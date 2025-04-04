@@ -24,6 +24,28 @@ import { AppUser, UserRole } from '@/lib/permissions';
 import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 
+// Hook to check if user is admin and handle redirection
+export function useAdminAuth() {
+  const { user, loading, error } = useAuthState();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!loading) {
+      if (!user) {
+        router.push('/admin/login');
+      } else if (user.role !== UserRole.ADMIN) {
+        router.push('/admin/unauthorized');
+      }
+    }
+  }, [user, loading, router]);
+
+  return { 
+    user: user?.role === UserRole.ADMIN ? user : null,
+    loading,
+    error
+  };
+}
+
 // Check if a user is already logged in from session
 export function useAuthState() {
   const [user, setUser] = useState<AppUser | null>(null);
@@ -31,23 +53,19 @@ export function useAuthState() {
   const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
-    // Set up auth state listener
     const unsubscribe = onAuthStateChanged(
       auth,
       async (firebaseUser) => {
         try {
           setLoading(true);
           if (firebaseUser) {
-            // Get the user data from Firestore
             const userData = await getUserData(firebaseUser.uid);
             if (userData) {
               setUser(userData);
-              // Update last login
               await updateDoc(doc(db, 'users', firebaseUser.uid), {
                 lastLogin: serverTimestamp()
               });
             } else {
-              // User exists in Firebase Auth but not in Firestore
               setUser(null);
             }
           } else {
@@ -66,11 +84,26 @@ export function useAuthState() {
       }
     );
 
-    // Clean up the listener on unmount
     return () => unsubscribe();
   }, []);
 
   return { user, loading, error };
+}
+
+// React hook to protect routes that require authentication
+export function useRequireAuth(requiredRole?: UserRole) {
+  const { user, loading } = useAuthState();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!loading && !user) {
+      router.push('/admin/login');
+    } else if (!loading && user && requiredRole && user.role !== requiredRole) {
+      router.push('/admin');
+    }
+  }, [user, loading, router, requiredRole]);
+
+  return { user, loading };
 }
 
 // Sign in with email and password
@@ -79,17 +112,14 @@ export async function signIn(email: string, password: string): Promise<{ success
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
     const firebaseUser = userCredential.user;
 
-    // Get additional user data from Firestore
     const userData = await getUserData(firebaseUser.uid);
     if (!userData) {
-      // User exists in Firebase Auth but not in Firestore
       return {
         success: false,
         message: 'User account data is missing. Please contact an administrator.'
       };
     }
 
-    // Check if user is active
     if (!userData.isActive) {
       await firebaseSignOut(auth);
       return {
@@ -157,7 +187,6 @@ export async function createUser(
   role: UserRole = UserRole.VIEWER
 ): Promise<{ success: boolean; message?: string; userId?: string }> {
   try {
-    // Check if user already exists
     const usersRef = collection(db, 'users');
     const q = query(usersRef, where('email', '==', email));
     const querySnapshot = await getDocs(q);
@@ -169,11 +198,9 @@ export async function createUser(
       };
     }
 
-    // Create the user in Firebase Auth
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     const firebaseUser = userCredential.user;
 
-    // Create user document in Firestore
     const newUser: Omit<AppUser, 'id'> = {
       email,
       displayName,
@@ -246,22 +273,4 @@ export async function getAllUsers(): Promise<AppUser[]> {
     console.error('Error getting users:', error);
     return [];
   }
-}
-
-// React hook to protect routes that require authentication
-export function useRequireAuth(requiredRole?: UserRole) {
-  const { user, loading } = useAuthState();
-  const router = useRouter();
-
-  useEffect(() => {
-    if (!loading && !user) {
-      // Redirect to login if not authenticated
-      router.push('/admin/login');
-    } else if (!loading && user && requiredRole && user.role !== requiredRole) {
-      // Redirect to admin home if authenticated but wrong role
-      router.push('/admin');
-    }
-  }, [user, loading, router, requiredRole]);
-
-  return { user, loading };
 }
