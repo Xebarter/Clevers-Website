@@ -1,0 +1,141 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Base colors */
+    --background: 0 0% 100%;
+    --foreground: 215 25% 27%;
+
+    /* Card and popover colors */
+    --card: 0 0% 100%;
+    --card-foreground: 215 25% 27%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 215 25% 27%;
+
+    /* Primary interactive colors */
+    --primary: 195 83% 58%;     /* Bright blue */
+    --primary-foreground: 0 0% 100%;
+    --secondary: 45 100% 67%;   /* Cheerful yellow */
+    --secondary-foreground: 215 25% 27%;
+
+    /* Utility colors */
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215 15% 50%;
+    --accent: 340 82% 76%;      /* Soft pink */
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 98%;
+
+    /* Border and form elements */
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 195 83% 58%;        /* Match primary */
+    --radius: 0.8rem;           /* Increased rounded corners */
+
+    /* Chart colors */
+    --chart-1: 0 66% 67%;       /* kinder-red */
+    --chart-2: 146 43% 60%;     /* kinder-green */
+    --chart-3: 197 70% 62%;     /* kinder-blue */
+    --chart-4: 49 100% 67%;     /* kinder-yellow */
+    --chart-5: 267 33% 69%;     /* kinder-purple */
+  }
+
+  .dark {
+    --background: 222 47% 11%;
+    --foreground: 210 40% 98%;
+
+    /* Card and popover colors */
+    --card: 222 47% 11%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222 47% 11%;
+    --popover-foreground: 210 40% 98%;
+
+    /* Maintain consistent brand colors in dark mode */
+    --primary: 195 83% 58%;     /* Keep same primary */
+    --primary-foreground: 210 40% 98%;
+    --secondary: 45 100% 67%;   /* Keep same secondary */
+    --secondary-foreground: 210 40% 98%;
+
+    /* Utility colors for dark mode */
+    --muted: 217 33% 17%;
+    --muted-foreground: 215 20% 65%;
+    --accent: 340 82% 76%;      /* Keep same accent */
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+
+    /* Border and form elements */
+    --border: 217 33% 17%;
+    --input: 217 33% 17%;
+    --ring: 195 83% 58%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  /* Typography */
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-heading;
+  }
+  p, span, div, li {
+    @apply font-body;
+  }
+}
+
+@layer components {
+  /* Text gradients and backgrounds */
+  .heading-gradient {
+    @apply bg-gradient-to-r from-kinder-red via-kinder-blue to-kinder-green bg-clip-text text-transparent;
+  }
+  .banner-gradient {
+    @apply bg-gradient-to-r from-kinder-yellow/20 via-kinder-blue/20 to-kinder-pink/20;
+  }
+
+  /* Cards and sections */
+  .school-card {
+    @apply rounded-2xl shadow-md transition-all duration-300 hover:shadow-lg
+           overflow-hidden border-2 border-kinder-yellow/30;
+  }
+  .section-title {
+    @apply text-3xl md:text-4xl font-bold mb-6 relative text-kinder-blue;
+  }
+  .section-title::after {
+    content: "";
+    @apply absolute bottom-0 left-0 w-16 h-2 bg-kinder-yellow rounded-full;
+  }
+
+  /* Interactive elements */
+  .kinder-button {
+    @apply bg-kinder-blue text-white font-heading py-3 px-6 rounded-xl shadow-md
+           hover:bg-kinder-blue/90 transition-all duration-200
+           border-b-4 border-blue-600 hover:border-blue-700
+           active:transform active:translate-y-1 active:border-b-2;
+  }
+
+  /* Form elements - consolidated similar styles */
+  .kinder-input, .kinder-select {
+    @apply rounded-xl border-2 border-kinder-blue/30 px-4 py-3
+           focus:border-kinder-blue focus:ring-2 focus:ring-kinder-yellow/30
+           transition-all duration-200;
+  }
+
+  .kinder-checkbox, .kinder-radio {
+    @apply border-2 border-kinder-purple text-kinder-blue
+           focus:ring-2 focus:ring-kinder-yellow/30;
+  }
+
+  .kinder-checkbox {
+    @apply w-5 h-5 rounded-md;
+  }
+
+  .kinder-radio {
+    @apply w-5 h-5 rounded-full;
+  }
+}

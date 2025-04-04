@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Clevers' Origin Schools - Kindergarten Website</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&family=Varela+Round&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --blue: #5DADE2;
+      --red: #FF5757;
+      --green: #66CC99;
+      --yellow: #FFDD59;
+      --purple: #AC8CD4;
+      --orange: #FF9966;
+      --pink: #FF99CC;
+    }
+
+    body {
+      font-family: 'Quicksand', sans-serif;
+      background: linear-gradient(135deg, rgba(255,221,89,0.1), rgba(93,173,226,0.1), rgba(255,153,204,0.1));
+      background-size: 400% 400%;
+      animation: gradient 15s ease infinite;
+      min-height: 100vh;
+      margin: 0;
+      padding: 20px;
+      color: #333;
+    }
+
+    @keyframes gradient {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    h1, h2, h3, h4 {
+      font-family: 'Varela Round', sans-serif;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 20px;
+    }
+
+    .logo-circle {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      margin-right: -10px;
+    }
+
+    .logo-text {
+      font-size: 28px;
+      font-weight: bold;
+      margin-left: 20px;
+      background: linear-gradient(90deg, var(--red), var(--blue), var(--green));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    h1 {
+      font-size: 36px;
+      margin-bottom: 10px;
+      background: linear-gradient(90deg, var(--red), var(--blue), var(--green));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .subtitle {
+      font-size: 20px;
+      margin-bottom: 40px;
+      color: #555;
+    }
+
+    .cards-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 30px;
+      margin-bottom: 40px;
+    }
+
+    .card {
+      background: white;
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: 0 6px 15px rgba(0,0,0,0.05);
+      transition: transform 0.3s, box-shadow 0.3s;
+      border: 2px solid rgba(93,173,226,0.2);
+    }
+
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    }
+
+    .card-img {
+      height: 200px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 80px;
+      background-color: rgba(93,173,226,0.1);
+    }
+
+    .card-content {
+      padding: 20px;
+    }
+
+    .card h3 {
+      color: var(--blue);
+      margin-top: 0;
+      margin-bottom: 10px;
+      font-size: 22px;
+    }
+
+    .card p {
+      color: #666;
+      margin-bottom: 20px;
+      line-height: 1.5;
+    }
+
+    .features {
+      margin-bottom: 15px;
+    }
+
+    .feature {
+      display: flex;
+      align-items: center;
+      margin-bottom: 8px;
+      font-size: 14px;
+    }
+
+    .feature-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      margin-right: 10px;
+      background-color: var(--blue);
+    }
+
+    .blue .feature-dot { background-color: var(--blue); }
+    .red .feature-dot { background-color: var(--red); }
+    .green .feature-dot { background-color: var(--green); }
+    .purple .feature-dot { background-color: var(--purple); }
+    .yellow .feature-dot { background-color: var(--yellow); }
+    .pink .feature-dot { background-color: var(--pink); }
+
+    .blue { border-color: rgba(93,173,226,0.3); }
+    .red { border-color: rgba(255,87,87,0.3); }
+    .green { border-color: rgba(102,204,153,0.3); }
+    .purple { border-color: rgba(172,140,212,0.3); }
+    .yellow { border-color: rgba(255,221,89,0.3); }
+    .pink { border-color: rgba(255,153,204,0.3); }
+
+    .blue .card-img { background-color: rgba(93,173,226,0.1); }
+    .red .card-img { background-color: rgba(255,87,87,0.1); }
+    .green .card-img { background-color: rgba(102,204,153,0.1); }
+    .purple .card-img { background-color: rgba(172,140,212,0.1); }
+    .yellow .card-img { background-color: rgba(255,221,89,0.1); }
+    .pink .card-img { background-color: rgba(255,153,204,0.1); }
+
+    .blue h3 { color: var(--blue); }
+    .red h3 { color: var(--red); }
+    .green h3 { color: var(--green); }
+    .purple h3 { color: var(--purple); }
+    .yellow h3 { color: var(--yellow); }
+    .pink h3 { color: var(--pink); }
+
+    .buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+      justify-content: center;
+      margin-top: 40px;
+    }
+
+    .button {
+      display: inline-block;
+      padding: 12px 25px;
+      border-radius: 50px;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 16px;
+      transition: all 0.3s;
+      border-bottom: 4px solid;
+    }
+
+    .button:hover {
+      transform: translateY(-2px);
+    }
+
+    .button:active {
+      transform: translateY(0);
+      border-bottom-width: 2px;
+    }
+
+    .button.primary {
+      background-color: var(--blue);
+      color: white;
+      border-color: #4a90e2;
+    }
+
+    .button.secondary {
+      background-color: white;
+      color: var(--blue);
+      border: 2px solid var(--blue);
+      border-bottom-width: 4px;
+    }
+
+    footer {
+      text-align: center;
+      margin-top: 60px;
+      padding: 20px;
+      color: #666;
+      font-size: 14px;
+    }
+
+    @media (max-width: 768px) {
+      .cards-container {
+        grid-template-columns: 1fr;
+      }
+
+      h1 {
+        font-size: 28px;
+      }
+
+      .subtitle {
+        font-size: 18px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="logo">
+        <div class="logo-circle" style="background-color: var(--red);"></div>
+        <div class="logo-circle" style="background-color: var(--blue);"></div>
+        <div class="logo-circle" style="background-color: var(--green);"></div>
+        <div class="logo-text">Clevers' Origin Schools</div>
+      </div>
+      <h1>Kindergarten Website Showcase</h1>
+      <p class="subtitle">A full kindergarten website with playful, child-friendly design and comprehensive content</p>
+    </header>
+
+    <div class="cards-container">
+      <div class="card blue">
+        <div class="card-img">🏠</div>
+        <div class="card-content">
+          <h3>Home Page</h3>
+          <p>A vibrant landing page introducing the school with captivating visuals and essential information for parents.</p>
+          <div class="features">
+            <div class="feature"><div class="feature-dot"></div>Hero section with call to action</div>
+            <div class="feature"><div class="feature-dot"></div>Announcements board</div>
+            <div class="feature"><div class="feature-dot"></div>Campus showcase</div>
+            <div class="feature"><div class="feature-dot"></div>Upcoming events section</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card green">
+        <div class="card-img">📄</div>
+        <div class="card-content">
+          <h3>About Section</h3>
+          <p>A comprehensive section sharing the school's story, mission, vision, and leadership team.</p>
+          <div class="features">
+            <div class="feature"><div class="feature-dot"></div>Our Story page</div>
+            <div class="feature"><div class="feature-dot"></div>Mission & Vision page</div>
+            <div class="feature"><div class="feature-dot"></div>Leadership Team profiles</div>
+            <div class="feature"><div class="feature-dot"></div>Core values presentation</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card red">
+        <div class="card-img">🏫</div>
+        <div class="card-content">
+          <h3>Campus Pages</h3>
+          <p>Detailed pages for each of our three campuses with consistent styling and complete information.</p>
+          <div class="features">
+            <div class="feature"><div class="feature-dot"></div>Kitintale Campus page</div>
+            <div class="feature"><div class="feature-dot"></div>Kasokoso Campus page</div>
+            <div class="feature"><div class="feature-dot"></div>Maganjo Campus page</div>
+            <div class="feature"><div class="feature-dot"></div>Campus comparison page</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card purple">
+        <div class="card-img">🏃‍♂️</div>
+        <div class="card-content">
+          <h3>Student Life</h3>
+          <p>Engaging pages showcasing the vibrant student experience through various activities and programs.</p>
+          <div class="features">
+            <div class="feature"><div class="feature-dot"></div>Activities page</div>
+            <div class="feature"><div class="feature-dot"></div>Arts & Culture page</div>
+            <div class="feature"><div class="feature-dot"></div>Sports page with schedule</div>
+            <div class="feature"><div class="feature-dot"></div>Testimonials and galleries</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card yellow">
+        <div class="card-img">📚</div>
+        <div class="card-content">
+          <h3>Academics</h3>
+          <p>Comprehensive information about our curriculum, academic calendar, and teaching approach.</p>
+          <div class="features">
+            <div class="feature"><div class="feature-dot"></div>Curriculum overview</div>
+            <div class="feature"><div class="feature-dot"></div>Academic calendar</div>
+            <div class="feature"><div class="feature-dot"></div>Teachers & Staff profiles</div>
+            <div class="feature"><div class="feature-dot"></div>Learning philosophy</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card pink">
+        <div class="card-img">✏️</div>
+        <div class="card-content">
+          <h3>Application Form</h3>
+          <p>A multi-step application form with kindergarten-friendly styling and intuitive navigation.</p>
+          <div class="features">
+            <div class="feature"><div class="feature-dot"></div>Multi-step application process</div>
+            <div class="feature"><div class="feature-dot"></div>Progress indicator</div>
+            <div class="feature"><div class="feature-dot"></div>Student & guardian information</div>
+            <div class="feature"><div class="feature-dot"></div>Engaging payment interface</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card blue">
+        <div class="card-img">📱</div>
+        <div class="card-content">
+          <h3>Contact Page</h3>
+          <p>A comprehensive contact page with campus information, contact form, and frequently asked questions.</p>
+          <div class="features">
+            <div class="feature"><div class="feature-dot"></div>Campus contact details</div>
+            <div class="feature"><div class="feature-dot"></div>Interactive contact form</div>
+            <div class="feature"><div class="feature-dot"></div>FAQ section</div>
+            <div class="feature"><div class="feature-dot"></div>Map location</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card green">
+        <div class="card-img">🎨</div>
+        <div class="card-content">
+          <h3>Design System</h3>
+          <p>A consistent kindergarten-friendly design system applied across all pages for a cohesive experience.</p>
+          <div class="features">
+            <div class="feature"><div class="feature-dot"></div>Playful color palette</div>
+            <div class="feature"><div class="feature-dot"></div>Child-friendly typography</div>
+            <div class="feature"><div class="feature-dot"></div>Rounded UI elements</div>
+            <div class="feature"><div class="feature-dot"></div>Engaging icons and illustrations</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card red">
+        <div class="card-img">💻</div>
+        <div class="card-content">
+          <h3>Technical Features</h3>
+          <p>Built with modern web technologies for performance, responsiveness, and maintainability.</p>
+          <div class="features">
+            <div class="feature"><div class="feature-dot"></div>Next.js framework</div>
+            <div class="feature"><div class="feature-dot"></div>Tailwind CSS styling</div>
+            <div class="feature"><div class="feature-dot"></div>Shadcn/ui components</div>
+            <div class="feature"><div class="feature-dot"></div>Responsive mobile design</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="buttons">
+      <a href="#" class="button primary">View Source Code</a>
+      <a href="#" class="button secondary">See Other Projects</a>
+    </div>
+
+    <footer>
+      <p>A showcase of a kindergarten website with comprehensive content and kindergarten-friendly design.</p>
+      <p>Created with Next.js, Tailwind CSS, and Shadcn/ui.</p>
+    </footer>
+  </div>
+</body>
+</html>
