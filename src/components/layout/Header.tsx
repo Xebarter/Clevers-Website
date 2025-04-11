@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Menu, X, ChevronDown, ChevronRight, HelpCircle } from "lucide-react";
@@ -32,7 +33,6 @@ const Header = () => {
         { name: "Our Story", href: "/about" },
         { name: "Mission & Vision", href: "/about/mission" },
         { name: "Leadership", href: "/about/leadership" },
-        // Nested Academics menu
         {
           name: "Academics", 
           href: "#",
@@ -43,7 +43,6 @@ const Header = () => {
             { name: "Academic Calendar", href: "/academics/calendar" },
           ]
         },
-        // Nested Student Life menu
         {
           name: "Student Life",
           href: "#",
@@ -69,7 +68,6 @@ const Header = () => {
     { name: "Contact", href: "/contact" },
   ];
 
-  // Toggle expanded state for mobile menu items
   const toggleExpanded = (itemName: string) => {
     setExpandedItems(prev => ({
       ...prev,
@@ -77,7 +75,6 @@ const Header = () => {
     }));
   };
 
-  // Improved mobile menu renderer with accordion-style expansion
   const renderMobileSubmenu = (items: any[], pathPrefix = "", level = 0) => {
     return items.map((item) => {
       const itemPath = `${pathPrefix}${item.name}`;
@@ -132,10 +129,13 @@ const Header = () => {
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between py-4">
             <Link href="/" className="flex items-center space-x-2">
-              <div className="flex items-center">
-                <div className="h-8 w-8 rounded-full bg-kinder-red" />
-                <div className="h-8 w-8 rounded-full bg-kinder-blue -ml-2" />
-                <div className="h-8 w-8 rounded-full bg-kinder-green -ml-2" />
+              <div className="relative w-10 h-10">
+                <Image 
+                  src="/logo.svg" 
+                  alt="Clevers' Origin Schools Logo"
+                  fill
+                  className="object-contain"
+                />
               </div>
               <span className="font-bold text-xl font-heading sm:block hidden">Clevers' Origin Schools</span>
               <span className="font-bold text-xl font-heading sm:hidden">COS</span>
@@ -158,16 +158,19 @@ const Header = () => {
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between py-4">
           <Link href="/" className="flex items-center space-x-2">
-            <div className="flex items-center">
-              <div className="h-8 w-8 rounded-full bg-kinder-red" />
-              <div className="h-8 w-8 rounded-full bg-kinder-blue -ml-2" />
-              <div className="h-8 w-8 rounded-full bg-kinder-green -ml-2" />
+            <div className="relative w-10 h-10">
+              <Image 
+                src="/logo.svg" 
+                alt="Clevers' Origin Schools Logo"
+                fill
+                className="object-contain"
+              />
             </div>
             <span className="font-bold text-xl sm:block hidden">Clevers' Origin Schools</span>
             <span className="font-bold text-xl sm:hidden">COS</span>
           </Link>
 
-          {/* Desktop Navigation - Unchanged */}
+          {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-6">
             {menuItems.map((item) => (
               <div key={item.name} className="relative group">
@@ -232,7 +235,7 @@ const Header = () => {
             </Link>
           </div>
 
-          {/* Optimized Mobile Navigation */}
+          {/* Mobile Navigation */}
           <div className="md:hidden flex items-center space-x-2">
             <Link href="/apply" className="mr-1">
               <Button size="sm" className="px-3 py-1">Apply</Button>
