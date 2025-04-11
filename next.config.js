@@ -5,18 +5,18 @@ const nextConfig = {
     unoptimized: true,
     remotePatterns: [
       {
-        protocol: 'https',
-        hostname: 'placehold.co',
+        protocol: "https",
+        hostname: "placehold.co",
       },
       {
-        protocol: 'https',
-        hostname: 'same-assets.com',
+        protocol: "https",
+        hostname: "same-assets.com",
       },
     ],
   },
-  //output: 'export',
-  distDir: 'out',
-  transpilePackages: ['tailwindcss', 'postcss', 'postcss-js'],
+  // Removed distDir to let Next.js use the default ".next" folder
+  // output: 'export',
+  transpilePackages: ["tailwindcss", "postcss", "postcss-js"],
   eslint: {
     ignoreDuringBuilds: true,
   },
