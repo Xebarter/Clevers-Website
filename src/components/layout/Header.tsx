@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Menu, X, ChevronDown, HelpCircle } from "lucide-react";
+import { Menu, X, ChevronDown, ChevronRight, HelpCircle } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -17,13 +17,10 @@ const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const pathname = usePathname();
   const [isApplyPage, setIsApplyPage] = useState(false);
-  const [isScrolled, setIsScrolled] = useState(false);
+  const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     setIsApplyPage(pathname === "/apply");
-    const handleScroll = () => setIsScrolled(window.scrollY > 10);
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
   }, [pathname]);
 
   const menuItems = [
@@ -35,6 +32,7 @@ const Header = () => {
         { name: "Our Story", href: "/about" },
         { name: "Mission & Vision", href: "/about/mission" },
         { name: "Leadership", href: "/about/leadership" },
+        // Nested Academics menu
         {
           name: "Academics", 
           href: "#",
@@ -45,6 +43,7 @@ const Header = () => {
             { name: "Academic Calendar", href: "/academics/calendar" },
           ]
         },
+        // Nested Student Life menu
         {
           name: "Student Life",
           href: "#",
@@ -70,45 +69,84 @@ const Header = () => {
     { name: "Contact", href: "/contact" },
   ];
 
-  const renderMobileSubmenu = (items: any[], onClose: () => void, level = 0) => {
-    return items.map((item) => (
-      <div key={item.name} className={`space-y-3 ${level > 0 ? 'ml-4 pl-4 border-l-2 border-gray-100' : ''}`}>
-        {item.submenu ? (
-          <>
-            <div className="font-medium text-gray-900 text-base">{item.name}</div>
-            {renderMobileSubmenu(item.submenu, onClose, level + 1)}
-          </>
-        ) : (
-          <Link
-            href={item.href}
-            className="block text-gray-600 hover:text-gray-900 text-base py-1.5"
-            onClick={onClose}
-          >
-            {item.name}
-          </Link>
-        )}
-      </div>
-    ));
+  // Toggle expanded state for mobile menu items
+  const toggleExpanded = (itemName: string) => {
+    setExpandedItems(prev => ({
+      ...prev,
+      [itemName]: !prev[itemName]
+    }));
+  };
+
+  // Improved mobile menu renderer with accordion-style expansion
+  const renderMobileSubmenu = (items: any[], pathPrefix = "", level = 0) => {
+    return items.map((item) => {
+      const itemPath = `${pathPrefix}${item.name}`;
+      const isExpanded = expandedItems[itemPath];
+      
+      return (
+        <div 
+          key={itemPath} 
+          className={`${level > 0 ? 'border-l border-gray-200' : 'border-b border-gray-200'}`}
+        >
+          {item.submenu ? (
+            <div>
+              <button
+                onClick={() => toggleExpanded(itemPath)}
+                className={`flex items-center justify-between w-full text-left py-2.5 px-3 ${
+                  level > 0 ? 'pl-4 ml-3 text-sm' : 'font-medium'
+                } ${level > 1 ? 'pl-6' : ''}`}
+              >
+                <span>{item.name}</span>
+                {isExpanded ? (
+                  <ChevronDown className="h-4 w-4 flex-shrink-0" />
+                ) : (
+                  <ChevronRight className="h-4 w-4 flex-shrink-0" />
+                )}
+              </button>
+              
+              {isExpanded && (
+                <div className={`${level === 0 ? 'ml-2' : 'ml-3'} mb-1`}>
+                  {renderMobileSubmenu(item.submenu, `${itemPath}-`, level + 1)}
+                </div>
+              )}
+            </div>
+          ) : (
+            <Link
+              href={item.href}
+              className={`block py-2.5 px-3 text-gray-700 hover:text-gray-900 hover:bg-gray-50 ${
+                pathname === item.href ? 'text-gray-900 font-medium bg-gray-50' : ''
+              } ${level > 0 ? 'pl-4 ml-3 text-sm' : ''} ${level > 1 ? 'pl-6' : ''}`}
+              onClick={() => setIsMenuOpen(false)}
+            >
+              {item.name}
+            </Link>
+          )}
+        </div>
+      );
+    });
   };
 
   if (isApplyPage) {
     return (
-      <header className={`bg-white border-b sticky top-0 z-50 ${isScrolled ? 'shadow-sm' : ''}`}>
+      <header className="bg-white border-b">
         <div className="container mx-auto px-4">
-          <div className="flex items-center justify-between py-3">
+          <div className="flex items-center justify-between py-4">
             <Link href="/" className="flex items-center space-x-2">
               <div className="flex items-center">
                 <div className="h-8 w-8 rounded-full bg-kinder-red" />
                 <div className="h-8 w-8 rounded-full bg-kinder-blue -ml-2" />
                 <div className="h-8 w-8 rounded-full bg-kinder-green -ml-2" />
               </div>
-              <span className="font-bold text-lg sm:text-xl">Clevers' Origin Schools</span>
+              <span className="font-bold text-xl font-heading sm:block hidden">Clevers' Origin Schools</span>
+              <span className="font-bold text-xl font-heading sm:hidden">COS</span>
             </Link>
 
-            <Link href="/contact" className="text-sm text-gray-600 hover:text-gray-900 flex items-center gap-1">
-              <HelpCircle className="h-4 w-4" />
-              <span className="hidden xs:inline">Need Help?</span>
-            </Link>
+            <div className="flex items-center gap-4">
+              <Link href="/contact" className="text-sm text-gray-600 hover:text-gray-900 flex items-center gap-1">
+                <HelpCircle className="h-4 w-4" />
+                <span className="hidden sm:inline">Need Help?</span>
+              </Link>
+            </div>
           </div>
         </div>
       </header>
@@ -116,26 +154,27 @@ const Header = () => {
   }
 
   return (
-    <header className={`border-b bg-white sticky top-0 z-50 ${isScrolled ? 'shadow-sm' : ''}`}>
+    <header className="border-b bg-white">
       <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between py-3">
+        <div className="flex items-center justify-between py-4">
           <Link href="/" className="flex items-center space-x-2">
             <div className="flex items-center">
               <div className="h-8 w-8 rounded-full bg-kinder-red" />
               <div className="h-8 w-8 rounded-full bg-kinder-blue -ml-2" />
               <div className="h-8 w-8 rounded-full bg-kinder-green -ml-2" />
             </div>
-            <span className="font-bold text-lg sm:text-xl">Clevers' Origin Schools</span>
+            <span className="font-bold text-xl sm:block hidden">Clevers' Origin Schools</span>
+            <span className="font-bold text-xl sm:hidden">COS</span>
           </Link>
 
-          {/* Desktop Navigation - Hidden on mobile */}
-          <nav className="hidden md:flex items-center space-x-4 lg:space-x-6">
+          {/* Desktop Navigation - Unchanged */}
+          <nav className="hidden md:flex items-center space-x-6">
             {menuItems.map((item) => (
               <div key={item.name} className="relative group">
                 {item.submenu ? (
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <button className="flex items-center text-gray-700 hover:text-gray-900 py-2 text-sm lg:text-base">
+                      <button className="flex items-center text-gray-700 hover:text-gray-900 py-2">
                         {item.name} <ChevronDown className="ml-1 h-4 w-4" />
                       </button>
                     </DropdownMenuTrigger>
@@ -178,7 +217,7 @@ const Header = () => {
                 ) : (
                   <Link
                     href={item.href}
-                    className="text-gray-700 hover:text-gray-900 py-2 text-sm lg:text-base"
+                    className="text-gray-700 hover:text-gray-900 py-2"
                   >
                     {item.name}
                   </Link>
@@ -187,43 +226,47 @@ const Header = () => {
             ))}
           </nav>
 
-          <div className="hidden md:flex items-center space-x-3">
+          <div className="hidden md:flex items-center space-x-4">
             <Link href="/apply">
-              <Button size="sm" className="text-sm">
-                Apply Now
-              </Button>
+              <Button>Apply Now</Button>
             </Link>
           </div>
 
-          {/* Mobile Navigation - Visible only on mobile */}
-          <div className="md:hidden flex">
+          {/* Optimized Mobile Navigation */}
+          <div className="md:hidden flex items-center space-x-2">
+            <Link href="/apply" className="mr-1">
+              <Button size="sm" className="px-3 py-1">Apply</Button>
+            </Link>
+            
             <Sheet open={isMenuOpen} onOpenChange={setIsMenuOpen}>
               <SheetTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-10 w-10">
+                <Button variant="ghost" size="icon" className="p-1">
                   <Menu className="h-5 w-5" />
                   <span className="sr-only">Toggle menu</span>
                 </Button>
               </SheetTrigger>
-              <SheetContent side="right" className="w-full max-w-[320px]">
+              <SheetContent side="right" className="w-[300px] p-0">
                 <div className="flex flex-col h-full">
-                  <div className="flex items-center justify-between py-4 border-b">
-                    <span className="font-bold text-xl">Menu</span>
+                  <div className="flex items-center justify-between p-4 border-b">
+                    <span className="font-bold text-lg">Menu</span>
                     <Button
                       variant="ghost"
                       size="icon"
+                      className="h-8 w-8"
                       onClick={() => setIsMenuOpen(false)}
-                      className="h-10 w-10"
                     >
                       <X className="h-5 w-5" />
                       <span className="sr-only">Close menu</span>
                     </Button>
                   </div>
-                  <nav className="flex-1 overflow-y-auto py-4 px-2">
-                    <div className="space-y-4">
-                      {renderMobileSubmenu(menuItems, () => setIsMenuOpen(false))}
-                    </div>
-                  </nav>
-                  <div className="border-t pt-4 pb-2 px-2">
+                  
+                  <div className="overflow-y-auto flex-grow">
+                    <nav className="flex flex-col">
+                      {renderMobileSubmenu(menuItems)}
+                    </nav>
+                  </div>
+                  
+                  <div className="mt-auto p-4 border-t">
                     <Link href="/apply" onClick={() => setIsMenuOpen(false)}>
                       <Button className="w-full">Apply Now</Button>
                     </Link>
