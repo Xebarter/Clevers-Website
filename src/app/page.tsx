@@ -41,7 +41,13 @@ export default function Home() {
         <div className="container mx-auto px-4 flex flex-col lg:flex-row items-center gap-12 relative z-10">
           <div className="w-full lg:w-1/2 space-y-6">
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight">
-              Welcome to <span className="heading-gradient">Clevers' Origin Schools</span>
+              Welcome to{" "}
+              <span className="relative">
+                <span className="bg-gradient-to-r from-[#ff5252] via-[#FFD700] to-[#66bb6a] bg-clip-text text-transparent animate-pulse">
+                  Clevers' Origin Schools
+                </span>
+                <span className="absolute -bottom-1 left-0 w-full h-1 bg-gradient-to-r from-[#ff5252] via-[#40c4ff] to-[#66bb6a] rounded-full"></span>
+              </span>
             </h1>
             <p className="text-lg text-gray-600 max-w-lg">
               Nurturing young minds with creativity, knowledge, and values across our three vibrant campuses in Kitintale, Kasokoso, and Maganjo.
