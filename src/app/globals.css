@@ -4,42 +4,42 @@
 
 @layer base {
   :root {
-    /* Base colors */
+    /* Base colors - brightened */
     --background: 0 0% 100%;
-    --foreground: 215 25% 27%;
+    --foreground: 215 30% 25%;
 
     /* Card and popover colors */
     --card: 0 0% 100%;
-    --card-foreground: 215 25% 27%;
+    --card-foreground: 215 30% 25%;
     --popover: 0 0% 100%;
-    --popover-foreground: 215 25% 27%;
+    --popover-foreground: 215 30% 25%;
 
-    /* Primary interactive colors */
-    --primary: 195 83% 58%;     /* Bright blue */
+    /* Primary interactive colors - more vibrant */
+    --primary: 195 100% 60%;     /* Brighter blue */
     --primary-foreground: 0 0% 100%;
-    --secondary: 45 100% 67%;   /* Cheerful yellow */
-    --secondary-foreground: 215 25% 27%;
+    --secondary: 45 100% 70%;    /* Brighter yellow */
+    --secondary-foreground: 215 30% 25%;
 
-    /* Utility colors */
+    /* Utility colors - more saturated */
     --muted: 210 40% 96.1%;
-    --muted-foreground: 215 15% 50%;
-    --accent: 340 82% 76%;      /* Soft pink */
+    --muted-foreground: 215 20% 45%;
+    --accent: 340 100% 80%;      /* Vibrant pink */
     --accent-foreground: 0 0% 100%;
-    --destructive: 0 84% 60%;
+    --destructive: 0 100% 65%;   /* Brighter red */
     --destructive-foreground: 0 0% 98%;
 
     /* Border and form elements */
     --border: 220 13% 91%;
     --input: 220 13% 91%;
-    --ring: 195 83% 58%;        /* Match primary */
-    --radius: 0.8rem;           /* Increased rounded corners */
+    --ring: 195 100% 60%;        /* Match primary */
+    --radius: 1rem;              /* More pronounced rounded corners */
 
-    /* Chart colors */
-    --chart-1: 0 66% 67%;       /* kinder-red */
-    --chart-2: 146 43% 60%;     /* kinder-green */
-    --chart-3: 197 70% 62%;     /* kinder-blue */
-    --chart-4: 49 100% 67%;     /* kinder-yellow */
-    --chart-5: 267 33% 69%;     /* kinder-purple */
+    /* Chart colors - more vibrant */
+    --chart-1: 0 100% 67%;       /* brighter kinder-red */
+    --chart-2: 146 80% 60%;      /* brighter kinder-green */
+    --chart-3: 197 100% 62%;     /* brighter kinder-blue */
+    --chart-4: 49 100% 70%;      /* brighter kinder-yellow */
+    --chart-5: 267 70% 69%;      /* brighter kinder-purple */
   }
 
   .dark {
@@ -52,24 +52,24 @@
     --popover: 222 47% 11%;
     --popover-foreground: 210 40% 98%;
 
-    /* Maintain consistent brand colors in dark mode */
-    --primary: 195 83% 58%;     /* Keep same primary */
+    /* Vibrant brand colors in dark mode */
+    --primary: 195 100% 60%;     /* Brighter primary */
     --primary-foreground: 210 40% 98%;
-    --secondary: 45 100% 67%;   /* Keep same secondary */
+    --secondary: 45 100% 70%;    /* Brighter secondary */
     --secondary-foreground: 210 40% 98%;
 
-    /* Utility colors for dark mode */
+    /* Utility colors for dark mode - more vibrant */
     --muted: 217 33% 17%;
-    --muted-foreground: 215 20% 65%;
-    --accent: 340 82% 76%;      /* Keep same accent */
+    --muted-foreground: 215 20% 70%;
+    --accent: 340 100% 80%;      /* Brighter accent */
     --accent-foreground: 210 40% 98%;
-    --destructive: 0 62.8% 30.6%;
+    --destructive: 0 80% 40%;    /* More visible destructive */
     --destructive-foreground: 210 40% 98%;
 
     /* Border and form elements */
     --border: 217 33% 17%;
     --input: 217 33% 17%;
-    --ring: 195 83% 58%;
+    --ring: 195 100% 60%;
   }
 }
 
@@ -90,52 +90,61 @@
 }
 
 @layer components {
-  /* Text gradients and backgrounds */
+  /* Enhanced text gradients and backgrounds */
   .heading-gradient {
-    @apply bg-gradient-to-r from-kinder-red via-kinder-blue to-kinder-green bg-clip-text text-transparent;
+    @apply bg-gradient-to-r from-[#ff5252] via-[#40c4ff] to-[#66bb6a] bg-clip-text text-transparent;
   }
   .banner-gradient {
-    @apply bg-gradient-to-r from-kinder-yellow/20 via-kinder-blue/20 to-kinder-pink/20;
+    @apply bg-gradient-to-r from-[#ffeb3b]/30 via-[#40c4ff]/30 to-[#ff80ab]/30;
   }
 
-  /* Cards and sections */
+  /* Enhanced cards and sections */
   .school-card {
-    @apply rounded-2xl shadow-md transition-all duration-300 hover:shadow-lg
-           overflow-hidden border-2 border-kinder-yellow/30;
+    @apply rounded-2xl shadow-lg transition-all duration-300 hover:shadow-xl
+           overflow-hidden border-2 border-[#ffeb3b]/50;
   }
   .section-title {
-    @apply text-3xl md:text-4xl font-bold mb-6 relative text-kinder-blue;
+    @apply text-3xl md:text-4xl font-bold mb-6 relative text-[#40c4ff];
   }
   .section-title::after {
     content: "";
-    @apply absolute bottom-0 left-0 w-16 h-2 bg-kinder-yellow rounded-full;
+    @apply absolute bottom-0 left-0 w-20 h-2 bg-[#ffeb3b] rounded-full;
   }
 
-  /* Interactive elements */
+  /* Enhanced interactive elements */
   .kinder-button {
-    @apply bg-kinder-blue text-white font-heading py-3 px-6 rounded-xl shadow-md
-           hover:bg-kinder-blue/90 transition-all duration-200
-           border-b-4 border-blue-600 hover:border-blue-700
+    @apply bg-[#40c4ff] text-white font-heading py-3 px-6 rounded-xl shadow-lg
+           hover:bg-[#00b0ff] transition-all duration-200
+           border-b-4 border-[#0091ea] hover:border-[#0277bd]
            active:transform active:translate-y-1 active:border-b-2;
   }
 
-  /* Form elements - consolidated similar styles */
+  /* Enhanced form elements */
   .kinder-input, .kinder-select {
-    @apply rounded-xl border-2 border-kinder-blue/30 px-4 py-3
-           focus:border-kinder-blue focus:ring-2 focus:ring-kinder-yellow/30
+    @apply rounded-xl border-2 border-[#40c4ff]/50 px-4 py-3
+           focus:border-[#40c4ff] focus:ring-2 focus:ring-[#ffeb3b]/50
            transition-all duration-200;
   }
 
   .kinder-checkbox, .kinder-radio {
-    @apply border-2 border-kinder-purple text-kinder-blue
-           focus:ring-2 focus:ring-kinder-yellow/30;
+    @apply border-2 border-[#ba68c8] text-[#40c4ff]
+           focus:ring-2 focus:ring-[#ffeb3b]/50;
   }
 
   .kinder-checkbox {
-    @apply w-5 h-5 rounded-md;
+    @apply w-6 h-6 rounded-md;
   }
 
   .kinder-radio {
-    @apply w-5 h-5 rounded-full;
+    @apply w-6 h-6 rounded-full;
+  }
+  
+  /* New vibrant accents */
+  .kinder-tag {
+    @apply bg-[#ff80ab] text-white px-3 py-1 rounded-full text-sm font-medium;
+  }
+  
+  .kinder-highlight {
+    @apply bg-[#ffeb3b]/20 px-2 py-1 rounded-md border-l-4 border-[#ffeb3b];
   }
 }

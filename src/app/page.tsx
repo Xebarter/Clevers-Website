@@ -1,18 +1,44 @@
+"use client";
+
 import Link from "next/link";
 import Image from "next/image";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowRight, Calendar, Music, Medal, Book, Activity, ChevronRight } from "lucide-react";
+import { ArrowRight, Calendar, Music, Medal, Book, ChevronRight } from "lucide-react";
 import AnnouncementBoard from "@/components/home/AnnouncementBoard";
 import UpcomingEvents from "@/components/home/UpcomingEvents";
 import CampusShowcase from "@/components/home/CampusShowcase";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default function Home() {
+  const images = [
+    "/image1.jpg",
+    "/image2.jpg",
+    "/image3.jpg",
+    "/image4.jpg",
+    "/image5.jpg",
+    "/image6.jpg",
+    "/image7.jpg",
+    "/image8.jpg",
+    "/image9.jpg",
+    "/image10.jpg",
+    "/image11.jpg",
+  ];
+
+  const [currentImage, setCurrentImage] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentImage((prev) => (prev + 1) % images.length);
+    }, 4000);
+    return () => clearInterval(interval);
+  }, []);
+
   return (
     <div className="flex flex-col min-h-screen">
       {/* Hero Section */}
-      <section className="relative bg-gradient-to-b from-blue-50 to-white py-16 md:py-24">
-        <div className="container mx-auto px-4 flex flex-col lg:flex-row items-center gap-12">
+      <section className="relative bg-gradient-to-b from-blue-50 to-white py-16 md:py-24 overflow-hidden">
+        <div className="container mx-auto px-4 flex flex-col lg:flex-row items-center gap-12 relative z-10">
           <div className="w-full lg:w-1/2 space-y-6">
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight">
               Welcome to <span className="heading-gradient">Clevers' Origin Schools</span>
@@ -33,14 +59,25 @@ export default function Home() {
               </Link>
             </div>
           </div>
+
+          {/* Slideshow */}
           <div className="w-full lg:w-1/2 relative h-[300px] md:h-[400px] rounded-lg overflow-hidden shadow-xl">
-            {/* Placeholder for hero image - will be replaced with actual image */}
-            <div className="absolute inset-0 bg-gradient-to-r from-school-red via-school-blue to-school-green opacity-50" />
-            <div className="absolute inset-0 flex items-center justify-center text-white text-2xl font-bold">
-              School Photo Placeholder
-            </div>
+            {images.map((src, index) => (
+              <Image
+                key={index}
+                src={src}
+                alt=""
+                fill
+                priority={index === 0}
+                className={`absolute object-cover transition-opacity duration-1000 ease-in-out ${
+                  index === currentImage ? "opacity-100" : "opacity-0"
+                }`}
+              />
+            ))}
+            <div className="absolute inset-0 bg-black/20 z-10 rounded-lg" />
           </div>
         </div>
+        <div className="absolute inset-0 bg-gradient-to-r from-white/40 via-transparent to-white/40 z-0 pointer-events-none" />
       </section>
 
       {/* Announcement Board */}
@@ -55,7 +92,6 @@ export default function Home() {
       <section className="py-16">
         <div className="container mx-auto px-4">
           <h2 className="section-title mb-12">Why Choose Us</h2>
-
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             <Card className="school-card">
               <CardHeader className="pb-2">
