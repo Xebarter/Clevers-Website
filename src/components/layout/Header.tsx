@@ -17,9 +17,13 @@ const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const pathname = usePathname();
   const [isApplyPage, setIsApplyPage] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
 
   useEffect(() => {
     setIsApplyPage(pathname === "/apply");
+    const handleScroll = () => setIsScrolled(window.scrollY > 10);
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
   }, [pathname]);
 
   const menuItems = [
@@ -31,7 +35,6 @@ const Header = () => {
         { name: "Our Story", href: "/about" },
         { name: "Mission & Vision", href: "/about/mission" },
         { name: "Leadership", href: "/about/leadership" },
-        // Nested Academics menu
         {
           name: "Academics", 
           href: "#",
@@ -42,7 +45,6 @@ const Header = () => {
             { name: "Academic Calendar", href: "/academics/calendar" },
           ]
         },
-        // Nested Student Life menu
         {
           name: "Student Life",
           href: "#",
@@ -70,16 +72,16 @@ const Header = () => {
 
   const renderMobileSubmenu = (items: any[], onClose: () => void, level = 0) => {
     return items.map((item) => (
-      <div key={item.name} className={`space-y-2 ${level > 0 ? 'ml-4 pl-4 border-l-2' : ''}`}>
+      <div key={item.name} className={`space-y-3 ${level > 0 ? 'ml-4 pl-4 border-l-2 border-gray-100' : ''}`}>
         {item.submenu ? (
           <>
-            <div className="font-medium">{item.name}</div>
+            <div className="font-medium text-gray-900 text-base">{item.name}</div>
             {renderMobileSubmenu(item.submenu, onClose, level + 1)}
           </>
         ) : (
           <Link
             href={item.href}
-            className="block text-gray-700 hover:text-gray-900"
+            className="block text-gray-600 hover:text-gray-900 text-base py-1.5"
             onClick={onClose}
           >
             {item.name}
@@ -91,24 +93,22 @@ const Header = () => {
 
   if (isApplyPage) {
     return (
-      <header className="bg-white border-b">
+      <header className={`bg-white border-b sticky top-0 z-50 ${isScrolled ? 'shadow-sm' : ''}`}>
         <div className="container mx-auto px-4">
-          <div className="flex items-center justify-between py-4">
+          <div className="flex items-center justify-between py-3">
             <Link href="/" className="flex items-center space-x-2">
               <div className="flex items-center">
                 <div className="h-8 w-8 rounded-full bg-kinder-red" />
                 <div className="h-8 w-8 rounded-full bg-kinder-blue -ml-2" />
                 <div className="h-8 w-8 rounded-full bg-kinder-green -ml-2" />
               </div>
-              <span className="font-bold text-xl font-heading">Clevers' Origin Schools</span>
+              <span className="font-bold text-lg sm:text-xl">Clevers' Origin Schools</span>
             </Link>
 
-            <div className="flex items-center gap-4">
-              <Link href="/contact" className="text-sm text-gray-600 hover:text-gray-900 flex items-center gap-1">
-                <HelpCircle className="h-4 w-4" />
-                <span>Need Help?</span>
-              </Link>
-            </div>
+            <Link href="/contact" className="text-sm text-gray-600 hover:text-gray-900 flex items-center gap-1">
+              <HelpCircle className="h-4 w-4" />
+              <span className="hidden xs:inline">Need Help?</span>
+            </Link>
           </div>
         </div>
       </header>
@@ -116,26 +116,26 @@ const Header = () => {
   }
 
   return (
-    <header className="border-b bg-white">
+    <header className={`border-b bg-white sticky top-0 z-50 ${isScrolled ? 'shadow-sm' : ''}`}>
       <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between py-4">
+        <div className="flex items-center justify-between py-3">
           <Link href="/" className="flex items-center space-x-2">
             <div className="flex items-center">
               <div className="h-8 w-8 rounded-full bg-kinder-red" />
               <div className="h-8 w-8 rounded-full bg-kinder-blue -ml-2" />
               <div className="h-8 w-8 rounded-full bg-kinder-green -ml-2" />
             </div>
-            <span className="font-bold text-xl">Clevers' Origin Schools</span>
+            <span className="font-bold text-lg sm:text-xl">Clevers' Origin Schools</span>
           </Link>
 
-          {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center space-x-6">
+          {/* Desktop Navigation - Hidden on mobile */}
+          <nav className="hidden md:flex items-center space-x-4 lg:space-x-6">
             {menuItems.map((item) => (
               <div key={item.name} className="relative group">
                 {item.submenu ? (
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <button className="flex items-center text-gray-700 hover:text-gray-900 py-2">
+                      <button className="flex items-center text-gray-700 hover:text-gray-900 py-2 text-sm lg:text-base">
                         {item.name} <ChevronDown className="ml-1 h-4 w-4" />
                       </button>
                     </DropdownMenuTrigger>
@@ -178,7 +178,7 @@ const Header = () => {
                 ) : (
                   <Link
                     href={item.href}
-                    className="text-gray-700 hover:text-gray-900 py-2"
+                    className="text-gray-700 hover:text-gray-900 py-2 text-sm lg:text-base"
                   >
                     {item.name}
                   </Link>
@@ -187,38 +187,43 @@ const Header = () => {
             ))}
           </nav>
 
-          <div className="hidden md:flex items-center space-x-4">
+          <div className="hidden md:flex items-center space-x-3">
             <Link href="/apply">
-              <Button>Apply Now</Button>
+              <Button size="sm" className="text-sm">
+                Apply Now
+              </Button>
             </Link>
           </div>
 
-          {/* Mobile Navigation */}
+          {/* Mobile Navigation - Visible only on mobile */}
           <div className="md:hidden flex">
             <Sheet open={isMenuOpen} onOpenChange={setIsMenuOpen}>
               <SheetTrigger asChild>
-                <Button variant="ghost" size="icon">
-                  <Menu className="h-6 w-6" />
+                <Button variant="ghost" size="icon" className="h-10 w-10">
+                  <Menu className="h-5 w-5" />
                   <span className="sr-only">Toggle menu</span>
                 </Button>
               </SheetTrigger>
-              <SheetContent side="right" className="w-[300px] sm:w-[400px]">
+              <SheetContent side="right" className="w-full max-w-[320px]">
                 <div className="flex flex-col h-full">
-                  <div className="flex items-center justify-between py-4">
+                  <div className="flex items-center justify-between py-4 border-b">
                     <span className="font-bold text-xl">Menu</span>
                     <Button
                       variant="ghost"
                       size="icon"
                       onClick={() => setIsMenuOpen(false)}
+                      className="h-10 w-10"
                     >
-                      <X className="h-6 w-6" />
+                      <X className="h-5 w-5" />
                       <span className="sr-only">Close menu</span>
                     </Button>
                   </div>
-                  <nav className="flex flex-col space-y-4 py-6">
-                    {renderMobileSubmenu(menuItems, () => setIsMenuOpen(false))}
+                  <nav className="flex-1 overflow-y-auto py-4 px-2">
+                    <div className="space-y-4">
+                      {renderMobileSubmenu(menuItems, () => setIsMenuOpen(false))}
+                    </div>
                   </nav>
-                  <div className="mt-auto pb-8">
+                  <div className="border-t pt-4 pb-2 px-2">
                     <Link href="/apply" onClick={() => setIsMenuOpen(false)}>
                       <Button className="w-full">Apply Now</Button>
                     </Link>
