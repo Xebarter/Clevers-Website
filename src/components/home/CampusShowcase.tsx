@@ -1,60 +1,62 @@
 "use client";
 
 import React, { useState } from "react";
-import Link from "next/link";
 import Image from "next/image";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { MapPin, Phone, Users, ArrowRight, Book, Star } from "lucide-react";
+import { motion } from "framer-motion";
+import Link from "next/link";
 
-// Define campus data
 const campuses = [
   {
     id: "kitintale",
     name: "Kitintale Campus",
-    color: "school-red",
+    shortName: "Kitintale",
+    color: "red",
     address: "Plot 123, Kitintale Road, Kampala",
     phone: "+256 750 123456",
     description: "Our flagship campus with state-of-the-art facilities including a swimming pool, science labs, and a performing arts center.",
-    highlightColor: "from-red-500/20 to-transparent",
     badgeColor: "bg-red-100 text-red-800",
     keyFeatures: [
       { icon: Users, label: "1,200 Students" },
       { icon: Book, label: "Nursery to High School" },
       { icon: Star, label: "STEM Excellence Program" },
     ],
+    image: "/kitintale1.jpg",
   },
   {
     id: "kasokoso",
     name: "Kasokoso Campus",
-    color: "school-blue",
+    shortName: "Kasokoso",
+    color: "blue",
     address: "Plot 456, Kasokoso Avenue, Kampala",
     phone: "+256 750 789012",
     description: "A modern campus with a focus on performing arts and humanities, featuring a 500-seat auditorium and art studios.",
-    highlightColor: "from-blue-500/20 to-transparent",
     badgeColor: "bg-blue-100 text-blue-800",
     keyFeatures: [
       { icon: Users, label: "800 Students" },
       { icon: Book, label: "Primary to Middle School" },
       { icon: Star, label: "Arts & Humanities Focus" },
     ],
+    image: "/kasokoso3.jpg",
   },
   {
     id: "maganjo",
     name: "Maganjo Campus",
-    color: "school-green",
+    shortName: "Maganjo",
+    color: "green",
     address: "Plot 789, Maganjo Road, Kampala",
     phone: "+256 750 345678",
     description: "Our newest campus with innovative learning spaces, sports facilities, and a focus on technology and entrepreneurship.",
-    highlightColor: "from-green-500/20 to-transparent",
     badgeColor: "bg-green-100 text-green-800",
     keyFeatures: [
       { icon: Users, label: "650 Students" },
       { icon: Book, label: "Nursery to High School" },
       { icon: Star, label: "Innovation Hub" },
     ],
+    image: "/maganjo1.jpg",
   },
 ];
 
@@ -72,7 +74,8 @@ const CampusShowcase = () => {
           >
             <div className="text-center">
               <div className={`w-4 h-4 rounded-full bg-${campus.color} mx-auto mb-2`} />
-              <span className="font-semibold">{campus.name}</span>
+              <span className="font-semibold block md:hidden">{campus.shortName}</span>
+              <span className="font-semibold hidden md:block">{campus.name}</span>
             </div>
           </TabsTrigger>
         ))}
@@ -81,21 +84,24 @@ const CampusShowcase = () => {
       {campuses.map((campus) => (
         <TabsContent key={campus.id} value={campus.id} className="mt-0">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            {/* Image Placeholder */}
             <div className="relative h-[300px] md:h-[400px] rounded-lg overflow-hidden shadow-lg">
-              {/* Placeholder for campus image - will be replaced with actual image */}
-              <div className={`absolute inset-0 bg-gradient-to-b ${campus.highlightColor}`} />
-              <div className="absolute inset-0 flex items-center justify-center text-white text-2xl font-bold">
-                {campus.name} Photo
-              </div>
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.8 }}
+                className="absolute inset-0"
+              >
+                <Image src={campus.image} alt={`${campus.name} Photo`} layout="fill" objectFit="cover" />
+              </motion.div>
             </div>
 
+            {/* Campus Details */}
             <Card>
               <CardHeader>
                 <Badge className={campus.badgeColor}>{campus.name}</Badge>
                 <CardTitle className="text-2xl mt-2">About {campus.name}</CardTitle>
-                <CardDescription className="text-base">
-                  {campus.description}
-                </CardDescription>
+                <CardDescription className="text-base">{campus.description}</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
@@ -126,9 +132,9 @@ const CampusShowcase = () => {
               </CardContent>
               <CardFooter>
                 <Link href={`/campus/${campus.id}`}>
-                  <Button className="gap-2">
+                  <button className="flex items-center gap-2 bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600">
                     Learn More <ArrowRight className="h-4 w-4" />
-                  </Button>
+                  </button>
                 </Link>
               </CardFooter>
             </Card>
