@@ -167,7 +167,7 @@ const Header = () => {
               />
             </div>
             <span className="font-bold text-xl sm:block hidden">Clevers' Origin Schools</span>
-            <span className="font-bold text-xl sm:hidden">COS</span>
+            <span className="font-bold text-xl sm:hidden">COJS</span>
           </Link>
 
           {/* Desktop Navigation */}
