@@ -1,17 +1,25 @@
-import React from "react";
+"use client";
+
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import type { Metadata } from "next";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Heart, Book, Star, Users, Calendar, ArrowRight } from "lucide-react";
 
-export const metadata: Metadata = {
-  title: "Our Story | Clevers' Origin Schools",
-  description: "Learn about Clevers' Origin Schools' journey, mission, values, and leadership team.",
-};
+const imageList = ["/COJS1.jpg", "/kitintale2.jpg", "/COJS2.jpg", "/maganjo3.jpg"];
 
 export default function AboutPage() {
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      setCurrentImageIndex((prevIndex) => (prevIndex + 1) % imageList.length);
+    }, 3000); // Change image every 3 seconds
+
+    return () => clearInterval(intervalId); // Cleanup on unmount
+  }, []);
+
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
@@ -35,38 +43,40 @@ export default function AboutPage() {
             <div className="order-2 md:order-1">
               <h2 className="text-3xl font-bold mb-6 text-kinder-blue font-heading">Our Humble Beginnings</h2>
               <p className="text-gray-700 mb-4 font-body">
-                Clevers' Origin Schools began as a small kindergarten in Kitintale, Kampala in 2005. Founded by a visionary educator, Mrs. Sarah Nantongo, who believed that early childhood education should be both joyful and rigorous.
+                Clevers' Origin Schools began as a small kindergarten in Kitintale, Kampala in <span className="font-semibold text-kinder-blue drop-shadow-sm">2005</span>. Founded by a visionary educator, Mrs. Sarah Nantongo, who believed that early childhood education should be both joyful and rigorous.
               </p>
               <p className="text-gray-700 mb-4 font-body">
                 Starting with just one classroom and 15 students, our school was built on the principle that every child deserves a colorful, engaging, and supportive learning environment.
               </p>
               <div className="flex items-center gap-2 mb-6">
-                <div className="h-8 w-8 rounded-full flex items-center justify-center bg-kinder-blue text-white font-bold font-heading">
-                  2005
+                <div className="h-8 w-8 rounded-full flex items-center justify-center bg-kinder-blue text-white font-bold font-heading shadow-md">
+                  <span className="drop-shadow-sm">2005</span>
                 </div>
                 <div className="h-1 w-12 bg-gradient-to-r from-kinder-blue to-kinder-green"></div>
-                <div className="h-8 w-8 rounded-full flex items-center justify-center bg-kinder-green text-white font-bold font-heading">
-                  2010
+                <div className="h-8 w-8 rounded-full flex items-center justify-center bg-kinder-green text-white font-bold font-heading shadow-md">
+                  <span className="drop-shadow-sm">2010</span>
                 </div>
                 <div className="h-1 w-12 bg-gradient-to-r from-kinder-green to-kinder-red"></div>
-                <div className="h-8 w-8 rounded-full flex items-center justify-center bg-kinder-red text-white font-bold font-heading">
-                  2017
+                <div className="h-8 w-8 rounded-full flex items-center justify-center bg-kinder-red text-white font-bold font-heading shadow-md">
+                  <span className="drop-shadow-sm">2017</span>
                 </div>
                 <div className="h-1 w-12 bg-gradient-to-r from-kinder-red to-kinder-purple"></div>
-                <div className="h-8 w-8 rounded-full flex items-center justify-center bg-kinder-purple text-white font-bold font-heading">
-                  2023
+                <div className="h-8 w-8 rounded-full flex items-center justify-center bg-kinder-purple text-white font-bold font-heading shadow-md">
+                  <span className="drop-shadow-sm">2023</span>
                 </div>
               </div>
             </div>
             <div className="order-1 md:order-2 bg-kinder-pink/10 p-6 rounded-3xl border-2 border-kinder-pink/30 shadow-md">
               <div className="aspect-video relative rounded-2xl overflow-hidden border-4 border-white shadow-md bg-kinder-blue/20">
-                {/* Replace with actual image */}
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="text-center">
-                    <div className="text-6xl mb-2">🏫</div>
-                    <p className="text-gray-600 font-heading">School in 2005</p>
-                  </div>
-                </div>
+                {/* Animated Image */}
+                <Image
+                  key={imageList[currentImageIndex]} // Force re-render on image change
+                  src={imageList[currentImageIndex]}
+                  alt={`Clevers' Origin Schools - Image ${currentImageIndex + 1}`}
+                  layout="fill"
+                  objectFit="cover"
+                  style={{ transition: 'opacity 0.5s ease-in-out' }} // Add a fade transition
+                />
               </div>
             </div>
           </div>
@@ -84,7 +94,7 @@ export default function AboutPage() {
                 <div className="mb-4 text-center">
                   <Calendar className="h-12 w-12 mx-auto text-kinder-blue" />
                 </div>
-                <h3 className="text-xl font-bold mb-2 text-center font-heading text-kinder-blue">2010</h3>
+                <h3 className="text-xl font-bold mb-2 text-center font-heading text-kinder-blue"><span className="drop-shadow-sm shadow-md rounded-full px-2 py-0.5 bg-white/20">2010</span></h3>
                 <p className="text-gray-700 font-body">
                   We expanded to our second campus in Kasokoso to serve more communities. By this time, we had grown to 150 students across both locations.
                 </p>
@@ -96,7 +106,7 @@ export default function AboutPage() {
                 <div className="mb-4 text-center">
                   <Calendar className="h-12 w-12 mx-auto text-kinder-red" />
                 </div>
-                <h3 className="text-xl font-bold mb-2 text-center font-heading text-kinder-red">2017</h3>
+                <h3 className="text-xl font-bold mb-2 text-center font-heading text-kinder-red"><span className="drop-shadow-sm shadow-md rounded-full px-2 py-0.5 bg-white/20">2017</span></h3>
                 <p className="text-gray-700 font-body">
                   Our third campus in Maganjo opened its doors, featuring modern facilities including a library, computer lab, and sports field.
                 </p>
@@ -108,7 +118,7 @@ export default function AboutPage() {
                 <div className="mb-4 text-center">
                   <Calendar className="h-12 w-12 mx-auto text-kinder-purple" />
                 </div>
-                <h3 className="text-xl font-bold mb-2 text-center font-heading text-kinder-purple">2023</h3>
+                <h3 className="text-xl font-bold mb-2 text-center font-heading text-kinder-purple"><span className="drop-shadow-sm shadow-md rounded-full px-2 py-0.5 bg-white/20">2023</span></h3>
                 <p className="text-gray-700 font-body">
                   Today, Clevers' Origin Schools serves over 500 students across our three campuses, with a staff of 75 dedicated educators and support personnel.
                 </p>
