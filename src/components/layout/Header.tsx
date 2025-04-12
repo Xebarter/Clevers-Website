@@ -138,7 +138,7 @@ const Header = () => {
                 />
               </div>
               <span className="font-bold text-xl font-heading sm:block hidden">Clevers' Origin Schools</span>
-              <span className="font-bold text-xl font-heading sm:hidden">COS</span>
+              <span className="font-bold text-xl font-heading sm:hidden">COJS</span>
             </Link>
 
             <div className="flex items-center gap-4">
