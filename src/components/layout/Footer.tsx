@@ -15,7 +15,7 @@ import {
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
-  const phoneNumber = "+256750123456";
+  const phoneNumber = "+256772470972";
   const emailAddress = "admissions@cleversorigin.edu";
 
   return (
