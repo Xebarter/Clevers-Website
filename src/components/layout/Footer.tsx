@@ -15,6 +15,8 @@ import {
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
+  const phoneNumber = "+256750123456";
+  const emailAddress = "admissions@cleversorigin.edu";
 
   return (
     <footer className="bg-gray-800 text-white">
@@ -127,11 +129,15 @@ const Footer = () => {
             <ul className="space-y-3">
               <li className="flex items-start">
                 <Phone className="h-5 w-5 mr-2 mt-0.5 flex-shrink-0" />
-                <span>+256 750 123456</span>
+                <a href={`tel:${phoneNumber}`} className="text-white hover:text-gray-300">
+                  {phoneNumber}
+                </a>
               </li>
               <li className="flex items-start">
                 <Mail className="h-5 w-5 mr-2 mt-0.5 flex-shrink-0" />
-                <span>admissions@cleversorigin.edu</span>
+                <a href={`mailto:${emailAddress}`} className="text-white hover:text-gray-300">
+                  {emailAddress}
+                </a>
               </li>
               <li className="flex items-start">
                 <Clock className="h-5 w-5 mr-2 mt-0.5 flex-shrink-0" />
