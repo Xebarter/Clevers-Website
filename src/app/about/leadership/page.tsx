@@ -1,34 +1,33 @@
+"use client";
+
 import React from "react";
 import Link from "next/link";
-import type { Metadata } from "next";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ArrowRight, Mail, Phone } from "lucide-react";
 
-export const metadata: Metadata = {
-  title: "Leadership Team | Clevers' Origin Schools",
-  description: "Meet the dedicated leadership team behind Clevers' Origin Schools, guiding our vision and ensuring excellence in kindergarten education.",
-};
-
 // Array of leadership team members
 const leadershipTeam = [
   {
-    name: "Sarah Nantongo",
-    role: "Founder & Director",
-    bio: "Mrs. Nantongo founded Clevers' Origin Schools in 2005 with a vision to create joyful learning environments for young children. With over 25 years of experience in early childhood education, she remains passionate about innovative teaching methods.",
+    name: "Mr. Christopher Mugwanya",
+    role: "Principal & Director",
+    bio: "Mrs. Mugwanya founded Clevers' Origin Schools in 2005 with a vision to create joyful learning environments for young children. With over 25 years of experience in early childhood education, she remains passionate about innovative teaching methods.",
     achievements: ["National Education Leadership Award (2019)", "Early Childhood Educator of the Year (2012)"],
     education: "M.Ed in Early Childhood Education, Makerere University",
     color: "kinder-blue",
-    emoji: "👩‍🏫"
+    emoji: "👩‍🏫",
+    image: "/admin1.jpg",
   },
   {
-    name: "David Okello",
-    role: "Academic Director",
-    bio: "Mr. Okello oversees curriculum development across all campuses. His focus on integrating play-based learning with academic rigor has significantly elevated our educational standards while keeping learning fun and engaging for our students.",
+    name: "Mr. Muwonge Johnson",
+    role: "Deputy Headteacher",
+    bio: "Mr. Muwonge oversees curriculum development across all campuses. His focus on integrating play-based learning with academic rigor has significantly elevated our educational standards while keeping learning fun and engaging for our students.",
     achievements: ["Curriculum Innovation Prize (2021)", "Excellence in Teaching Award (2015)"],
     education: "Ph.D. in Educational Psychology, University of Nairobi",
     color: "kinder-green",
-    emoji: "👨‍🎓"
+    emoji: "👨‍🎓",
+    image: "/admin2.jpg",
   },
   {
     name: "Rebecca Nambi",
@@ -37,35 +36,39 @@ const leadershipTeam = [
     achievements: ["Best School Administration Award (2022)", "Community Service Recognition (2018)"],
     education: "MBA, Uganda Management Institute",
     color: "kinder-purple",
-    emoji: "👩‍💼"
+    emoji: "👩‍💼",
+    image: "/admin3.jpg",
   },
   {
     name: "Joshua Musoke",
-    role: "Kitintale Campus Principal",
+    role: "Kitintale Headteacher",
     bio: "Mr. Musoke has led our flagship campus since 2010. His leadership style emphasizes creating a family atmosphere where every child and staff member feels valued and supported in their learning journey.",
     achievements: ["Principal of the Year Finalist (2020)", "Community Impact Award (2019)"],
     education: "B.Ed in Early Childhood Education, Kyambogo University",
     color: "kinder-red",
-    emoji: "👨‍🚀"
+    emoji: "👨‍🚀",
+    image: "/admin4.jpg",
   },
   {
-    name: "Esther Nakato",
-    role: "Kasokoso Campus Principal",
+    name: "Nursery Principal",
+    role: "Kasokoso Headteacher",
     bio: "Ms. Nakato joined our team in 2011 and has been instrumental in developing our arts and music programs. Under her leadership, the Kasokoso campus has become known for its vibrant cultural activities and performances.",
     achievements: ["Arts Education Leadership Award (2018)", "Music Program Excellence (2016)"],
     education: "B.A. in Education & Music, Makerere University",
     color: "kinder-yellow",
-    emoji: "👩‍🎨"
+    emoji: "👩‍🎨",
+    image: "/admin5.jpg",
   },
   {
     name: "Daniel Kigozi",
-    role: "Maganjo Campus Principal",
+    role: "Maganjo Headteacher",
     bio: "Mr. Kigozi has been leading our newest campus since its opening in 2017. His background in sports education has helped develop excellent physical education programs while maintaining strong academic standards.",
     achievements: ["Physical Education Excellence Award (2021)", "Child Development Innovation (2019)"],
     education: "M.Ed in Sports Education, Uganda Christian University",
     color: "kinder-orange",
-    emoji: "🧑‍🏫"
-  }
+    emoji: "🧑‍🏫",
+    image: "/admin6.jpg",
+  },
 ];
 
 export default function LeadershipPage() {
@@ -92,8 +95,14 @@ export default function LeadershipPage() {
             {leadershipTeam.map((leader, index) => (
               <Card key={index} className={`border-4 border-${leader.color}/30 rounded-3xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow`}>
                 <div className={`bg-${leader.color}/10 p-6 flex justify-center`}>
-                  <div className={`w-24 h-24 rounded-full bg-${leader.color}/20 border-4 border-${leader.color} flex items-center justify-center`}>
-                    <div className="text-4xl">{leader.emoji}</div>
+                  <div className={`w-24 h-24 rounded-full border-4 border-${leader.color} flex items-center justify-center overflow-hidden`}>
+                    <Image
+                      src={leader.image}
+                      alt={`${leader.name} - ${leader.role}`}
+                      width={96}
+                      height={96}
+                      className="object-cover"
+                    />
                   </div>
                 </div>
                 <CardContent className="p-6">
@@ -131,7 +140,7 @@ export default function LeadershipPage() {
         </div>
       </section>
 
-      {/* Campus Leadership Section */}
+      {/* Campus Leadership Section and Board of Advisors remain the same */}
       <section className="py-12 md:py-16 bg-gradient-to-r from-kinder-red/10 via-kinder-green/10 to-kinder-blue/10">
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-3xl font-bold mb-6 font-heading text-kinder-blue">Visit Our Campuses</h2>
@@ -155,7 +164,6 @@ export default function LeadershipPage() {
         </div>
       </section>
 
-      {/* Board of Advisors */}
       <section className="py-12 md:py-16">
         <div className="container mx-auto px-4">
           <h2 className="text-3xl font-bold mb-10 text-center text-kinder-blue font-heading">Board of Advisors</h2>
