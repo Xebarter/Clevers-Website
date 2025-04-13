@@ -1,3 +1,4 @@
+// src/app/announcement-board/page.tsx
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -74,7 +75,7 @@ const AnnouncementBoard = () => {
     return date.toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'long',
-      day: 'numeric'
+      day: 'numeric',
     });
   };
 
@@ -84,21 +85,30 @@ const AnnouncementBoard = () => {
         <motion.div
           animate={{ rotate: 360 }}
           transition={{ repeat: Infinity, duration: 1 }}
-          className="h-8 w-8 border-4 border-blue-500 border-t-transparent rounded-full"
+          className="h-6 w-6 sm:h-8 sm:w-8 border-4 border-blue-500 border-t-transparent rounded-full"
         />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-4xl mx-auto">
+    <div className="bg-gray-50 pt-6 sm:pt-8 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-5xl mx-auto">
+        {/* Header Section */}
+        <div className="mb-6 sm:mb-8 text-center">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-3 sm:mb-4">
+            Announcement Board
+          </h1>
+          <p className="text-gray-600 text-sm sm:text-base md:text-lg">
+            Stay updated with the latest announcements, events, and achievements at Clevers' Origin Schools.
+          </p>
+        </div>
 
         <Tabs defaultValue="all" onValueChange={setActiveTab}>
-          <TabsList className="mb-8 flex flex-wrap gap-2 justify-center">
+          <TabsList className="mb-6 sm:mb-8 flex flex-wrap gap-2 justify-center">
             <TabsTrigger
               value="all"
-              className="px-4 py-2 rounded-md transition-colors data-[state=active]:bg-blue-500 data-[state=active]:text-white"
+              className="px-3 py-1 sm:px-4 sm:py-2 text-xs sm:text-sm rounded-md transition-colors data-[state=active]:bg-blue-500 data-[state=active]:text-white"
             >
               All
             </TabsTrigger>
@@ -106,22 +116,24 @@ const AnnouncementBoard = () => {
               <TabsTrigger
                 key={key}
                 value={key}
-                className="px-4 py-2 rounded-md transition-colors data-[state=active]:bg-blue-500 data-[state=active]:text-white"
+                className="px-3 py-1 sm:px-4 sm:py-2 text-xs sm:text-sm rounded-md transition-colors data-[state=active]:bg-blue-500 data-[state=active]:text-white"
               >
                 {label}
               </TabsTrigger>
             ))}
           </TabsList>
 
-          <TabsContent value={activeTab} className="mt-0">
+          <TabsContent value={activeTab} className="mt-0 mb-0">
             {sortedAnnouncements.length === 0 ? (
-              <Card className="p-8 text-center shadow-lg bg-white rounded-xl">
-                <CardContent>
-                  <p className="text-gray-500 text-lg">No announcements available.</p>
+              <Card className="p-6 sm:p-8 text-center shadow-lg bg-white rounded-xl">
+                <CardContent className="p-0">
+                  <p className="text-gray-500 text-sm sm:text-lg">
+                    No announcements available.
+                  </p>
                 </CardContent>
               </Card>
             ) : (
-              <div className="space-y-6">
+              <div className="space-y-4 sm:space-y-6">
                 <AnimatePresence>
                   {sortedAnnouncements.map((announcement, index) => {
                     const CategoryIcon = categories[announcement.category].icon;
@@ -133,29 +145,37 @@ const AnnouncementBoard = () => {
                         exit={{ opacity: 0, y: -20 }}
                         transition={{ delay: index * 0.1 }}
                       >
-                        <Card className={`bg-white shadow-lg rounded-xl overflow-hidden border-l-4 ${announcement.pinned ? 'border-blue-500' : 'border-gray-200'} transition-all hover:shadow-xl`}>
-                          <CardHeader className="pb-3">
-                            <div className="flex justify-between items-start">
-                              <div className="flex items-center gap-3">
-                                <CategoryIcon className="h-6 w-6 text-gray-600" />
-                                <CardTitle className="text-xl font-semibold text-gray-800">{announcement.title}</CardTitle>
+                        <Card
+                          className={`bg-white shadow-lg rounded-xl overflow-hidden border-l-4 ${
+                            announcement.pinned ? 'border-blue-500' : 'border-gray-200'
+                          } transition-all hover:shadow-xl`}
+                        >
+                          <CardHeader className="pb-2 sm:pb-3 px-4 sm:px-6">
+                            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 sm:gap-3">
+                              <div className="flex items-center gap-2 sm:gap-3">
+                                <CategoryIcon className="h-5 w-5 sm:h-6 sm:w-6 text-gray-600 flex-shrink-0" />
+                                <CardTitle className="text-base sm:text-xl font-semibold text-gray-800">
+                                  {announcement.title}
+                                </CardTitle>
                               </div>
                               {announcement.pinned && (
-                                <Badge className="bg-blue-100 text-blue-700 hover:bg-blue-200 font-medium">
+                                <Badge className="bg-blue-100 text-blue-700 hover:bg-blue-200 font-medium text-xs sm:text-sm">
                                   Pinned
                                 </Badge>
                               )}
                             </div>
-                            <CardDescription className="text-sm text-gray-500 mt-1">
+                            <CardDescription className="text-xs sm:text-sm text-gray-500 mt-1">
                               {formatDate(announcement.date)}
                             </CardDescription>
                           </CardHeader>
-                          <CardContent className="pt-4">
-                            <p className="text-gray-600 leading-relaxed">{announcement.content}</p>
+                          <CardContent className="pt-3 sm:pt-4 px-4 sm:px-6">
+                            <p className="text-gray-600 leading-relaxed text-sm sm:text-base">
+                              {announcement.content}
+                            </p>
                           </CardContent>
-                          <CardFooter className="pt-0 pb-4 px-6">
+                          <CardFooter className="pt-0 pb-3 sm:pb-4 px-4 sm:px-6">
                             <Badge
-                              className={`${categories[announcement.category].color} px-3 py-1 text-sm font-medium transition-colors`}
+                              className={`${categories[announcement.category].color} px-2 sm:px-3 py-1 text-xs sm:text-sm font-medium transition-colors`}
                             >
                               {categories[announcement.category].label}
                             </Badge>
