@@ -362,9 +362,9 @@ export default function TeachersStaffPage() {
             <p className="text-gray-600 mb-8">
               We're always looking for passionate educators and staff who are committed to excellence and making a difference in the lives of young learners.
             </p>
-            <Link href="/careers">
+            <Link href="/contact">
               <Button size="lg" className="gap-2">
-                View Open Positions <ArrowRight className="h-4 w-4" />
+                Write to Us <ArrowRight className="h-4 w-4" />
               </Button>
             </Link>
           </div>
