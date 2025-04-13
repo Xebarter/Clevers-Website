@@ -1,3 +1,4 @@
+// src/app/academic-calendar/page.tsx
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -140,7 +141,7 @@ export default function AcademicCalendarPage() {
     if (!eventCategory) return null;
 
     return (
-      <Badge className={eventCategory.color}>
+      <Badge className={`${eventCategory.color} text-xs`}>
         {eventCategory.name}
       </Badge>
     );
@@ -164,81 +165,103 @@ export default function AcademicCalendarPage() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-4">Academic Calendar</h1>
-        <p className="text-gray-600 mb-8">
+    <div className="container mx-auto px-4 py-6 sm:py-8 min-h-screen">
+      {/* Header Section */}
+      <div className="mb-6 sm:mb-8">
+        <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-3 sm:mb-4">
+          Academic Calendar
+        </h1>
+        <p className="text-gray-600 text-sm sm:text-base md:text-lg">
           Stay informed about important dates, exams, and school events throughout the academic year.
         </p>
       </div>
 
-      <Card>
-        <CardHeader>
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-            <CardTitle className="flex items-center gap-2">
+      <Card className="shadow-sm">
+        <CardHeader className="pb-4">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4">
+            <CardTitle className="flex items-center gap-2 text-lg sm:text-xl md:text-2xl">
               <CalendarDays className="h-5 w-5" />
               Academic Calendar
             </CardTitle>
             <Tabs defaultValue="all" onValueChange={handleTabChange}>
-              <TabsList>
-                <TabsTrigger value="all">All Events</TabsTrigger>
-                <TabsTrigger value="academic">Academic</TabsTrigger>
-                <TabsTrigger value="exam">Exams</TabsTrigger>
-                <TabsTrigger value="event">Events</TabsTrigger>
+              <TabsList className="flex flex-wrap h-auto">
+                <TabsTrigger value="all" className="text-xs sm:text-sm px-2 sm:px-4 py-1 sm:py-2">
+                  All Events
+                </TabsTrigger>
+                <TabsTrigger value="academic" className="text-xs sm:text-sm px-2 sm:px-4 py-1 sm:py-2">
+                  Academic
+                </TabsTrigger>
+                <TabsTrigger value="exam" className="text-xs sm:text-sm px-2 sm:px-4 py-1 sm:py-2">
+                  Exams
+                </TabsTrigger>
+                <TabsTrigger value="event" className="text-xs sm:text-sm px-2 sm:px-4 py-1 sm:py-2">
+                  Events
+                </TabsTrigger>
               </TabsList>
             </Tabs>
           </div>
-          <CardDescription>Click on dates to view events. Dates with events are highlighted.</CardDescription>
+          <CardDescription className="text-xs sm:text-sm mt-2">
+            Click on dates to view events. Dates with events are highlighted.
+          </CardDescription>
         </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div className="lg:col-span-2">
-              <Calendar
-                onChange={handleDateChange}
-                value={date}
-                tileClassName={getTileClassName}
-                className="w-full border rounded-md"
-              />
+        <CardContent className="p-4 sm:p-6">
+          <div className="flex flex-col lg:flex-row gap-6 sm:gap-8">
+            {/* Calendar Section */}
+            <div className="w-full lg:w-2/3">
+              <div className="overflow-x-auto">
+                <Calendar
+                  onChange={handleDateChange}
+                  value={date}
+                  tileClassName={getTileClassName}
+                  className="w-full min-w-[280px] border rounded-md text-xs sm:text-sm"
+                />
+              </div>
             </div>
-            <div>
-              <Card>
+            {/* Events Section */}
+            <div className="w-full lg:w-1/3">
+              <Card className="h-full">
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-lg flex items-center gap-2">
+                  <CardTitle className="text-base sm:text-lg flex items-center gap-2">
                     <CalendarDays className="h-4 w-4" />
                     {formatDisplayDate(date)}
                   </CardTitle>
-                  <CardDescription>
+                  <CardDescription className="text-xs sm:text-sm">
                     {getEventsForSelectedDate().length} event{getEventsForSelectedDate().length !== 1 ? 's' : ''} on this date
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="pt-0">
                   {getEventsForSelectedDate().length === 0 ? (
-                    <p className="text-gray-500 text-center p-4">No events on this date</p>
+                    <p className="text-gray-500 text-center p-4 text-sm">No events on this date</p>
                   ) : (
-                    <ScrollArea className="h-[400px] pr-4">
+                    <ScrollArea className="h-[300px] sm:h-[350px] md:h-[400px] pr-3">
                       <div className="space-y-4">
                         {getEventsForSelectedDate().map(event => (
-                          <div key={event._id} className={`p-3 border rounded-md ${event.isImportant ? 'border-l-4 border-l-blue-500' : ''}`}>
-                            <div className="flex justify-between items-start gap-2 mb-1">
-                              <h3 className="font-semibold">{event.title}</h3>
+                          <div
+                            key={event._id}
+                            className={`p-3 border rounded-md ${
+                              event.isImportant ? 'border-l-4 border-l-blue-500' : ''
+                            }`}
+                          >
+                            <div className="flex flex-col sm:flex-row justify-between items-start gap-2 mb-1">
+                              <h3 className="font-semibold text-sm sm:text-base">{event.title}</h3>
                               {getEventBadge(event.category)}
                             </div>
-                            <p className="text-sm text-gray-600 mb-2">{event.description}</p>
+                            <p className="text-xs sm:text-sm text-gray-600 mb-2">{event.description}</p>
                             <div className="text-xs text-gray-500 space-y-1">
                               <div className="flex items-center gap-1">
-                                <CalendarDays className="h-3 w-3" />
-                                {formatDateRange(event.startDate, event.endDate)}
+                                <CalendarDays className="h-3 w-3 flex-shrink-0" />
+                                <span>{formatDateRange(event.startDate, event.endDate)}</span>
                               </div>
                               {event.time && (
                                 <div className="flex items-center gap-1">
-                                  <Clock className="h-3 w-3" />
-                                  {event.time}
+                                  <Clock className="h-3 w-3 flex-shrink-0" />
+                                  <span>{event.time}</span>
                                 </div>
                               )}
                               {event.location && (
                                 <div className="flex items-center gap-1">
-                                  <Landmark className="h-3 w-3" />
-                                  {event.location}
+                                  <Landmark className="h-3 w-3 flex-shrink-0" />
+                                  <span>{event.location}</span>
                                 </div>
                               )}
                             </div>

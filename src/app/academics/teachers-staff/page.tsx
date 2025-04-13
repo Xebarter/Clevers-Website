@@ -1,23 +1,45 @@
-import React from "react";
-import type { Metadata } from "next";
+"use client";
+
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Facebook, Twitter, Linkedin, Mail, Phone, Search, MapPin, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 
-export const metadata: Metadata = {
-  title: "Teachers & Staff | Clevers' Origin Schools",
-  description: "Meet our dedicated teachers, leadership team, and administrative staff at Clevers' Origin Schools.",
-};
-
 export default function TeachersStaffPage() {
+  // Client-side metadata workaround
+  useEffect(() => {
+    document.title = "Teachers & Staff | Clevers' Origin Schools";
+    const metaDescription = document.querySelector('meta[name="description"]');
+    if (metaDescription) {
+      metaDescription.setAttribute(
+        "content",
+        "Meet our dedicated teachers, leadership team, and administrative staff at Clevers' Origin Schools."
+      );
+    } else {
+      const meta = document.createElement("meta");
+      meta.name = "description";
+      meta.content = "Meet our dedicated teachers, leadership team, and administrative staff at Clevers' Origin Schools.";
+      document.head.appendChild(meta);
+    }
+  }, []);
+
+  // Function to get teacher image path
+  const getTeacherImage = (id: number) => {
+    const imageNumber = ((id - 1) % 14) + 1; // Cycle through 1-14
+    return `/teachers/teacher${imageNumber}.jpg`;
+  };
+
+  // State to manage the selected campus filter
+  const [selectedCampus, setSelectedCampus] = useState("All Campuses");
+
   const leadershipTeam = [
     {
       id: 1,
       name: "Dr. James Mukasa",
       role: "Principal",
-      imageUrl: "/placeholder-person.jpg",
+      imageUrl: getTeacherImage(1),
       bio: "Dr. Mukasa brings over 25 years of experience in education leadership. He holds a PhD in Educational Administration and is passionate about fostering a positive school culture that nurtures excellence.",
       email: "james.mukasa@cleversorigin.edu",
       phone: "+256 750 123000",
@@ -26,7 +48,7 @@ export default function TeachersStaffPage() {
       id: 2,
       name: "Mrs. Sarah Nakato",
       role: "Deputy Principal, Academics",
-      imageUrl: "/placeholder-person.jpg",
+      imageUrl: getTeacherImage(2),
       bio: "Mrs. Nakato oversees the academic programs across all campuses. With her Master's in Curriculum Development, she ensures that our educational offerings meet the highest standards while remaining innovative.",
       email: "sarah.nakato@cleversorigin.edu",
       phone: "+256 750 123001",
@@ -35,11 +57,11 @@ export default function TeachersStaffPage() {
       id: 3,
       name: "Mr. Paul Kigongo",
       role: "Deputy Principal, Administration",
-      imageUrl: "/placeholder-person.jpg",
+      imageUrl: getTeacherImage(3),
       bio: "Mr. Kigongo manages the school's administrative operations and facilities. He is dedicated to creating a safe and supportive environment where students can thrive.",
       email: "paul.kigongo@cleversorigin.edu",
       phone: "+256 750 123002",
-    }
+    },
   ];
 
   const departmentHeads = [
@@ -47,7 +69,7 @@ export default function TeachersStaffPage() {
       id: 1,
       name: "Ms. Jane Akello",
       role: "Head of Sciences",
-      imageUrl: "/placeholder-person.jpg",
+      imageUrl: getTeacherImage(4),
       qualifications: "MSc. Chemistry, BSc. Education",
       bio: "Leading our science department with a focus on practical, inquiry-based learning approaches.",
     },
@@ -55,7 +77,7 @@ export default function TeachersStaffPage() {
       id: 2,
       name: "Mr. Richard Ochen",
       role: "Head of Mathematics",
-      imageUrl: "/placeholder-person.jpg",
+      imageUrl: getTeacherImage(5),
       qualifications: "MSc. Applied Mathematics, BSc. Education",
       bio: "Passionate about making mathematics accessible and engaging for all students.",
     },
@@ -63,7 +85,7 @@ export default function TeachersStaffPage() {
       id: 3,
       name: "Mrs. Grace Namugwanya",
       role: "Head of Languages",
-      imageUrl: "/placeholder-person.jpg",
+      imageUrl: getTeacherImage(6),
       qualifications: "MA English Literature, BA Education",
       bio: "Dedicated to fostering strong communication skills and a love for literature among students.",
     },
@@ -71,7 +93,7 @@ export default function TeachersStaffPage() {
       id: 4,
       name: "Mr. Daniel Mugisha",
       role: "Head of Humanities",
-      imageUrl: "/placeholder-person.jpg",
+      imageUrl: getTeacherImage(7),
       qualifications: "MA History, BA Education",
       bio: "Committed to helping students understand our world through historical and cultural contexts.",
     },
@@ -79,7 +101,7 @@ export default function TeachersStaffPage() {
       id: 5,
       name: "Ms. Esther Nakabuye",
       role: "Head of Arts & Music",
-      imageUrl: "/placeholder-person.jpg",
+      imageUrl: getTeacherImage(1),
       qualifications: "BFA, Diploma in Music Education",
       bio: "Nurturing creative expression and artistic talents through our vibrant arts program.",
     },
@@ -87,32 +109,38 @@ export default function TeachersStaffPage() {
       id: 6,
       name: "Mr. Joseph Ssemanda",
       role: "Head of Physical Education",
-      imageUrl: "/placeholder-person.jpg",
+      imageUrl: getTeacherImage(9),
       qualifications: "BSc. Sports Science, Certified Athletic Trainer",
       bio: "Promoting physical fitness, teamwork, and healthy competition through sports and physical activities.",
-    }
+    },
   ];
 
   const teachingStaff = [
-    { id: 1, name: "Christine Nantongo", role: "Biology Teacher", campus: "Kitintale", imageUrl: "/placeholder-person.jpg" },
-    { id: 2, name: "Mark Okello", role: "Physics Teacher", campus: "Kitintale", imageUrl: "/placeholder-person.jpg" },
-    { id: 3, name: "Phiona Namukasa", role: "Mathematics Teacher", campus: "Kitintale", imageUrl: "/placeholder-person.jpg" },
-    { id: 4, name: "Bernard Kyagulanyi", role: "English Teacher", campus: "Kasokoso", imageUrl: "/placeholder-person.jpg" },
-    { id: 5, name: "Rebecca Nalwanga", role: "Chemistry Teacher", campus: "Kasokoso", imageUrl: "/placeholder-person.jpg" },
-    { id: 6, name: "Patrick Mugabi", role: "History Teacher", campus: "Kasokoso", imageUrl: "/placeholder-person.jpg" },
-    { id: 7, name: "Alice Amanya", role: "Geography Teacher", campus: "Maganjo", imageUrl: "/placeholder-person.jpg" },
-    { id: 8, name: "Simon Lutaaya", role: "Computer Studies Teacher", campus: "Maganjo", imageUrl: "/placeholder-person.jpg" },
-    { id: 9, name: "Juliet Nakimuli", role: "Art & Design Teacher", campus: "Maganjo", imageUrl: "/placeholder-person.jpg" },
+    { id: 1, name: "Christine Nantongo", role: "Biology Teacher", campus: "Kitintale", imageUrl: getTeacherImage(10) },
+    { id: 2, name: "Mark Okello", role: "Physics Teacher", campus: "Kitintale", imageUrl: getTeacherImage(11) },
+    { id: 3, name: "Phiona Namukasa", role: "Mathematics Teacher", campus: "Kitintale", imageUrl: getTeacherImage(12) },
+    { id: 4, name: "Bernard Kyagulanyi", role: "English Teacher", campus: "Kasokoso", imageUrl: getTeacherImage(13) },
+    { id: 5, name: "Rebecca Nalwanga", role: "Chemistry Teacher", campus: "Kasokoso", imageUrl: getTeacherImage(14) },
+    { id: 6, name: "Patrick Mugabi", role: "History Teacher", campus: "Kasokoso", imageUrl: getTeacherImage(1) },
+    { id: 7, name: "Alice Amanya", role: "Geography Teacher", campus: "Maganjo", imageUrl: getTeacherImage(2) },
+    { id: 8, name: "Simon Lutaaya", role: "Computer Studies Teacher", campus: "Maganjo", imageUrl: getTeacherImage(3) },
+    { id: 9, name: "Juliet Nakimuli", role: "Art & Design Teacher", campus: "Maganjo", imageUrl: getTeacherImage(4) },
   ];
 
   const administrativeStaff = [
-    { id: 1, name: "Martin Kayondo", role: "Admissions Officer", imageUrl: "/placeholder-person.jpg" },
-    { id: 2, name: "Florence Nalubega", role: "Finance Manager", imageUrl: "/placeholder-person.jpg" },
-    { id: 3, name: "Robert Kasozi", role: "Facilities Manager", imageUrl: "/placeholder-person.jpg" },
-    { id: 4, name: "Irene Nabukalu", role: "School Counselor", imageUrl: "/placeholder-person.jpg" },
-    { id: 5, name: "George Muwanga", role: "ICT Administrator", imageUrl: "/placeholder-person.jpg" },
-    { id: 6, name: "Patricia Nanyonga", role: "Librarian", imageUrl: "/placeholder-person.jpg" },
+    { id: 1, name: "Martin Kayondo", role: "Admissions Officer", imageUrl: getTeacherImage(5) },
+    { id: 2, name: "Florence Nalubega", role: "Finance Manager", imageUrl: getTeacherImage(6) },
+    { id: 3, name: "Robert Kasozi", role: "Facilities Manager", imageUrl: getTeacherImage(7) },
+    { id: 4, name: "Irene Nabukalu", role: "School Counselor", imageUrl: getTeacherImage(1) },
+    { id: 5, name: "George Muwanga", role: "ICT Administrator", imageUrl: getTeacherImage(9) },
+    { id: 6, name: "Patricia Nanyonga", role: "Librarian", imageUrl: getTeacherImage(10) },
   ];
+
+  // Filter teaching staff based on the selected campus
+  const filteredTeachingStaff =
+    selectedCampus === "All Campuses"
+      ? teachingStaff
+      : teachingStaff.filter((teacher) => teacher.campus === selectedCampus);
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -140,9 +168,13 @@ export default function TeachersStaffPage() {
             {leadershipTeam.map((leader) => (
               <Card key={leader.id} className="border-none shadow-lg overflow-hidden">
                 <div className="h-64 bg-gray-200 relative">
-                  <div className="absolute inset-0 flex items-center justify-center text-gray-400">
-                    Leadership Photo Placeholder
-                  </div>
+                  <Image 
+                    src={leader.imageUrl} 
+                    alt={leader.name}
+                    layout="fill"
+                    objectFit="cover"
+                    className="absolute inset-0"
+                  />
                 </div>
                 <CardHeader>
                   <CardTitle>{leader.name}</CardTitle>
@@ -182,9 +214,13 @@ export default function TeachersStaffPage() {
               <Card key={head.id} className="border shadow-sm hover:shadow-md transition-shadow">
                 <div className="flex items-center p-4">
                   <div className="w-16 h-16 bg-gray-200 rounded-full overflow-hidden mr-4 flex-shrink-0">
-                    <div className="w-full h-full flex items-center justify-center text-gray-400 text-xs">
-                      Photo
-                    </div>
+                    <Image 
+                      src={head.imageUrl} 
+                      alt={head.name}
+                      width={64}
+                      height={64}
+                      className="w-full h-full object-cover"
+                    />
                   </div>
                   <div>
                     <h3 className="font-bold text-lg">{head.name}</h3>
@@ -211,40 +247,80 @@ export default function TeachersStaffPage() {
 
           <div className="mb-8 flex justify-center">
             <div className="inline-flex rounded-md shadow-sm" role="group">
-              <button type="button" className="px-4 py-2 text-sm font-medium text-primary bg-white border border-gray-200 rounded-l-lg hover:bg-gray-100 focus:z-10 focus:ring-2 focus:ring-primary">
+              <button
+                type="button"
+                className={`px-4 py-2 text-sm font-medium border border-gray-200 rounded-l-lg hover:bg-gray-100 focus:z-10 focus:ring-2 focus:ring-primary ${
+                  selectedCampus === "All Campuses"
+                    ? "bg-primary text-white hover:bg-primary/90"
+                    : "bg-white text-primary"
+                }`}
+                onClick={() => setSelectedCampus("All Campuses")}
+              >
                 All Campuses
               </button>
-              <button type="button" className="px-4 py-2 text-sm font-medium text-gray-900 bg-white border-t border-b border-gray-200 hover:bg-gray-100 focus:z-10 focus:ring-2 focus:ring-primary">
+              <button
+                type="button"
+                className={`px-4 py-2 text-sm font-medium border-t border-b border-gray-200 hover:bg-gray-100 focus:z-10 focus:ring-2 focus:ring-primary ${
+                  selectedCampus === "Kitintale"
+                    ? "bg-primary text-white hover:bg-primary/90"
+                    : "bg-white text-gray-900"
+                }`}
+                onClick={() => setSelectedCampus("Kitintale")}
+              >
                 Kitintale
               </button>
-              <button type="button" className="px-4 py-2 text-sm font-medium text-gray-900 bg-white border-t border-b border-gray-200 hover:bg-gray-100 focus:z-10 focus:ring-2 focus:ring-primary">
+              <button
+                type="button"
+                className={`px-4 py-2 text-sm font-medium border-t border-b border-gray-200 hover:bg-gray-100 focus:z-10 focus:ring-2 focus:ring-primary ${
+                  selectedCampus === "Kasokoso"
+                    ? "bg-primary text-white hover:bg-primary/90"
+                    : "bg-white text-gray-900"
+                }`}
+                onClick={() => setSelectedCampus("Kasokoso")}
+              >
                 Kasokoso
               </button>
-              <button type="button" className="px-4 py-2 text-sm font-medium text-gray-900 bg-white border border-gray-200 rounded-r-lg hover:bg-gray-100 focus:z-10 focus:ring-2 focus:ring-primary">
+              <button
+                type="button"
+                className={`px-4 py-2 text-sm font-medium border border-gray-200 rounded-r-lg hover:bg-gray-100 focus:z-10 focus:ring-2 focus:ring-primary ${
+                  selectedCampus === "Maganjo"
+                    ? "bg-primary text-white hover:bg-primary/90"
+                    : "bg-white text-gray-900"
+                }`}
+                onClick={() => setSelectedCampus("Maganjo")}
+              >
                 Maganjo
               </button>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {teachingStaff.map((teacher) => (
-              <div key={teacher.id} className="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow">
-                <div className="h-48 bg-gray-200 relative">
-                  <div className="absolute inset-0 flex items-center justify-center text-gray-400">
-                    Photo
+          {filteredTeachingStaff.length === 0 ? (
+            <p className="text-center text-gray-600">No teachers found for this campus.</p>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              {filteredTeachingStaff.map((teacher) => (
+                <div key={teacher.id} className="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+                  <div className="h-48 bg-gray-200 relative">
+                    <Image 
+                      src={teacher.imageUrl} 
+                      alt={teacher.name}
+                      layout="fill"
+                      objectFit="cover"
+                      className="absolute inset-0"
+                    />
+                  </div>
+                  <div className="p-4">
+                    <h3 className="font-semibold">{teacher.name}</h3>
+                    <p className="text-sm text-primary">{teacher.role}</p>
+                    <div className="mt-2 flex items-center text-xs text-gray-500">
+                      <MapPin className="h-3 w-3 mr-1" />
+                      <span>{teacher.campus} Campus</span>
+                    </div>
                   </div>
                 </div>
-                <div className="p-4">
-                  <h3 className="font-semibold">{teacher.name}</h3>
-                  <p className="text-sm text-primary">{teacher.role}</p>
-                  <div className="mt-2 flex items-center text-xs text-gray-500">
-                    <MapPin className="h-3 w-3 mr-1" />
-                    <span>{teacher.campus} Campus</span>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
       </section>
 
@@ -260,9 +336,13 @@ export default function TeachersStaffPage() {
             {administrativeStaff.map((staff) => (
               <div key={staff.id} className="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow text-center">
                 <div className="h-32 w-32 bg-gray-200 rounded-full overflow-hidden mx-auto mt-6">
-                  <div className="w-full h-full flex items-center justify-center text-gray-400 text-xs">
-                    Photo
-                  </div>
+                  <Image 
+                    src={staff.imageUrl} 
+                    alt={staff.name}
+                    width={128}
+                    height={128}
+                    className="w-full h-full object-cover"
+                  />
                 </div>
                 <div className="p-4">
                   <h3 className="font-semibold text-sm">{staff.name}</h3>
