@@ -12,17 +12,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 
 export default function Home() {
   const images = [
-    "/image1.jpg",
-    "/image2.jpg",
-    "/image3.jpg",
-    "/image4.jpg",
-    "/image5.jpg",
-    "/image6.jpg",
-    "/image7.jpg",
-    "/image8.jpg",
-    "/image9.jpg",
-    "/image10.jpg",
-    "/image11.jpg",
+    "/image1.jpg", "/image2.jpg", "/image3.jpg", "/image4.jpg",
+    "/image5.jpg", "/image6.jpg", "/image7.jpg", "/image8.jpg",
+    "/image9.jpg", "/image10.jpg", "/image11.jpg",
   ];
 
   const [currentImage, setCurrentImage] = useState(0);
@@ -35,39 +27,42 @@ export default function Home() {
   }, []);
 
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-col min-h-screen bg-gradient-to-tl from-yellow-50 via-pink-50 to-blue-50 text-gray-800">
+      
       {/* Hero Section */}
-      <section className="relative bg-gradient-to-b from-blue-50 to-white py-10 sm:py-16 md:py-24 overflow-hidden">
-        <div className="container mx-auto px-4 sm:px-6 flex flex-col lg:flex-row items-center gap-6 sm:gap-8 md:gap-10 lg:gap-12 relative z-10">
-          <div className="w-full lg:w-1/2 space-y-4 sm:space-y-5 md:space-y-6">
-            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold leading-tight">
+      <section className="relative py-12 sm:py-20 md:py-24 bg-gradient-to-br from-pink-100 via-yellow-100 to-green-100 overflow-hidden">
+        <div className="container mx-auto px-4 sm:px-6 flex flex-col lg:flex-row items-center gap-8 lg:gap-12 relative z-10">
+          
+          {/* Hero Text */}
+          <div className="w-full lg:w-1/2 space-y-6">
+            <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold leading-tight">
               Welcome to{" "}
               <span className="relative inline-block">
-                <span className="bg-gradient-to-r from-[#ff5252] via-[#FFD700] to-[#66bb6a] bg-clip-text text-transparent animate-pulse">
+                <span className="bg-gradient-to-r from-pink-500 via-yellow-400 to-green-500 bg-clip-text text-transparent animate-pulse">
                   Clevers' Origin Schools
                 </span>
-                <span className="absolute -bottom-1 left-0 w-full h-1 bg-gradient-to-r from-[#ff5252] via-[#40c4ff] to-[#66bb6a] rounded-full"></span>
+                <span className="absolute -bottom-1 left-0 w-full h-1 bg-gradient-to-r from-pink-400 via-yellow-300 to-green-400 rounded-full"></span>
               </span>
             </h1>
-            <p className="text-base sm:text-lg text-gray-600 max-w-lg">
+            <p className="text-lg text-gray-700 max-w-xl">
               Nurturing young minds with creativity, knowledge, and values across our three vibrant campuses in Kitintale, Kasokoso, and Maganjo.
             </p>
-            <div className="flex flex-wrap gap-3 sm:gap-4 pt-2 sm:pt-4">
+            <div className="flex flex-wrap gap-4 pt-4">
               <Link href="/apply">
-                <Button size="lg" className="gap-2 px-4 sm:px-6 py-2 sm:py-3 text-sm sm:text-base">
-                  Apply Now <ArrowRight className="h-4 w-4" />
+                <Button size="lg" className="gap-2 bg-pink-500 hover:bg-pink-600 text-white px-6 py-3">
+                  Apply Now <ArrowRight className="h-5 w-5" />
                 </Button>
               </Link>
               <Link href="/contact">
-                <Button size="lg" variant="outline" className="px-4 sm:px-6 py-2 sm:py-3 text-sm sm:text-base">
+                <Button size="lg" variant="outline" className="border-pink-400 text-pink-600 hover:bg-pink-50 px-6 py-3">
                   Contact Us
                 </Button>
               </Link>
             </div>
           </div>
 
-          {/* Slideshow */}
-          <div className="w-full lg:w-1/2 relative h-[200px] sm:h-[250px] md:h-[350px] lg:h-[400px] mt-6 lg:mt-0 rounded-lg overflow-hidden shadow-xl">
+          {/* Hero Slideshow */}
+          <div className="w-full lg:w-1/2 relative h-[250px] sm:h-[350px] lg:h-[400px] mt-6 lg:mt-0 rounded-xl overflow-hidden shadow-2xl">
             {images.map((src, index) => (
               <Image
                 key={index}
@@ -76,77 +71,78 @@ export default function Home() {
                 fill
                 priority={index === 0}
                 sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 40vw"
-                className={`absolute object-cover transition-opacity duration-1000 ease-in-out ${
-                  index === currentImage ? "opacity-100" : "opacity-0"
-                }`}
+                className={`absolute object-cover transition-opacity duration-1000 ease-in-out ${index === currentImage ? "opacity-100" : "opacity-0"}`}
               />
             ))}
             <div className="absolute inset-0 bg-black/20 z-10 rounded-lg" />
           </div>
         </div>
-        <div className="absolute inset-0 bg-gradient-to-r from-white/40 via-transparent to-white/40 z-0 pointer-events-none" />
       </section>
 
-      {/* Announcement Board */}
-      <section className="py-8 sm:py-10 md:py-12 bg-gray-50">
+      {/* Announcements */}
+      <section className="py-12 bg-yellow-50">
         <div className="container mx-auto px-4 sm:px-6">
-          <h2 className="section-title text-2xl sm:text-3xl md:text-4xl">Announcements</h2>
+          <h2 className="text-3xl font-bold text-pink-600 mb-6">Announcements</h2>
           <AnnouncementBoard />
         </div>
       </section>
 
       {/* Key Features */}
-      <section className="py-10 sm:py-12 md:py-16">
+      <section className="py-16 bg-gradient-to-br from-green-50 via-white to-pink-50">
         <div className="container mx-auto px-4 sm:px-6">
-          <h2 className="section-title mb-8 sm:mb-10 md:mb-12 text-2xl sm:text-3xl md:text-4xl">Why Choose Us</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 md:gap-8">
-            <Card className="school-card h-full">
-              <CardHeader className="pb-2">
-                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-school-red/10 flex items-center justify-center mb-3 sm:mb-4">
-                  <Music className="h-5 w-5 sm:h-6 sm:w-6 text-school-red" />
+          <h2 className="text-3xl font-bold text-center text-yellow-600 mb-12">Why Choose Us</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+            
+            {/* MDD */}
+            <Card className="bg-white hover:shadow-lg transition">
+              <CardHeader>
+                <div className="w-12 h-12 rounded-full bg-pink-100 flex items-center justify-center mb-4">
+                  <Music className="text-pink-500 w-6 h-6" />
                 </div>
-                <CardTitle className="text-lg sm:text-xl md:text-2xl">Music, Dance & Drama</CardTitle>
+                <CardTitle className="text-xl">Music, Dance & Drama</CardTitle>
               </CardHeader>
               <CardContent>
-                <CardDescription className="text-sm sm:text-base">
-                  Our award-winning MDD program nurtures artistic talents and builds confidence through regular performances and competitions.
+                <CardDescription>
+                  Our award-winning MDD program nurtures artistic talents and builds confidence through performances and competitions.
                 </CardDescription>
-                <Link href="/student-life/arts" className="flex items-center text-school-red mt-3 sm:mt-4 text-sm font-medium hover:underline">
-                  Learn More <ChevronRight className="h-4 w-4 ml-1" />
+                <Link href="/student-life/arts" className="flex items-center text-pink-500 mt-4 font-medium hover:underline">
+                  Learn More <ChevronRight className="ml-1 h-4 w-4" />
                 </Link>
               </CardContent>
             </Card>
 
-            <Card className="school-card h-full">
-              <CardHeader className="pb-2">
-                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-school-blue/10 flex items-center justify-center mb-3 sm:mb-4">
-                  <Medal className="h-5 w-5 sm:h-6 sm:w-6 text-school-blue" />
+            {/* Activities */}
+            <Card className="bg-white hover:shadow-lg transition">
+              <CardHeader>
+                <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center mb-4">
+                  <Medal className="text-blue-500 w-6 h-6" />
                 </div>
-                <CardTitle className="text-lg sm:text-xl md:text-2xl">Extracurricular Activities</CardTitle>
+                <CardTitle className="text-xl">Extracurricular Activities</CardTitle>
               </CardHeader>
               <CardContent>
-                <CardDescription className="text-sm sm:text-base">
-                  From sports to robotics, we offer diverse extracurricular programs to develop well-rounded students with varied interests.
+                <CardDescription>
+                  From sports to robotics, we offer diverse programs to develop well-rounded students.
                 </CardDescription>
-                <Link href="/student-life/activities" className="flex items-center text-school-blue mt-3 sm:mt-4 text-sm font-medium hover:underline">
-                  Learn More <ChevronRight className="h-4 w-4 ml-1" />
+                <Link href="/student-life/activities" className="flex items-center text-blue-500 mt-4 font-medium hover:underline">
+                  Learn More <ChevronRight className="ml-1 h-4 w-4" />
                 </Link>
               </CardContent>
             </Card>
 
-            <Card className="school-card h-full sm:col-span-2 lg:col-span-1">
-              <CardHeader className="pb-2">
-                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-school-green/10 flex items-center justify-center mb-3 sm:mb-4">
-                  <Book className="h-5 w-5 sm:h-6 sm:w-6 text-school-green" />
+            {/* Academics */}
+            <Card className="bg-white hover:shadow-lg transition">
+              <CardHeader>
+                <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center mb-4">
+                  <Book className="text-green-500 w-6 h-6" />
                 </div>
-                <CardTitle className="text-lg sm:text-xl md:text-2xl">Academic Excellence</CardTitle>
+                <CardTitle className="text-xl">Academic Excellence</CardTitle>
               </CardHeader>
               <CardContent>
-                <CardDescription className="text-sm sm:text-base">
-                  Our rigorous academic program is designed to challenge students and prepare them for success in higher education and beyond.
+                <CardDescription>
+                  A rigorous academic program designed to prepare students for lifelong success.
                 </CardDescription>
-                <Link href="/academics/curriculum" className="flex items-center text-school-green mt-3 sm:mt-4 text-sm font-medium hover:underline">
-                  Learn More <ChevronRight className="h-4 w-4 ml-1" />
+                <Link href="/academics/curriculum" className="flex items-center text-green-600 mt-4 font-medium hover:underline">
+                  Learn More <ChevronRight className="ml-1 h-4 w-4" />
                 </Link>
               </CardContent>
             </Card>
@@ -155,14 +151,14 @@ export default function Home() {
       </section>
 
       {/* Upcoming Events */}
-      <section className="py-10 sm:py-12 md:py-16 bg-gray-50">
+      <section className="py-16 bg-blue-50">
         <div className="container mx-auto px-4 sm:px-6">
-          <h2 className="section-title mb-8 sm:mb-10 md:mb-12 text-2xl sm:text-3xl md:text-4xl">Upcoming Events</h2>
+          <h2 className="text-3xl font-bold text-center text-blue-700 mb-10">Upcoming Events</h2>
           <UpcomingEvents />
-          <div className="text-center mt-6 sm:mt-8">
+          <div className="text-center mt-8">
             <Link href="/academics/calendar">
-              <Button variant="outline" className="gap-2 text-sm sm:text-base">
-                View Full Calendar <Calendar className="h-4 w-4" />
+              <Button variant="outline" className="text-blue-600 border-blue-400 hover:bg-blue-100">
+                View Full Calendar <Calendar className="ml-2 h-5 w-5" />
               </Button>
             </Link>
           </div>
@@ -170,23 +166,23 @@ export default function Home() {
       </section>
 
       {/* Campus Showcase */}
-      <section className="py-10 sm:py-12 md:py-16">
+      <section className="py-16 bg-gradient-to-t from-white via-green-50 to-yellow-50">
         <div className="container mx-auto px-4 sm:px-6">
-          <h2 className="section-title mb-8 sm:mb-10 md:mb-12 text-2xl sm:text-3xl md:text-4xl">Our Campuses</h2>
+          <h2 className="text-3xl font-bold text-center text-green-700 mb-10">Our Campuses</h2>
           <CampusShowcase />
         </div>
       </section>
 
       {/* Call to Action */}
-      <section className="py-10 sm:py-12 md:py-16 bg-gradient-to-r from-school-red/10 via-school-blue/10 to-school-green/10">
-        <div className="container mx-auto px-4 sm:px-6 text-center">
-          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4 sm:mb-6">Ready to Join Our School Community?</h2>
-          <p className="text-base sm:text-lg text-gray-600 max-w-lg sm:max-w-xl md:max-w-2xl mx-auto mb-6 sm:mb-8">
-            Take the first step towards a bright future for your child. Apply now to secure a place at one of our three vibrant campuses.
+      <section className="py-16 bg-gradient-to-r from-pink-200 via-yellow-200 to-green-200 text-center">
+        <div className="container mx-auto px-4 sm:px-6">
+          <h2 className="text-3xl font-bold mb-4">Ready to Join Our School Community?</h2>
+          <p className="text-lg max-w-2xl mx-auto mb-8">
+            Take the first step towards a bright future. Apply now to secure your child’s spot at one of our vibrant campuses.
           </p>
           <Link href="/apply">
-            <Button size="lg" className="gap-2 px-4 sm:px-6 py-2 sm:py-3 text-sm sm:text-base">
-              Start Your Application <ArrowRight className="h-4 w-4" />
+            <Button size="lg" className="bg-green-500 hover:bg-green-600 text-white gap-2 px-6 py-3">
+              Start Your Application <ArrowRight className="h-5 w-5" />
             </Button>
           </Link>
         </div>
