@@ -27,12 +27,9 @@ export default function GalleryPage() {
   const [activeTab, setActiveTab] = useState<string>('all');
   const [activeCampus, setActiveCampus] = useState<string>('all');
   const [loading, setLoading] = useState(true);
-  const [previewImage, setPreviewImage] = useState<{
-    url: string;
-    title: string;
-    description?: string;
-    date: string;
-  } | null>(null);
+
+  const [currentGallery, setCurrentGallery] = useState<GalleryImage | null>(null);
+  const [currentImageIndex, setCurrentImageIndex] = useState<number>(0);
 
   useEffect(() => {
     const fetchGalleryImages = async () => {
@@ -87,6 +84,24 @@ export default function GalleryPage() {
     maganjo: 'bg-lime-400 text-white hover:bg-lime-500',
   };
 
+  const currentImage = currentGallery?.images?.[currentImageIndex];
+
+  const handleNext = () => {
+    if (
+      currentGallery &&
+      currentGallery.images &&
+      currentImageIndex < currentGallery.images.length - 1
+    ) {
+      setCurrentImageIndex((prev) => prev + 1);
+    }
+  };
+
+  const handlePrevious = () => {
+    if (currentImageIndex > 0) {
+      setCurrentImageIndex((prev) => prev - 1);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
@@ -125,7 +140,7 @@ export default function GalleryPage() {
 
         {['all', ...categories].map((tab) => (
           <TabsContent key={tab} value={tab} className="mt-0">
-            <div className="mb-4 sm:mb-6 lg:mb-8">
+            <div className="mt-6 mb-4 sm:mt-8 sm:mb-6 lg:mt-10 lg:mb-8">
               <h2 className="text-sm font-semibold mb-2 text-center sm:text-base lg:text-lg">
                 Filter by Campus
               </h2>
@@ -168,14 +183,10 @@ export default function GalleryPage() {
                       <div
                         key={`${gallery._id}-${index}`}
                         className="group relative overflow-hidden rounded-2xl border border-yellow-100 shadow-md hover:shadow-2xl hover:border-pink-200 transition-all duration-300 cursor-pointer"
-                        onClick={() =>
-                          setPreviewImage({
-                            url: image.asset.url,
-                            title: gallery.title,
-                            description: gallery.description,
-                            date: gallery.date,
-                          })
-                        }
+                        onClick={() => {
+                          setCurrentGallery(gallery);
+                          setCurrentImageIndex(index);
+                        }}
                       >
                         <Image
                           src={image.asset.url}
@@ -219,36 +230,52 @@ export default function GalleryPage() {
       </Tabs>
 
       {/* Modal Preview */}
-      <Dialog open={!!previewImage} onClose={() => setPreviewImage(null)} className="relative z-50">
+      <Dialog open={!!currentGallery} onClose={() => setCurrentGallery(null)} className="relative z-50">
         <div className="fixed inset-0 bg-black/50" aria-hidden="true" />
         <div className="fixed inset-0 flex items-center justify-center p-2 sm:p-4 lg:p-6">
-          <Dialog.Panel className="relative bg-white w-full max-w-[95vw] rounded-lg shadow-lg max-h-[90vh] overflow-y-auto sm:max-w-3xl">
-            {previewImage && (
+          <Dialog.Panel className="relative bg-white w-full max-w-[95vw] rounded-lg shadow-lg max-h-[90vh] overflow-y-auto sm:max-w-4xl">
+            {currentImage && (
               <>
-                <div className="relative w-full h-[50vw] max-h-80 bg-black sm:h-[500px] lg:h-[600px]">
+                <div className="relative w-full h-[60vh] bg-black sm:h-[70vh] lg:h-[75vh]">
                   <Image
-                    src={previewImage.url}
-                    alt={previewImage.title}
+                    src={currentImage.asset.url}
+                    alt={currentGallery?.title || 'Gallery image'}
                     fill
                     className="object-contain"
                   />
+                  {currentImageIndex > 0 && (
+                    <button
+                      onClick={handlePrevious}
+                      className="absolute left-2 top-1/2 transform -translate-y-1/2 text-white bg-black/50 p-2 rounded-full hover:bg-black"
+                    >
+                      ‹
+                    </button>
+                  )}
+                  {currentGallery.images && currentImageIndex < currentGallery.images.length - 1 && (
+                    <button
+                      onClick={handleNext}
+                      className="absolute right-2 top-1/2 transform -translate-y-1/2 text-white bg-black/50 p-2 rounded-full hover:bg-black"
+                    >
+                      ›
+                    </button>
+                  )}
                 </div>
                 <div className="p-3 space-y-2 sm:p-4 sm:space-y-3 lg:p-6 lg:space-y-4">
                   <h2 className="text-base font-semibold sm:text-lg lg:text-xl">
-                    {previewImage.title}
+                    {currentGallery?.title}
                   </h2>
-                  {previewImage.description && (
+                  {currentGallery?.description && (
                     <p className="text-gray-700 text-xs sm:text-sm lg:text-base">
-                      {previewImage.description}
+                      {currentGallery.description}
                     </p>
                   )}
                   <p className="text-xs text-gray-500 sm:text-sm lg:text-base">
-                    {formatDate(previewImage.date)}
+                    {formatDate(currentGallery?.date || '')}
                   </p>
                 </div>
                 <button
                   className="absolute top-2 right-2 text-white bg-black/70 p-1 rounded-full hover:bg-black sm:top-4 sm:right-4 sm:p-2"
-                  onClick={() => setPreviewImage(null)}
+                  onClick={() => setCurrentGallery(null)}
                 >
                   <XMarkIcon className="h-4 w-4 sm:h-5 sm:w-5" />
                 </button>
