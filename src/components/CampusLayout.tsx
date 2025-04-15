@@ -1,3 +1,5 @@
+// src/components/CampusLayout.tsx
+
 import React from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -15,6 +17,7 @@ import {
   CalendarDays,
   Home
 } from "lucide-react";
+import Image from "next/image";
 
 export type CampusInfo = {
   name: string;
@@ -37,7 +40,8 @@ export type CampusInfo = {
   }[];
   facilities: string[];
   extracurriculars: string[];
-  galleryImages: {url: string; alt: string; placeholder?: string;}[];
+  galleryImages: { url: string; alt: string; placeholder?: string; }[];
+  imagePlaceholder?: React.ReactNode; // Add this line
 };
 
 interface CampusLayoutProps {
@@ -89,12 +93,12 @@ const CampusLayout: React.FC<CampusLayoutProps> = ({ campusInfo }) => {
               <div className="flex flex-wrap gap-4">
                 <Link href="/apply">
                   <Button className={`gap-2 bg-${campusInfo.accentColor} border-b-4 border-${campusInfo.accentColor === 'kinder-red' ? 'red' :
-                                                   campusInfo.accentColor === 'kinder-blue' ? 'blue' :
-                                                   campusInfo.accentColor === 'kinder-green' ? 'green' :
-                                                   campusInfo.accentColor === 'kinder-purple' ? 'purple' :
-                                                   campusInfo.accentColor === 'kinder-yellow' ? 'yellow' :
-                                                   campusInfo.accentColor === 'kinder-orange' ? 'orange' : 'pink'}-600
-                                   hover:bg-${campusInfo.accentColor}/90 kinder-button`}>
+                    campusInfo.accentColor === 'kinder-blue' ? 'blue' :
+                      campusInfo.accentColor === 'kinder-green' ? 'green' :
+                        campusInfo.accentColor === 'kinder-purple' ? 'purple' :
+                          campusInfo.accentColor === 'kinder-yellow' ? 'yellow' :
+                            campusInfo.accentColor === 'kinder-orange' ? 'orange' : 'pink'}-600
+                      hover:bg-${campusInfo.accentColor}/90 kinder-button`}>
                     Apply Now
                     <ArrowRight className="h-4 w-4" />
                   </Button>
@@ -107,12 +111,16 @@ const CampusLayout: React.FC<CampusLayoutProps> = ({ campusInfo }) => {
             <div className={`bg-${campusInfo.accentColor}/10 p-6 rounded-3xl border-2 border-${campusInfo.accentColor}/30 shadow-md`}>
               <div className="aspect-video relative rounded-2xl overflow-hidden border-4 border-white shadow-md">
                 {/* Campus Image Placeholder - replace with actual image */}
-                <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
-                  <div className="text-center">
-                    <div className="text-6xl mb-2">🏫</div>
-                    <p className="text-gray-600 font-heading">{campusInfo.name} Campus</p>
+                {campusInfo.imagePlaceholder ? (
+                  campusInfo.imagePlaceholder
+                ) : (
+                  <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
+                    <div className="text-center">
+                      <div className="text-6xl mb-2">🏫</div>
+                      <p className="text-gray-600 font-heading">{campusInfo.name} Campus</p>
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
             </div>
           </div>
@@ -213,7 +221,6 @@ const CampusLayout: React.FC<CampusLayoutProps> = ({ campusInfo }) => {
             {campusInfo.galleryImages.map((image, index) => (
               <div key={index} className="bg-white rounded-xl overflow-hidden shadow-md">
                 <div className="aspect-video relative">
-                  {/* Image placeholder - replace with actual images */}
                   <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
                     <div className="text-center">
                       <div className="text-4xl mb-2">{image.placeholder || '📸'}</div>

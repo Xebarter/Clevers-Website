@@ -1,8 +1,10 @@
+// src/app/maganjo/page.tsx
+
 import React from "react";
 import type { Metadata } from "next";
-import CampusLayout from "@/components/CampusLayout";
+import CampusLayout, { CampusInfo } from "@/components/CampusLayout";
 import { Activity, Cpu, Trophy, Leaf, BookOpen } from "lucide-react";
-import type { CampusInfo } from "@/components/CampusLayout";
+import ImageCarousel from "../ImageCarousel";
 
 export const metadata: Metadata = {
   title: "Maganjo Campus | Clevers' Origin Schools",
@@ -17,7 +19,8 @@ const maganjoCampusInfo: CampusInfo = {
   headshot: "🧑‍🏫",
   principal: "Daniel Kigozi",
   principalTitle: "Campus Principal",
-  principalMessage: "At Maganjo Campus, we believe in developing well-rounded children through a balance of physical activity, technological literacy, and environmental stewardship. Our modern facilities and dynamic programs provide the perfect foundation for 21st-century learning.",
+  principalMessage:
+    "At Maganjo Campus, we believe in developing well-rounded children through a balance of physical activity, technological literacy, and environmental stewardship. Our modern facilities and dynamic programs provide the perfect foundation for 21st-century learning.",
   address: "Plot 13, Maganjo Road, Kampala, Uganda",
   phone: "+256 700 345678",
   email: "maganjo@cleversoriginschools.com",
@@ -27,29 +30,34 @@ const maganjoCampusInfo: CampusInfo = {
   features: [
     {
       title: "Sports Excellence",
-      description: "Our comprehensive physical education program develops coordination, teamwork, and healthy habits through age-appropriate sports activities.",
-      icon: <Trophy className="h-6 w-6 text-kinder-green" />
+      description:
+        "Our comprehensive physical education program develops coordination, teamwork, and healthy habits through age-appropriate sports activities.",
+      icon: <Trophy className="h-6 w-6 text-kinder-green" />,
     },
     {
       title: "Tech for Tots",
-      description: "Introduction to basic technology concepts through interactive, screen-limited activities that build digital literacy foundations.",
-      icon: <Cpu className="h-6 w-6 text-kinder-green" />
+      description:
+        "Introduction to basic technology concepts through interactive, screen-limited activities that build digital literacy foundations.",
+      icon: <Cpu className="h-6 w-6 text-kinder-green" />,
     },
     {
       title: "Eco-Explorers",
-      description: "Hands-on environmental education program teaching children about sustainability, conservation, and respect for nature.",
-      icon: <Leaf className="h-6 w-6 text-kinder-green" />
+      description:
+        "Hands-on environmental education program teaching children about sustainability, conservation, and respect for nature.",
+      icon: <Leaf className="h-6 w-6 text-kinder-green" />,
     },
     {
       title: "Active Learning",
-      description: "Movement-integrated teaching approaches that combine physical activity with academic concepts for enhanced retention.",
-      icon: <Activity className="h-6 w-6 text-kinder-green" />
+      description:
+        "Movement-integrated teaching approaches that combine physical activity with academic concepts for enhanced retention.",
+      icon: <Activity className="h-6 w-6 text-kinder-green" />,
     },
     {
       title: "STEM Foundations",
-      description: "Early introduction to science, technology, engineering, and math concepts through playful, hands-on projects.",
-      icon: <BookOpen className="h-6 w-6 text-kinder-green" />
-    }
+      description:
+        "Early introduction to science, technology, engineering, and math concepts through playful, hands-on projects.",
+      icon: <BookOpen className="h-6 w-6 text-kinder-green" />,
+    },
   ],
 
   facilities: [
@@ -60,7 +68,7 @@ const maganjoCampusInfo: CampusInfo = {
     "Nature center with gardening plots and small animal habitats",
     "Science discovery room with interactive exhibits and exploration stations",
     "Eco-friendly cafeteria serving healthy, locally-sourced meals",
-    "Multipurpose hall for assemblies, events, and indoor activities"
+    "Multipurpose hall for assemblies, events, and indoor activities",
   ],
 
   extracurriculars: [
@@ -70,43 +78,29 @@ const maganjoCampusInfo: CampusInfo = {
     "Nature Explorers: Field trips and outdoor education experiences",
     "Little Scientists: Hands-on experiments and scientific discoveries",
     "Eco Warriors: Environmental stewardship and conservation projects",
-    "Robotics Basics: Introduction to simple machines and movement"
+    "Robotics Basics: Introduction to simple machines and movement",
   ],
 
-  galleryImages: [
-    {
-      url: "/images/maganjo/sports-field.jpg",
-      alt: "Children participating in outdoor sports activities",
-      placeholder: "⚽"
-    },
-    {
-      url: "/images/maganjo/tech-lab.jpg",
-      alt: "Interactive learning in the technology lab",
-      placeholder: "💻"
-    },
-    {
-      url: "/images/maganjo/nature-center.jpg",
-      alt: "Exploring in the campus nature center",
-      placeholder: "🌿"
-    },
-    {
-      url: "/images/maganjo/science-room.jpg",
-      alt: "Hands-on activities in the science discovery room",
-      placeholder: "🔬"
-    },
-    {
-      url: "/images/maganjo/classroom.jpg",
-      alt: "Modern classroom with flexible seating arrangements",
-      placeholder: "📚"
-    },
-    {
-      url: "/images/maganjo/eco-garden.jpg",
-      alt: "Children tending to the eco-friendly garden",
-      placeholder: "🌱"
-    }
-  ]
+  galleryImages: [], // Optional — handled via imagePlaceholder
 };
 
 export default function MaganjoCampusPage() {
-  return <CampusLayout campusInfo={maganjoCampusInfo} />;
+  return (
+    <CampusLayout
+      campusInfo={{
+        ...maganjoCampusInfo,
+        imagePlaceholder: (
+          <ImageCarousel
+            images={[
+              { url: "/maganjo/maganjo1.jpg", alt: "Maganjo Campus Image 1" },
+              { url: "/maganjo/maganjo2.jpg", alt: "Maganjo Campus Image 2" },
+              { url: "/maganjo/maganjo3.jpg", alt: "Maganjo Campus Image 3" },
+              { url: "/maganjo/maganjo4.jpg", alt: "Maganjo Campus Image 4" },
+              { url: "/maganjo/maganjo5.jpg", alt: "Maganjo Campus Image 5" },
+            ]}
+          />
+        ),
+      }}
+    />
+  );
 }

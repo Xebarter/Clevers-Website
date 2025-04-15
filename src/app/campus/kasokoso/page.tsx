@@ -1,8 +1,11 @@
+// src/app/kasokoso/page.tsx
+
 import React from "react";
 import type { Metadata } from "next";
 import CampusLayout from "@/components/CampusLayout";
 import { Music, Heart, BookOpen, Globe, Users } from "lucide-react";
 import type { CampusInfo } from "@/components/CampusLayout";
+import ImageCarousel from "../ImageCarousel"; // Ensure this file exists and matches Kitintale's version
 
 export const metadata: Metadata = {
   title: "Kasokoso Campus | Clevers' Origin Schools",
@@ -73,38 +76,19 @@ const kasokosoCampusInfo: CampusInfo = {
     "Cultural Exchange Days: Learning about global cultures and traditions"
   ],
 
-  galleryImages: [
-    {
-      url: "/images/kasokoso/music-room.jpg",
-      alt: "Children playing instruments in the music room",
-      placeholder: "🎵"
-    },
-    {
-      url: "/images/kasokoso/dance.jpg",
-      alt: "Traditional dance performance by students",
-      placeholder: "💃"
-    },
-    {
-      url: "/images/kasokoso/art-studio.jpg",
-      alt: "Creative activities in the art studio",
-      placeholder: "🎨"
-    },
-    {
-      url: "/images/kasokoso/outdoor-play.jpg",
-      alt: "Children enjoying the musical playground",
-      placeholder: "🎹"
-    },
-    {
-      url: "/images/kasokoso/performance.jpg",
-      alt: "Children performing in the mini-amphitheater",
-      placeholder: "🎭"
-    },
-    {
-      url: "/images/kasokoso/reading.jpg",
-      alt: "Story time in the reading garden",
-      placeholder: "📚"
-    }
-  ]
+  galleryImages: [],
+
+  imagePlaceholder: (
+    <ImageCarousel
+      images={[
+        { url: "/kasokoso/kasokoso1.jpg", alt: "Kasokoso Campus Image 1" },
+        { url: "/kasokoso/kasokoso2.jpg", alt: "Kasokoso Campus Image 2" },
+        { url: "/kasokoso/kasokoso3.jpg", alt: "Kasokoso Campus Image 3" },
+        { url: "/kasokoso/kasokoso4.jpg", alt: "Kasokoso Campus Image 4" },
+        { url: "/kasokoso/kasokoso5.jpg", alt: "Kasokoso Campus Image 5" },
+      ]}
+    />
+  )
 };
 
 export default function KasokosoCampusPage() {

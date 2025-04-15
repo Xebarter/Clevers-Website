@@ -1,8 +1,10 @@
+// src/app/kitintale/page.tsx
+
 import React from "react";
 import type { Metadata } from "next";
-import CampusLayout from "@/components/CampusLayout";
+import CampusLayout, { CampusInfo } from "@/components/CampusLayout";
 import { Award, BookOpen, Music, Palette, Users } from "lucide-react";
-import type { CampusInfo } from "@/components/CampusLayout";
+import ImageCarousel from "../ImageCarousel"; // Carousel stays for the animated images
 
 export const metadata: Metadata = {
   title: "Kitintale Campus | Clevers' Origin Schools",
@@ -73,40 +75,27 @@ const kitintaleCampusInfo: CampusInfo = {
     "Parent-Child Workshops: Special sessions where parents join classroom activities"
   ],
 
-  galleryImages: [
-    {
-      url: "/images/kitintale/playground.jpg",
-      alt: "Children enjoying the outdoor playground",
-      placeholder: "🧒"
-    },
-    {
-      url: "/images/kitintale/classroom.jpg",
-      alt: "Bright and colorful classroom setting",
-      placeholder: "📚"
-    },
-    {
-      url: "/images/kitintale/art.jpg",
-      alt: "Students engaged in an art activity",
-      placeholder: "🎨"
-    },
-    {
-      url: "/images/kitintale/garden.jpg",
-      alt: "Children learning in the community garden",
-      placeholder: "🌱"
-    },
-    {
-      url: "/images/kitintale/performance.jpg",
-      alt: "Students performing in the activity hall",
-      placeholder: "🎭"
-    },
-    {
-      url: "/images/kitintale/reading.jpg",
-      alt: "Story time in the library corner",
-      placeholder: "📖"
-    }
-  ]
+  galleryImages: [] // Required but unused
+
 };
 
 export default function KitintaleCampusPage() {
-  return <CampusLayout campusInfo={kitintaleCampusInfo} />;
+  return (
+    <CampusLayout
+      campusInfo={{
+        ...kitintaleCampusInfo,
+        imagePlaceholder: (
+          <ImageCarousel
+            images={[
+              { url: "/kitintale/kitintale1.jpg", alt: "Kitintale Campus Image 1" },
+              { url: "/kitintale/kitintale2.jpg", alt: "Kitintale Campus Image 2" },
+              { url: "/kitintale/kitintale3.jpg", alt: "Kitintale Campus Image 3" },
+              { url: "/kitintale/kitintale4.jpg", alt: "Kitintale Campus Image 4" },
+              { url: "/kitintale/kitintale5.jpg", alt: "Kitintale Campus Image 5" },
+            ]}
+          />
+        ),
+      }}
+    />
+  );
 }
