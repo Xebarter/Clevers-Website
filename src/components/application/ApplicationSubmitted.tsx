@@ -73,7 +73,7 @@ const ApplicationSubmitted = () => {
 
       <div className="border-t border-gray-200 pt-6 mt-6">
         <p className="text-gray-500 mb-6">
-          What happens next? Our admissions team will review your application and contact you within 5-7 business days.
+          What happens next? Our admissions team will review your application and contact you within 1-2 business days.
         </p>
 
         <Link href="/">
