@@ -20,15 +20,15 @@ const campusContacts = [
   },
   {
     name: "Kasokoso Campus",
-    address: "Plot 27, Kasokoso Lane, Kampala, Uganda",
-    phone: "+256 700 234567",
+    address: "Kasokoso, Kireka",
+    phone: "+256 788 409 947",
     email: "kasokoso@cleversoriginschools.com",
     color: "kinder-red"
   },
   {
     name: "Maganjo Campus",
     address: "Plot 13, Maganjo Road, Kampala, Uganda",
-    phone: "+256 700 345678",
+    phone: "+256 753 252 716",
     email: "maganjo@cleversoriginschools.com",
     color: "kinder-green"
   }
@@ -187,7 +187,7 @@ export default function ContactPage() {
                         We'd love to show you around! Schedule a visit to see our facilities and meet our staff.
                       </p>
                       <p className="text-kinder-green mt-2 font-medium font-body">
-                        +256 700 789012
+                        +256 762 474 822
                       </p>
                     </div>
                   </div>
@@ -275,13 +275,16 @@ export default function ContactPage() {
 
           <div className="bg-white p-6 rounded-3xl shadow-md border-2 border-kinder-blue/20">
             <div className="aspect-video relative rounded-2xl overflow-hidden">
-              {/* Map Placeholder - replace with actual map */}
-              <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
-                <div className="text-center">
-                  <div className="text-6xl mb-2">🗺️</div>
-                  <p className="text-gray-600 font-heading">Interactive Map of Our Locations</p>
-                </div>
-              </div>
+              <iframe 
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d15959.027167556984!2d32.61808495541991!3d0.3181996000000214!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x177db953b299249b%3A0x98e4b4346fdbbc63!2sClever&#39;s%20Origin%20Junior%20School!5e0!3m2!1sen!2sug!4v1744825288688!5m2!1sen!2sug" 
+                width="100%" 
+                height="100%" 
+                style={{ border: 0 }} 
+                allowFullScreen 
+                loading="lazy" 
+                referrerPolicy="no-referrer-when-downgrade"
+                className="absolute inset-0"
+              ></iframe>
             </div>
           </div>
         </div>

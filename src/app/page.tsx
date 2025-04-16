@@ -121,7 +121,7 @@ export default function Home() {
               </CardHeader>
               <CardContent>
                 <CardDescription>
-                  From sports to robotics, we offer diverse programs to develop well-rounded students.
+                  From football to swimming, we offer diverse programs to develop well-rounded students.
                 </CardDescription>
                 <Link href="/student-life/activities" className="flex items-center text-blue-500 mt-4 font-medium hover:underline">
                   Learn More <ChevronRight className="ml-1 h-4 w-4" />

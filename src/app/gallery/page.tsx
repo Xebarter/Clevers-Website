@@ -112,122 +112,126 @@ export default function GalleryPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-yellow-50 via-pink-50 to-blue-50 px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
-      <h1 className="text-2xl font-extrabold text-center text-pink-600 mb-2 sm:text-3xl sm:mb-3 lg:text-4xl lg:mb-4">
-        🎉 School Gallery
-      </h1>
-      <p className="text-center text-gray-600 text-sm mb-6 max-w-md mx-auto sm:text-base sm:mb-8 lg:max-w-2xl">
-        Explore joyful moments, events, and everyday fun across our campuses.
-      </p>
+      <div className="max-w-7xl mx-auto">
+        <h1 className="text-2xl font-extrabold text-center text-pink-600 mb-2 sm:text-3xl sm:mb-3 lg:text-4xl lg:mb-4">
+          🎉 School Gallery
+        </h1>
+        <p className="text-center text-gray-600 text-sm mb-6 max-w-md mx-auto sm:text-base sm:mb-8 lg:max-w-2xl">
+          Explore joyful moments, events, and everyday fun across our campuses.
+        </p>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="flex flex-wrap justify-center gap-2 mb-4 sm:gap-3 sm:mb-6 lg:gap-4">
-          <TabsTrigger
-            value="all"
-            className="px-3 py-1.5 text-xs rounded-full bg-purple-500 text-white hover:bg-purple-600 sm:px-4 sm:py-2 sm:text-sm lg:text-base"
-          >
-            All Categories
-          </TabsTrigger>
-          {categories.map((category) => (
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="flex flex-wrap justify-center gap-2 mb-6 sm:gap-3 sm:mb-8 lg:gap-4">
             <TabsTrigger
-              key={category}
-              value={category}
-              className="px-3 py-1.5 text-xs rounded-full bg-teal-400 text-white hover:bg-teal-500 sm:px-4 sm:py-2 sm:text-sm lg:text-base"
+              value="all"
+              className="px-3 py-1.5 text-xs rounded-full bg-purple-500 text-white hover:bg-purple-600 sm:px-4 sm:py-2 sm:text-sm lg:text-base"
             >
-              {category.charAt(0).toUpperCase() + category.slice(1)}
+              All Categories
             </TabsTrigger>
-          ))}
-        </TabsList>
+            {categories.map((category) => (
+              <TabsTrigger
+                key={category}
+                value={category}
+                className="px-3 py-1.5 text-xs rounded-full bg-teal-400 text-white hover:bg-teal-500 sm:px-4 sm:py-2 sm:text-sm lg:text-base"
+              >
+                {category.charAt(0).toUpperCase() + category.slice(1)}
+              </TabsTrigger>
+            ))}
+          </TabsList>
 
-        {['all', ...categories].map((tab) => (
-          <TabsContent key={tab} value={tab} className="mt-0">
-            <div className="mt-6 mb-4 sm:mt-8 sm:mb-6 lg:mt-10 lg:mb-8">
-              <h2 className="text-sm font-semibold mb-2 text-center sm:text-base lg:text-lg">
-                Filter by Campus
-              </h2>
-              <div className="flex flex-wrap justify-center gap-2 sm:gap-3 lg:gap-4">
-                <button
-                  className={`px-3 py-1.5 text-xs rounded-full ${
-                    activeCampus === 'all'
-                      ? 'bg-orange-500 text-white'
-                      : 'bg-orange-100 text-orange-800 hover:bg-orange-200'
-                  } min-w-[90px] sm:px-4 sm:py-2 sm:text-sm sm:min-w-[100px] lg:text-base`}
-                  onClick={() => setActiveCampus('all')}
-                >
-                  All Campuses
-                </button>
-                {campuses.map((campus) => (
-                  <button
-                    key={campus}
-                    className={`px-3 py-1.5 text-xs rounded-full transition ${
-                      activeCampus === campus
-                        ? campusColors[campus]
-                        : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                    } min-w-[90px] sm:px-4 sm:py-2 sm:text-sm sm:min-w-[100px] lg:text-base`}
-                    onClick={() => setActiveCampus(campus)}
-                  >
-                    {campus.charAt(0).toUpperCase() + campus.slice(1)}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {filteredImages.length === 0 ? (
-              <p className="text-center text-gray-500 py-6 text-xs sm:text-sm lg:text-base">
-                No images found for this category and campus
-              </p>
-            ) : (
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 md:grid-cols-3 lg:grid-cols-4">
-                {filteredImages.map((gallery) =>
-                  gallery.images?.length ? (
-                    gallery.images.map((image, index) => (
-                      <div
-                        key={`${gallery._id}-${index}`}
-                        className="group relative overflow-hidden rounded-2xl border border-yellow-100 shadow-md hover:shadow-2xl hover:border-pink-200 transition-all duration-300 cursor-pointer"
-                        onClick={() => {
-                          setCurrentGallery(gallery);
-                          setCurrentImageIndex(index);
-                        }}
-                      >
-                        <Image
-                          src={image.asset.url}
-                          alt={gallery.title || 'Gallery image'}
-                          width={400}
-                          height={300}
-                          className="w-full h-40 object-cover transition-transform duration-300 group-hover:scale-105 sm:h-64"
-                          loading="lazy"
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-pink-800/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-2 sm:p-3 lg:p-4">
-                          <h3 className="text-white font-semibold text-xs sm:text-sm lg:text-base">
-                            {gallery.title}
-                          </h3>
-                          {gallery.description && (
-                            <p className="text-white/80 text-xs mt-1 line-clamp-2 sm:text-sm lg:text-base">
-                              {gallery.description}
-                            </p>
-                          )}
-                          <p className="text-white/60 text-xs mt-1 sm:mt-2 lg:text-sm">
-                            {formatDate(gallery.date)}
-                          </p>
-                          <p className="text-white/60 text-xs capitalize sm:text-sm lg:text-sm">
-                            {gallery.location}
-                          </p>
-                        </div>
-                      </div>
-                    ))
-                  ) : (
-                    <div
-                      key={gallery._id}
-                      className="bg-gray-200 w-full h-40 flex items-center justify-center text-xs text-gray-500 rounded-xl sm:h-64 lg:h-64"
+          {['all', ...categories].map((tab) => (
+            <TabsContent key={tab} value={tab} className="mt-0">
+              <div className="mb-8">
+                <div className="flex flex-col items-center gap-4">
+                  <h2 className="text-sm font-semibold text-center sm:text-base lg:text-lg">
+                    Filter by Campus
+                  </h2>
+                  <div className="flex flex-wrap justify-center gap-2 sm:gap-3 lg:gap-4">
+                    <button
+                      className={`px-3 py-1.5 text-xs rounded-full ${
+                        activeCampus === 'all'
+                          ? 'bg-orange-500 text-white'
+                          : 'bg-orange-100 text-orange-800 hover:bg-orange-200'
+                      } min-w-[90px] sm:px-4 sm:py-2 sm:text-sm sm:min-w-[100px] lg:text-base`}
+                      onClick={() => setActiveCampus('all')}
                     >
-                      No images available
-                    </div>
-                  )
-                )}
+                      All Campuses
+                    </button>
+                    {campuses.map((campus) => (
+                      <button
+                        key={campus}
+                        className={`px-3 py-1.5 text-xs rounded-full transition ${
+                          activeCampus === campus
+                            ? campusColors[campus]
+                            : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                        } min-w-[90px] sm:px-4 sm:py-2 sm:text-sm sm:min-w-[100px] lg:text-base`}
+                        onClick={() => setActiveCampus(campus)}
+                      >
+                        {campus.charAt(0).toUpperCase() + campus.slice(1)}
+                      </button>
+                    ))}
+                  </div>
+                </div>
               </div>
-            )}
-          </TabsContent>
-        ))}
-      </Tabs>
+
+              {filteredImages.length === 0 ? (
+                <p className="text-center text-gray-500 py-6 text-xs sm:text-sm lg:text-base">
+                  No images found for this category and campus
+                </p>
+              ) : (
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 md:grid-cols-3 lg:grid-cols-4">
+                  {filteredImages.map((gallery) =>
+                    gallery.images?.length ? (
+                      gallery.images.map((image, index) => (
+                        <div
+                          key={`${gallery._id}-${index}`}
+                          className="group relative overflow-hidden rounded-2xl border border-yellow-100 shadow-md hover:shadow-2xl hover:border-pink-200 transition-all duration-300 cursor-pointer"
+                          onClick={() => {
+                            setCurrentGallery(gallery);
+                            setCurrentImageIndex(index);
+                          }}
+                        >
+                          <Image
+                            src={image.asset.url}
+                            alt={gallery.title || 'Gallery image'}
+                            width={400}
+                            height={300}
+                            className="w-full h-40 object-cover transition-transform duration-300 group-hover:scale-105 sm:h-64"
+                            loading="lazy"
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-pink-800/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-2 sm:p-3 lg:p-4">
+                            <h3 className="text-white font-semibold text-xs sm:text-sm lg:text-base">
+                              {gallery.title}
+                            </h3>
+                            {gallery.description && (
+                              <p className="text-white/80 text-xs mt-1 line-clamp-2 sm:text-sm lg:text-base">
+                                {gallery.description}
+                              </p>
+                            )}
+                            <p className="text-white/60 text-xs mt-1 sm:mt-2 lg:text-sm">
+                              {formatDate(gallery.date)}
+                            </p>
+                            <p className="text-white/60 text-xs capitalize sm:text-sm lg:text-sm">
+                              {gallery.location}
+                            </p>
+                          </div>
+                        </div>
+                      ))
+                    ) : (
+                      <div
+                        key={gallery._id}
+                        className="bg-gray-200 w-full h-40 flex items-center justify-center text-xs text-gray-500 rounded-xl sm:h-64 lg:h-64"
+                      >
+                        No images available
+                      </div>
+                    )
+                  )}
+                </div>
+              )}
+            </TabsContent>
+          ))}
+        </Tabs>
+      </div>
 
       {/* Modal Preview */}
       <Dialog open={!!currentGallery} onClose={() => setCurrentGallery(null)} className="relative z-50">
