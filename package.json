@@ -7,7 +7,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "bunx biome lint --write && bunx tsc --noEmit",
-    "format": "bunx biome format --write"
+    "format": "bunx biome format --write",
+    "postbuild": "next-sitemap"
+
   },
   "dependencies": {
     "@headlessui/react": "^2.2.1",
@@ -32,6 +34,7 @@
     "lucide-react": "^0.288.0",
     "next": "^14.0.1",
     "next-sanity": "^9.9.9",
+    "next-sitemap": "^4.2.3",
     "next-themes": "^0.2.1",
     "react": "^18.2.0",
     "react-calendar": "^4.6.1",
