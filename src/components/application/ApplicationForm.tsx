@@ -8,7 +8,6 @@ import GuardianInformationForm from "./GuardianInformationForm";
 import AcademicInformationForm from "./AcademicInformationForm";
 import CampusPreferenceForm from "./CampusPreferenceForm";
 import AdditionalInformationForm from "./AdditionalInformationForm";
-import PaymentForm from "./PaymentForm";
 import ApplicationReview from "./ApplicationReview";
 import ApplicationSubmitted from "./ApplicationSubmitted";
 import ApplicationFormProgress from "./ApplicationFormProgress";
@@ -22,7 +21,6 @@ const stepHelpText = {
   academic: "Tell us about the student's previous academic history and which grade they're applying for.",
   campus: "Select your preferred campus and program options for the application.",
   additional: "Provide any additional information that may help us better understand the student's needs.",
-  payment: "Complete the application fee payment to continue with your application.",
   review: "Please review all information before final submission. You can edit any section by clicking 'Edit'.",
 };
 
@@ -40,8 +38,6 @@ const FormStepContent = () => {
       return <CampusPreferenceForm />;
     case "additional":
       return <AdditionalInformationForm />;
-    case "payment":
-      return <PaymentForm />;
     case "review":
       return <ApplicationReview />;
     case "submitted":

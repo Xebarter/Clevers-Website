@@ -8,128 +8,27 @@ import { zodResolver } from "@hookform/resolvers/zod";
 
 // Define form schema with Zod
 export const applicationFormSchema = z.object({
-  // Student Information
-  student: z.object({
-    firstName: z.string().min(2, { message: "First name must be at least 2 characters" }),
-    lastName: z.string().min(2, { message: "Last name must be at least 2 characters" }),
-    dateOfBirth: z.string().min(1, { message: "Date of birth is required" }),
-    gender: z.enum(["male", "female", "other"], {
-      required_error: "Please select a gender",
-    }),
-    nationality: z.string().min(1, { message: "Nationality is required" }),
-    religion: z.string().optional(),
-  }),
-
-  // Parent/Guardian Information
-  guardian: z.object({
-    firstName: z.string().min(2, { message: "First name must be at least 2 characters" }),
-    lastName: z.string().min(2, { message: "Last name must be at least 2 characters" }),
-    relationship: z.string().min(1, { message: "Relationship is required" }),
-    email: z.string().email({ message: "Please enter a valid email address" }),
-    phone: z.string().min(10, { message: "Phone number must be at least 10 characters" }),
-    occupation: z.string().optional(),
-    address: z.string().min(5, { message: "Address must be at least 5 characters" }),
-  }),
-
-  // Academic Information
-  academic: z.object({
-    appliedGrade: z.string().min(1, { message: "Please select the grade applying for" }),
-    previousSchool: z.string().optional(),
-    previousGrade: z.string().optional(),
-    academicRecords: z.boolean().optional(),
-  }),
-
-  // Campus Selection
-  campusPreference: z.object({
-    campus: z.enum(["kitintale", "kasokoso", "maganjo"], {
-      required_error: "Please select a campus",
-    }),
-    admissionTerm: z.enum(["term1", "term2", "term3"], {
-      required_error: "Please select an admission term",
-    }),
-    residentialOption: z.enum(["day", "boarding"], {
-      required_error: "Please select a residential option",
-    }),
-  }),
-
-  // Additional Information
-  additional: z.object({
-    specialNeeds: z.boolean().optional(),
-    specialNeedsDetails: z.string().optional(),
-    healthConditions: z.boolean().optional(),
-    healthConditionsDetails: z.string().optional(),
-    howDidYouHear: z.string().optional(),
-    additionalComments: z.string().optional(),
-  }),
-
-  // Payment Information
-  payment: z.object({
-    method: z.enum(["mobile", "card", "bank"], {
-      required_error: "Please select a payment method",
-    }),
-    status: z.enum(["initial", "processing", "success", "error"]).default("initial"),
-    reference: z.string().optional(),
-    transactionDate: z.string().optional(),
-    paymentComplete: z.boolean().default(false),
-  }),
-
-  // Terms and Conditions
-  termsAccepted: z.boolean().refine(val => val === true, {
-    message: "You must accept the terms and conditions",
-  }),
+  // ... (keep your existing schema exactly as is)
 });
 
 export type ApplicationFormValues = z.infer<typeof applicationFormSchema>;
 
 // Default values for the form
 const defaultValues: ApplicationFormValues = {
-  student: {
-    firstName: "",
-    lastName: "",
-    dateOfBirth: "",
-    gender: "male",
-    nationality: "",
-    religion: "",
-  },
-  guardian: {
-    firstName: "",
-    lastName: "",
-    relationship: "",
-    email: "",
-    phone: "",
-    occupation: "",
-    address: "",
-  },
-  academic: {
-    appliedGrade: "",
-    previousSchool: "",
-    previousGrade: "",
-    academicRecords: false,
-  },
-  campusPreference: {
-    campus: "kitintale",
-    admissionTerm: "term1",
-    residentialOption: "day",
-  },
-  additional: {
-    specialNeeds: false,
-    specialNeedsDetails: "",
-    healthConditions: false,
-    healthConditionsDetails: "",
-    howDidYouHear: "",
-    additionalComments: "",
-  },
-  payment: {
-    method: "mobile",
-    status: "initial",
-    reference: "",
-    transactionDate: "",
-    paymentComplete: false,
-  },
-  termsAccepted: false,
+  // ... (keep your existing default values exactly as is)
 };
 
-type FormStep = "student" | "guardian" | "academic" | "campus" | "additional" | "payment" | "review" | "submitted";
+// Define steps in correct order
+const FORM_STEPS = [
+  "student",
+  "guardian", 
+  "academic",
+  "campus",
+  "additional",
+  "review"
+] as const;
+
+type FormStep = typeof FORM_STEPS[number] | "submitted";
 
 interface FormContextType {
   currentStep: FormStep;
@@ -138,7 +37,8 @@ interface FormContextType {
   goToStep: (step: FormStep) => void;
   isLastStep: boolean;
   isFirstStep: boolean;
-  progress: number; // 0-100
+  progress: number;
+  steps: typeof FORM_STEPS;
 }
 
 const FormContext = createContext<FormContextType | null>(null);
@@ -164,33 +64,35 @@ export const ApplicationFormProvider = ({ children }: ApplicationFormProviderPro
 
   const [currentStep, setCurrentStep] = useState<FormStep>("student");
 
-  // Update the steps array to include payment:
-  const steps: FormStep[] = ["student", "guardian", "academic", "campus", "additional", "payment", "review"];
-
-  const currentStepIndex = steps.indexOf(currentStep);
-  const isLastStep = currentStepIndex === steps.length - 1;
-  const isFirstStep = currentStepIndex === 0;
+  const currentStepIndex = FORM_STEPS.indexOf(currentStep as typeof FORM_STEPS[number]);
+  const isLastStep = currentStep === "review";
+  const isFirstStep = currentStep === "student";
 
   const goToNextStep = () => {
-    if (!isLastStep) {
-      setCurrentStep(steps[currentStepIndex + 1]);
+    if (currentStep === "review") {
+      setCurrentStep("submitted");
+    } else {
+      const nextIndex = currentStepIndex + 1;
+      if (nextIndex < FORM_STEPS.length) {
+        setCurrentStep(FORM_STEPS[nextIndex]);
+      }
     }
   };
 
   const goToPreviousStep = () => {
-    if (!isFirstStep) {
-      setCurrentStep(steps[currentStepIndex - 1]);
+    const prevIndex = currentStepIndex - 1;
+    if (prevIndex >= 0) {
+      setCurrentStep(FORM_STEPS[prevIndex]);
     }
   };
 
   const goToStep = (step: FormStep) => {
-    if (steps.includes(step)) {
+    if (step === "submitted" || FORM_STEPS.includes(step as any)) {
       setCurrentStep(step);
     }
   };
 
-  // Calculate progress (0-100)
-  const progress = Math.round(((currentStepIndex + 1) / steps.length) * 100);
+  const progress = Math.round(((currentStepIndex + 1) / FORM_STEPS.length) * 100);
 
   const formContextValue: FormContextType = {
     currentStep,
@@ -200,6 +102,7 @@ export const ApplicationFormProvider = ({ children }: ApplicationFormProviderPro
     isLastStep,
     isFirstStep,
     progress,
+    steps: FORM_STEPS
   };
 
   return (

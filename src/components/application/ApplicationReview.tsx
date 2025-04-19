@@ -9,7 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useApplicationForm } from "./ApplicationFormProvider";
 import {
   User, Users, School, BookOpen, FileText,
-  CreditCard, Pencil, Check, Star
+  Pencil, Check, Star
 } from "lucide-react";
 
 const ApplicationReview = () => {
@@ -48,26 +48,7 @@ const ApplicationReview = () => {
       }
     }
 
-    if (section === "payment" && key === "method") {
-      const methodMap: Record<string, string> = {
-        mobile: "Mobile Money",
-        card: "Credit/Debit Card",
-        bank: "Bank Transfer",
-      };
-      return methodMap[value] || value;
-    }
-
     return value;
-  };
-
-  // Format payment date
-  const formatDate = (dateString: string) => {
-    if (!dateString) return "";
-    try {
-      return new Date(dateString).toLocaleDateString();
-    } catch (e) {
-      return dateString;
-    }
   };
 
   // Map sections to icons and colors
@@ -77,7 +58,6 @@ const ApplicationReview = () => {
     academic: { icon: BookOpen, color: "kinder-green", title: "Academic Information" },
     campus: { icon: School, color: "kinder-red", title: "Campus Preference" },
     additional: { icon: FileText, color: "kinder-orange", title: "Additional Information" },
-    payment: { icon: CreditCard, color: "kinder-yellow", title: "Payment Information" },
   };
 
   // Function to render a review section
@@ -111,9 +91,7 @@ const ApplicationReview = () => {
             // Skip rendering some fields based on logic
             if (
               (key === "specialNeedsDetails" && !data.specialNeeds) ||
-              (key === "healthConditionsDetails" && !data.healthConditions) ||
-              (key === "status" && section === "payment") || // Skip status field for payment
-              (key === "paymentComplete" && section === "payment") // Skip paymentComplete field
+              (key === "healthConditionsDetails" && !data.healthConditions)
             ) {
               return null;
             }
@@ -137,16 +115,6 @@ const ApplicationReview = () => {
             // Skip empty values
             if (value === "" || value === undefined) return null;
 
-            // Format transaction date
-            if (key === "transactionDate" && section === "payment") {
-              return (
-                <div key={key} className="flex items-center bg-gray-50 p-2 rounded-lg">
-                  <span className="font-medium text-gray-700 font-heading">Date:</span>{" "}
-                  <span className="ml-2 font-body">{formatDate(value as string)}</span>
-                </div>
-              );
-            }
-
             return (
               <div key={key} className="flex items-start bg-gray-50 p-2 rounded-lg">
                 <span className="font-medium text-gray-700 font-heading">{key.split(/(?=[A-Z])/).map(capitalize).join(" ")}:</span>{" "}
@@ -154,14 +122,6 @@ const ApplicationReview = () => {
               </div>
             );
           })}
-
-          {/* Add fee amount for payment section */}
-          {section === "payment" && (
-            <div className="flex items-center bg-gray-50 p-2 rounded-lg">
-              <span className="font-medium text-gray-700 font-heading">Amount:</span>{" "}
-              <span className="ml-2 font-bold text-kinder-green font-body">UGX 50,000</span>
-            </div>
-          )}
         </CardContent>
       </Card>
     );
@@ -182,7 +142,6 @@ const ApplicationReview = () => {
       {renderSection(sectionInfo.academic.title, values.academic, "academic")}
       {renderSection(sectionInfo.campus.title, values.campusPreference, "campus")}
       {renderSection(sectionInfo.additional.title, values.additional, "additional")}
-      {renderSection(sectionInfo.payment.title, values.payment, "payment")}
 
       <div className="mt-8 border-t-2 border-kinder-yellow/30 pt-6">
         <FormField

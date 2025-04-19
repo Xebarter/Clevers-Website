@@ -6,83 +6,91 @@ import { Button } from "@/components/ui/button";
 import { CheckCircle, Calendar, Download, ArrowRight } from "lucide-react";
 import { useFormContext } from "react-hook-form";
 import type { ApplicationFormValues } from "./ApplicationFormProvider";
+import { jsPDF } from "jspdf";
+import autoTable from "jspdf-autotable";
 
 const ApplicationSubmitted = () => {
   const { getValues } = useFormContext<ApplicationFormValues>();
   const values = getValues();
 
-  // Generate a random application reference number
-  const applicationRef = `APP-${Math.floor(100000 + Math.random() * 900000)}-${new Date().getFullYear()}`;
+  // Generate PDF function
+  const generatePDF = () => {
+    const doc = new jsPDF();
+    
+    // Add title
+    doc.setFontSize(20);
+    doc.text("Clevers' Origin Schools Application", 105, 20, { align: 'center' });
+    
+    // Add application details
+    doc.setFontSize(12);
+    doc.text(`Application ID: APP-${Math.floor(100000 + Math.random() * 900000)}-${new Date().getFullYear()}`, 14, 30);
+    doc.text(`Submission Date: ${new Date().toLocaleDateString()}`, 14, 40);
+    
+    // Student Information
+    doc.setFontSize(14);
+    doc.text("Student Information", 14, 50);
+    autoTable(doc, {
+      startY: 55,
+      head: [['Field', 'Value']],
+      body: [
+        ['Full Name', `${values.student.firstName} ${values.student.lastName}`],
+        ['Date of Birth', values.student.dateOfBirth],
+        ['Gender', values.student.gender],
+        ['Nationality', values.student.nationality],
+        ['Religion', values.student.religion || 'N/A'],
+      ],
+    });
 
-  // Format date for display
-  const formattedDate = new Date().toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  });
+    // Guardian Information
+    doc.setFontSize(14);
+    doc.text("Guardian Information", 14, doc.lastAutoTable.finalY + 15);
+    autoTable(doc, {
+      startY: doc.lastAutoTable.finalY + 20,
+      head: [['Field', 'Value']],
+      body: [
+        ['Full Name', `${values.guardian.firstName} ${values.guardian.lastName}`],
+        ['Relationship', values.guardian.relationship],
+        ['Email', values.guardian.email],
+        ['Phone', values.guardian.phone],
+        ['Address', values.guardian.address],
+      ],
+    });
+
+    // Campus Preference
+    doc.setFontSize(14);
+    doc.text("Campus Preference", 14, doc.lastAutoTable.finalY + 15);
+    autoTable(doc, {
+      startY: doc.lastAutoTable.finalY + 20,
+      head: [['Field', 'Value']],
+      body: [
+        ['Campus', values.campusPreference.campus],
+        ['Admission Term', values.campusPreference.admissionTerm],
+        ['Residential Option', values.campusPreference.residentialOption],
+      ],
+    });
+
+    // Save the PDF
+    doc.save(`CleversOrigin_Application_${values.student.lastName}.pdf`);
+  };
 
   return (
     <div className="text-center py-8">
-      <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-6">
-        <CheckCircle className="h-10 w-10 text-green-600" />
-      </div>
-
-      <h2 className="text-2xl md:text-3xl font-bold mb-4">Application Submitted Successfully!</h2>
-
-      <p className="text-gray-600 mb-8 max-w-md mx-auto">
-        Thank you for applying to Clevers' Origin Schools. We have received your application and will be in touch soon.
-      </p>
-
-      <div className="bg-gray-50 rounded-lg p-6 mb-8 max-w-md mx-auto text-left">
-        <h3 className="font-bold text-lg mb-4">Application Details</h3>
-
-        <div className="space-y-3">
-          <div className="flex justify-between">
-            <span className="text-gray-500">Application ID:</span>
-            <span className="font-medium">{applicationRef}</span>
-          </div>
-
-          <div className="flex justify-between">
-            <span className="text-gray-500">Applicant Name:</span>
-            <span className="font-medium">{values.student.firstName} {values.student.lastName}</span>
-          </div>
-
-          <div className="flex justify-between">
-            <span className="text-gray-500">Campus:</span>
-            <span className="font-medium capitalize">{values.campusPreference.campus} Campus</span>
-          </div>
-
-          <div className="flex justify-between">
-            <span className="text-gray-500">Submission Date:</span>
-            <span className="font-medium">{formattedDate}</span>
-          </div>
-        </div>
-      </div>
+      {/* ... existing code ... */}
 
       <div className="flex flex-col md:flex-row gap-4 justify-center mb-8">
-        <Button variant="outline" className="gap-2">
+        <Button 
+          variant="outline" 
+          className="gap-2"
+          onClick={generatePDF}
+        >
           <Download className="h-4 w-4" />
-          Download Application
+          Download Application (PDF)
         </Button>
 
-        <Button variant="outline" className="gap-2">
-          <Calendar className="h-4 w-4" />
-          Schedule a Visit
-        </Button>
+        {/* ... rest of your existing code ... */}
       </div>
 
-      <div className="border-t border-gray-200 pt-6 mt-6">
-        <p className="text-gray-500 mb-6">
-          What happens next? Our admissions team will review your application and contact you within 1-2 business days.
-        </p>
-
-        <Link href="/">
-          <Button className="gap-2">
-            Return to Homepage
-            <ArrowRight className="h-4 w-4" />
-          </Button>
-        </Link>
-      </div>
+      {/* ... rest of your existing code ... */}
     </div>
   );
 };
