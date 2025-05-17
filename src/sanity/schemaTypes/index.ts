@@ -1,4 +1,3 @@
-// sanity/schemaTypes/index.ts
 import { type SchemaTypeDefinition } from 'sanity';
 
 // Import individual schema files
@@ -7,6 +6,7 @@ import calendarEvent from './calendarEvent';
 import event from './event';
 import galleryImage from './galleryImage';
 import resources from './resources';
+import application from './application'; // Ensure this points to application.ts
 
 // If you're using default exports in your schema files:
 export const schema: { types: SchemaTypeDefinition[] } = {
@@ -16,11 +16,6 @@ export const schema: { types: SchemaTypeDefinition[] } = {
     event,
     galleryImage,
     resources,
-    // Add more schemas here
+    application,
   ],
 };
-
-// Alternative if you're using named exports:
-// import { announcement } from './announcement';
-// import { calendarEvent } from './calendarEvent';
-// ...etc

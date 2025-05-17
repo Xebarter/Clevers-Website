@@ -1,37 +1,47 @@
-// /app/api/apply/route.ts
+// src/app/api/submit-application/route.ts
 import { NextResponse } from "next/server";
-import { client } from "@/lib/sanity/client"; // Ensure this is correctly initialized
 
-export async function POST(req: Request) {
+export async function POST(request: Request) {
   try {
-    const body = await req.json();
+    const formData = await request.json();
 
-    // Validate the body structure (optional, recommended)
-    if (!body.student || !body.guardian || !body.academic || !body.campusPreference) {
-      return NextResponse.json(
-        { success: false, error: "Missing required application data" },
-        { status: 400 }
-      );
+    // Basic validation
+    const requiredFields = [
+      "studentName",
+      "dateOfBirth",
+      "gender",
+      "gradeLevel",
+      "parentName",
+      "relationship",
+      "phone",
+      "email",
+      "campus",
+      "boarding",
+      "howHeard",
+    ];
+    for (const field of requiredFields) {
+      if (!formData[field]) {
+        return NextResponse.json(
+          { error: `Missing required field: ${field}` },
+          { status: 400 }
+        );
+      }
     }
 
-    const doc = {
-      _type: "application",
-      student: body.student,
-      guardian: body.guardian,
-      academic: body.academic,
-      campusPreference: body.campusPreference,
-      additional: body.additional,
-      termsAccepted: body.termsAccepted,
-      submittedAt: new Date().toISOString(),
-    };
+    // Log the form data (replace with database storage or email sending)
+    console.log("Application received:", formData);
 
-    const result = await client.create(doc);
+    // TODO: Add logic to store in database or send email
+    // Example: Send email using Nodemailer (as in contact form) or save to Sanity
 
-    return NextResponse.json({ success: true, id: result._id }, { status: 200 });
-  } catch (error: any) {
-    console.error("Error saving application:", error);
     return NextResponse.json(
-      { success: false, error: error.message || "Failed to save application" },
+      { message: "Application submitted successfully" },
+      { status: 200 }
+    );
+  } catch (error) {
+    console.error("Error processing application:", error);
+    return NextResponse.json(
+      { error: "Failed to submit application" },
       { status: 500 }
     );
   }

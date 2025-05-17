@@ -1,35 +1,37 @@
 import React from "react";
-import type { Metadata } from "next";
-import ApplicationForm from "@/components/application/ApplicationForm";
-import { Button } from "@/components/ui/button";
-import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
+import { Metadata } from "next";
+import ApplicationForm from "@/components/ApplicationForm";
 
 export const metadata: Metadata = {
-  title: "Apply for Admission | Clevers' Origin Schools",
-  description: "Start your application to join Clevers' Origin Schools. Our multi-step application process is simple and straightforward.",
+  title: "Apply Now | Clevers' Origin Schools",
+  description: "Apply to Clevers' Origin Schools for a nurturing and innovative educational experience at our Kitintale, Kasokoso, or Maganjo campuses.",
 };
 
-export default function ApplicationPage() {
+export default function ApplyPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
-      <div className="container mx-auto px-4 py-8">
-        <div className="mb-8">
-          <Link href="/" className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-4 transition-colors">
-            <ArrowLeft className="h-4 w-4" />
-            <span>Return to Homepage</span>
-          </Link>
-
-          <h1 className="text-3xl md:text-4xl font-bold mb-3 font-heading text-kinder-blue">Application for Admission</h1>
-          <p className="text-gray-600 max-w-2xl font-body">
-            Thank you for your interest in Clevers' Origin Schools. This application will take approximately 10-15 minutes to complete. You can save your progress and return later.
-          </p>
+    <div className="min-h-screen bg-white">
+      {/* Hero Section */}
+      <section className="py-12 md:py-16 bg-blue-900/10">
+        <div className="container mx-auto px-4">
+          <div className="max-w-3xl mx-auto text-center">
+            <h1 className="text-3xl md:text-4xl font-bold mb-6 text-blue-900">
+              Apply to Clevers' Origin Schools
+            </h1>
+            <p className="text-lg text-gray-600 mb-8">
+              Join our vibrant community at Kitintale, Kasokoso, or Maganjo. Complete the form below to start your application.
+            </p>
+          </div>
         </div>
+      </section>
 
-        <div className="max-w-4xl mx-auto">
-          <ApplicationForm />
+      {/* Application Form Section */}
+      <section className="py-12 md:py-16">
+        <div className="container mx-auto px-4">
+          <div className="max-w-2xl mx-auto">
+            <ApplicationForm />
+          </div>
         </div>
-      </div>
+      </section>
     </div>
   );
 }
