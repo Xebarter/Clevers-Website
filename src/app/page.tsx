@@ -150,6 +150,14 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Campus Showcase */}
+      <section className="py-16 bg-gradient-to-t from-white via-green-50 to-yellow-50">
+        <div className="container mx-auto px-4 sm:px-6">
+          <h2 className="text-3xl font-bold text-center text-green-700 mb-10">Our Campuses</h2>
+          <CampusShowcase />
+        </div>
+      </section>
+
       {/* Upcoming Events */}
       <section className="py-16 bg-blue-50">
         <div className="container mx-auto px-4 sm:px-6">
@@ -162,14 +170,6 @@ export default function Home() {
               </Button>
             </Link>
           </div>
-        </div>
-      </section>
-
-      {/* Campus Showcase */}
-      <section className="py-16 bg-gradient-to-t from-white via-green-50 to-yellow-50">
-        <div className="container mx-auto px-4 sm:px-6">
-          <h2 className="text-3xl font-bold text-center text-green-700 mb-10">Our Campuses</h2>
-          <CampusShowcase />
         </div>
       </section>
 
