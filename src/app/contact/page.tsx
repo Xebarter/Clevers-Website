@@ -3,6 +3,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { Button } from "@/components/ui/button";
 import { MapPin, Phone, Mail, Clock, Calendar, ArrowRight, HelpCircle, School, MessageSquare } from "lucide-react";
+import ContactForm from "@/components/ContactForm";
 
 export const metadata: Metadata = {
   title: "Contact Us | Clevers' Origin Schools",
@@ -209,58 +210,7 @@ export default function ContactPage() {
                 </div>
               </div>
 
-              <div className="bg-white p-6 rounded-3xl shadow-md border-2 border-kinder-blue/20">
-                <h3 className="text-xl font-bold mb-6 font-heading text-kinder-blue">
-                  Send Us a Message
-                </h3>
-                <form className="space-y-4">
-                  <div>
-                    <label htmlFor="name" className="block mb-2 font-body">Your Name</label>
-                    <input
-                      type="text"
-                      id="name"
-                      className="kinder-input w-full"
-                      placeholder="Enter your full name"
-                    />
-                  </div>
-
-                  <div>
-                    <label htmlFor="email" className="block mb-2 font-body">Email Address</label>
-                    <input
-                      type="email"
-                      id="email"
-                      className="kinder-input w-full"
-                      placeholder="Enter your email"
-                    />
-                  </div>
-
-                  <div>
-                    <label htmlFor="subject" className="block mb-2 font-body">Subject</label>
-                    <select id="subject" className="kinder-select w-full font-body">
-                      <option value="">Select a subject</option>
-                      <option value="admissions">Admissions Inquiry</option>
-                      <option value="tour">Campus Tour Request</option>
-                      <option value="programs">Program Information</option>
-                      <option value="feedback">Feedback or Suggestions</option>
-                      <option value="other">Other Inquiry</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label htmlFor="message" className="block mb-2 font-body">Message</label>
-                    <textarea
-                      id="message"
-                      rows={5}
-                      className="kinder-input w-full"
-                      placeholder="Type your message here..."
-                    />
-                  </div>
-
-                  <Button className="w-full kinder-button">
-                    Send Message
-                  </Button>
-                </form>
-              </div>
+              <ContactForm />
             </div>
           </div>
         </div>
@@ -276,7 +226,7 @@ export default function ContactPage() {
           <div className="bg-white p-6 rounded-3xl shadow-md border-2 border-kinder-blue/20">
             <div className="aspect-video relative rounded-2xl overflow-hidden">
               <iframe 
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d15959.027167556984!2d32.61808495541991!3d0.3181996000000214!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x177db953b299249b%3A0x98e4b4346fdbbc63!2sClever&#39;s%20Origin%20Junior%20School!5e0!3m2!1sen!2sug!4v1744825288688!5m2!1sen!2sug" 
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d15959.027167556984!2d32.61808495541991!3d0.3181996000000214!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x177db953b299249b%3A0x98e4b4346fdbbc63!2sClever's%20Origin%20Junior%20School!5e0!3m2!1sen!2sug!4v1744825288688!5m2!1sen!2sug" 
                 width="100%" 
                 height="100%" 
                 style={{ border: 0 }} 
