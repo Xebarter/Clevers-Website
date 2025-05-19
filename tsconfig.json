@@ -1,26 +1,16 @@
 {
   "compilerOptions": {
     "target": "es2015",
-    "lib": [
-      "dom",
-      "dom.iterable",
-      "esnext"
-    ],
+    "lib": ["dom", "dom.iterable", "esnext"],
     "module": "esnext",
     "moduleResolution": "node",
     "baseUrl": "src",
     "paths": {
-      "@/*": [
-        "*"
-      ],
-      "@/lib/*": [
-        "lib/*"
-      ],
-      "@/sanity/*": [
-        "sanity/*"
-      ]
+      "@/*": ["*"],
+      "@/lib/*": ["lib/*"],
+      "@/sanity/*": ["sanity/*"]
     },
-    "allowJs": true,
+    "allowJs": false, // Changed to false since application.js is now application.ts
     "skipLibCheck": true,
     "strict": true,
     "forceConsistentCasingInFileNames": true,
@@ -39,11 +29,11 @@
   },
   "include": [
     "next-env.d.ts",
-    "src",
-    ".next/types/**/*.ts",
-    "out/types/**/*.ts"
+    "src/**/*",
+    ".next/types/**/*.ts"
   ],
   "exclude": [
-    "node_modules"
+    "node_modules",
+    "out"
   ]
 }
