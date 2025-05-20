@@ -1,13 +1,13 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Music, HeartHandshake, CalendarDays, Trophy, Users, PlayCircle, Palette } from "lucide-react";
+import { Music, HeartHandshake, CalendarDays, Trophy, Users, PlayCircle, Palette, ExternalLink } from "lucide-react";
 
 // Define MDD activity types
 const mddTypes = [
@@ -37,7 +37,36 @@ const mddTypes = [
   }
 ];
 
-// Sample MDD activities
+// YouTube video links and thumbnail URLs
+const youtubeVideos = [
+  {
+    id: "_Sza63XNOa4",
+    url: "https://youtu.be/_Sza63XNOa4?si=ZeIz1O1j2yjZSlFF",
+    thumbnail: "https://img.youtube.com/vi/_Sza63XNOa4/maxresdefault.jpg"
+  },
+  {
+    id: "7QF3EWq06pQ",
+    url: "https://youtu.be/7QF3EWq06pQ?si=IXbUC4ddVjxd1b60",
+    thumbnail: "https://img.youtube.com/vi/7QF3EWq06pQ/maxresdefault.jpg"
+  },
+  {
+    id: "-ZXVbT3oD6k",
+    url: "https://youtu.be/-ZXVbT3oD6k?si=-jvwPIe6Y3vm29Vr",
+    thumbnail: "https://img.youtube.com/vi/-ZXVbT3oD6k/maxresdefault.jpg"
+  },
+  {
+    id: "aqJoXbW1oVw",
+    url: "https://youtu.be/aqJoXbW1oVw?si=buIRqtP-K4hBRey6",
+    thumbnail: "https://img.youtube.com/vi/aqJoXbW1oVw/maxresdefault.jpg"
+  },
+  {
+    id: "78fqO_zwuMA",
+    url: "https://youtu.be/78fqO_zwuMA?si=SeJXbmP1zYrVFT7p",
+    thumbnail: "https://img.youtube.com/vi/78fqO_zwuMA/maxresdefault.jpg"
+  }
+];
+
+// Sample MDD activities with YouTube videos
 const mddActivities = {
   music: [
     {
@@ -47,7 +76,7 @@ const mddActivities = {
       achievements: ["National Choir Competition 2024 - 2nd Place", "East African Schools Choir Festival - Silver Medal"],
       schedule: "Monday & Wednesday, 3:30 PM - 5:00 PM",
       leadTeacher: "Ms. Nakabuye Maria",
-      image: "/placeholder-choir.jpg" // This will be replaced with an actual image
+      video: youtubeVideos[0]
     },
     {
       id: 2,
@@ -56,7 +85,7 @@ const mddActivities = {
       achievements: ["Regional Music Festival - Gold Award", "National Schools Orchestra Competition - Finalists"],
       schedule: "Tuesday & Thursday, 3:30 PM - 5:00 PM",
       leadTeacher: "Mr. Kato Benjamin",
-      image: "/placeholder-orchestra.jpg" // This will be replaced with an actual image
+      video: youtubeVideos[1]
     },
     {
       id: 3,
@@ -65,7 +94,7 @@ const mddActivities = {
       achievements: ["Cultural Heritage Festival - Best Traditional Performance", "National Cultural Competition - 1st Place"],
       schedule: "Friday, 2:00 PM - 4:00 PM",
       leadTeacher: "Mr. Ssematimba John",
-      image: "/placeholder-traditional.jpg" // This will be replaced with an actual image
+      video: youtubeVideos[2]
     }
   ],
   dance: [
@@ -76,7 +105,7 @@ const mddActivities = {
       achievements: ["East African Schools Cultural Showcase - Best Dance Performance", "National Traditional Dance Competition - Gold Medal"],
       schedule: "Tuesday & Thursday, 4:00 PM - 5:30 PM",
       leadTeacher: "Ms. Namakula Sarah",
-      image: "/placeholder-traditional-dance.jpg" // This will be replaced with an actual image
+      video: youtubeVideos[3]
     },
     {
       id: 2,
@@ -85,7 +114,7 @@ const mddActivities = {
       achievements: ["Urban Dance Challenge - First Runner Up", "School Arts Festival - Best Choreography"],
       schedule: "Monday & Wednesday, 4:00 PM - 5:30 PM",
       leadTeacher: "Mr. Mutumba Daniel",
-      image: "/placeholder-contemporary.jpg" // This will be replaced with an actual image
+      video: youtubeVideos[4]
     }
   ],
   drama: [
@@ -96,7 +125,7 @@ const mddActivities = {
       achievements: ["National Schools Drama Festival - Best Production", "Regional Theater Competition - Best Ensemble Cast"],
       schedule: "Monday & Friday, 3:30 PM - 5:30 PM",
       leadTeacher: "Ms. Nabatanzi Joyce",
-      image: "/placeholder-drama.jpg" // This will be replaced with an actual image
+      video: youtubeVideos[0]
     },
     {
       id: 2,
@@ -105,7 +134,7 @@ const mddActivities = {
       achievements: ["Young Writers Competition - Best Drama Script", "National Youth Playwrights Award - Finalist"],
       schedule: "Wednesday, 3:30 PM - 5:00 PM",
       leadTeacher: "Mr. Wasswa Timothy",
-      image: "/placeholder-scriptwriting.jpg" // This will be replaced with an actual image
+      video: youtubeVideos[1]
     },
     {
       id: 3,
@@ -114,12 +143,54 @@ const mddActivities = {
       achievements: ["School Arts Fest - Best Technical Production", "National Drama Competition - Technical Excellence Award"],
       schedule: "Thursday, 3:30 PM - 5:30 PM",
       leadTeacher: "Mr. Lubega Patrick",
-      image: "/placeholder-technical.jpg" // This will be replaced with an actual image
+      video: youtubeVideos[2]
     }
   ]
 };
 
+// Video Modal Component
+const VideoModal = ({ isOpen, onClose, videoId }) => {
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-75 z-50 flex items-center justify-center p-4">
+      <div className="relative bg-white rounded-lg w-full max-w-4xl">
+        <button 
+          onClick={onClose}
+          className="absolute top-4 right-4 text-gray-400 hover:text-gray-700 focus:outline-none z-10"
+        >
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
+        <div className="aspect-w-16 aspect-h-9">
+          <iframe 
+            className="w-full h-[500px]"
+            src={`https://www.youtube.com/embed/${videoId}`}
+            title="YouTube video player"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+          ></iframe>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 export default function ArtsPage() {
+  const [modalOpen, setModalOpen] = useState(false);
+  const [currentVideo, setCurrentVideo] = useState("");
+
+  const openVideoModal = (videoId) => {
+    setCurrentVideo(videoId);
+    setModalOpen(true);
+  };
+
+  const closeVideoModal = () => {
+    setModalOpen(false);
+    setCurrentVideo("");
+  };
+
   return (
     <div className="container mx-auto px-4 py-12">
       <div className="max-w-5xl mx-auto">
@@ -167,13 +238,21 @@ export default function ArtsPage() {
 
             {mddTypes.map((type) => (
               <TabsContent key={type.id} value={type.id} className="space-y-8">
-                {mddActivities[type.id as keyof typeof mddActivities].map((activity) => (
+                {mddActivities[type.id].map((activity) => (
                   <Card key={activity.id} className="overflow-hidden school-card">
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <div className="relative h-[200px] md:h-auto">
-                        {/* Placeholder div for image */}
-                        <div className={`absolute inset-0 flex items-center justify-center bg-${type.bgColor} text-${type.color}`}>
-                          <PlayCircle className="h-12 w-12 opacity-50" />
+                      <div className="relative h-[200px] md:h-auto cursor-pointer" onClick={() => openVideoModal(activity.video.id)}>
+                        {/* YouTube thumbnail */}
+                        <div className="relative w-full h-full">
+                          <Image 
+                            src={activity.video.thumbnail} 
+                            alt={activity.title}
+                            fill
+                            className="object-cover absolute inset-0"
+                          />
+                          <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30 transition-opacity hover:bg-opacity-10">
+                            <PlayCircle className="h-16 w-16 text-white" />
+                          </div>
                         </div>
                       </div>
                       <div className="md:col-span-2 p-6">
@@ -209,6 +288,14 @@ export default function ArtsPage() {
                             </div>
                           </div>
                         </div>
+                        
+                        <Button 
+                          variant="outline" 
+                          className="flex items-center gap-2 mt-4"
+                          onClick={() => openVideoModal(activity.video.id)}
+                        >
+                          <PlayCircle className="h-4 w-4" /> Watch Video
+                        </Button>
                       </div>
                     </div>
                   </Card>
@@ -237,6 +324,13 @@ export default function ArtsPage() {
           </div>
         </div>
       </div>
+
+      {/* Video Modal */}
+      <VideoModal 
+        isOpen={modalOpen}
+        onClose={closeVideoModal}
+        videoId={currentVideo}
+      />
     </div>
   );
 }

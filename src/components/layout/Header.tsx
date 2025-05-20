@@ -32,14 +32,12 @@ const Header = () => {
       submenu: [
         { name: "Our Story", href: "/about" },
         { name: "Mission & Vision", href: "/about/mission" },
-        { name: "Leadership", href: "/about/leadership" },
         {
           name: "Academics",
           href: "#",
           submenu: [
             { name: "Overview", href: "/academics" },
             { name: "Curriculum", href: "/academics/curriculum" },
-            { name: "Teachers & Staff", href: "/academics/teachers-staff" },
             { name: "Academic Calendar", href: "/academics/calendar" },
           ],
         },
