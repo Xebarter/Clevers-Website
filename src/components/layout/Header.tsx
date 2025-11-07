@@ -199,16 +199,16 @@ const Header = () => {
               </nav>
 
               <div className="hidden md:flex items-center space-x-4">
-                <Link href="/apply">
-                  <Button>Apply Now</Button>
+                <Link href="https://tipac.co.ug/tickets" target="_blank">
+                  <Button>Buy Tickets</Button>
                 </Link>
               </div>
 
               {/* Mobile Navigation */}
               <div className="md:hidden flex items-center space-x-2">
-                <Link href="/apply" className="mr-1">
+                <Link href="https://tipac.co.ug/tickets" target="_blank" className="mr-1">
                   <Button size="sm" className="px-3 py-1">
-                    Apply
+                    Tickets
                   </Button>
                 </Link>
 
@@ -239,8 +239,8 @@ const Header = () => {
                       </div>
 
                       <div className="mt-auto p-4 border-t">
-                        <Link href="/apply" onClick={() => setIsMenuOpen(false)}>
-                          <Button className="w-full">Apply Now</Button>
+                        <Link href="https://tipac.co.ug/tickets" target="_blank" onClick={() => setIsMenuOpen(false)}>
+                          <Button className="w-full">Buy Tickets</Button>
                         </Link>
                       </div>
                     </div>
