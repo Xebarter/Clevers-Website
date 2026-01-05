@@ -11,9 +11,10 @@ import {
 } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { CalendarClock, Users, Megaphone, BookOpen, Award } from "lucide-react";
-import { client } from "@/sanity/lib/client";
 import { motion, AnimatePresence } from "framer-motion";
+import { announcementsService, type Announcement } from "../../../lib/supabase/services";
 
 const categories = {
   general: {
@@ -43,217 +44,291 @@ const categories = {
   },
 };
 
-interface Announcement {
-  _id: string;
+interface AnnouncementItem {
+  id: string;
   title: string;
   content: string;
-  date: string;
-  category: keyof typeof categories;
-  pinned?: boolean;
+  created_at: string;
+  category?: keyof typeof categories;
+  author?: string;
+  image_url?: string;
+  cta_text?: string;
+  cta_link?: string;
 }
 
-const renderContentWithLinks = (content: string) => {
-  // Regex to detect URLs (http(s):// or www.)
-  const urlRegex = /(https?:\/\/[^\s]+|www\.[^\s]+)/g;
-  // Split content by URLs and wrap URLs in <a> tags
-  const parts = content.split(urlRegex).map((part, index) => {
-    if (part.match(urlRegex)) {
-      // Ensure URL has protocol for href (add https:// to www. links)
-      const href = part.startsWith("www.") ? `https://${part}` : part;
-      return (
-        <a
-          key={index}
-          href={href}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-blue-600 underline hover:text-blue-800 transition-colors"
-        >
-          {part}
-        </a>
-      );
-    }
-    return part;
-  });
-  return <p className="text-gray-700 leading-relaxed text-sm sm:text-base">{parts}</p>;
-};
-
 const AnnouncementBoard = () => {
-  const [activeTab, setActiveTab] = useState<string>("all");
-  const [announcements, setAnnouncements] = useState<Announcement[]>([]);
+  const [announcements, setAnnouncements] = useState<AnnouncementItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchAnnouncements = async () => {
       try {
-        const query = `*[_type == "announcement"] | order(date desc) {
-          _id,
-          title,
-          content,
-          date,
-          category,
-          pinned
-        }`;
-        const data = await client.fetch(query);
-        setAnnouncements(data);
-      } catch (error) {
-        console.error("Error fetching announcements:", error);
+        setLoading(true);
+        const data = await announcementsService.getAll();
+        // Convert Supabase data to match component expectations
+        const convertedData = data.map((item: Announcement) => ({
+          id: item.id,
+          title: item.title,
+          content: item.content,
+          created_at: item.created_at || new Date().toISOString(),
+          category: item.category as keyof typeof categories || 'general',
+          author: item.author,
+          image_url: item.image_url,
+          cta_text: item.cta_text,
+          cta_link: item.cta_link
+        }));
+        setAnnouncements(convertedData);
+        setError(null);
+      } catch (err) {
+        console.error("Error fetching announcements:", err);
+        setError("Failed to load announcements");
       } finally {
         setLoading(false);
       }
     };
+
     fetchAnnouncements();
   }, []);
 
-  const filteredAnnouncements =
-    activeTab === "all"
-      ? announcements
-      : announcements.filter((announcement) => announcement.category === activeTab);
+  // Group announcements by category
+  const groupedAnnouncements = announcements.reduce((acc, announcement) => {
+    const category = announcement.category || 'general';
+    if (!acc[category]) {
+      acc[category] = [];
+    }
+    acc[category].push(announcement);
+    return acc;
+  }, {} as Record<string, AnnouncementItem[]>);
 
-  const sortedAnnouncements = [...filteredAnnouncements].sort((a, b) => {
-    if (a.pinned && !b.pinned) return -1;
-    if (!a.pinned && b.pinned) return 1;
-    return new Date(b.date).getTime() - new Date(a.date).getTime();
-  });
-
-  const formatDate = (dateStr: string) => {
-    const date = new Date(dateStr);
-    return date.toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    });
-  };
+  // Get the latest 3 announcements for the "All" tab
+  const latestAnnouncements = [...announcements]
+    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+    .slice(0, 3);
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center min-h-[300px] py-8">
-        <motion.div
-          animate={{ rotate: 360 }}
-          transition={{ repeat: Infinity, duration: 1.2, ease: "linear" }}
-          className="h-8 w-8 border-3 border-blue-600 border-t-transparent rounded-full"
-        />
-      </div>
+      <Card className="w-full max-w-4xl mx-auto">
+        <CardHeader>
+          <CardTitle className="text-2xl font-bold text-center">Latest Announcements</CardTitle>
+          <CardDescription className="text-center">Loading announcements...</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {[...Array(3)].map((_, i) => (
+              <div key={i} className="animate-pulse flex space-x-4">
+                <div className="flex-1 space-y-2">
+                  <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                  <div className="h-4 bg-gray-200 rounded"></div>
+                  <div className="h-4 bg-gray-200 rounded w-5/6"></div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
     );
   }
 
-  return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 pt-6 sm:pt-10 pb-10 px-3 sm:px-6 lg:px-8">
-      <div className="max-w-7xl mx-auto">
-        {/* Header Section */}
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="text-center mb-6 sm:mb-10"
-        >
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-gray-900 tracking-tight">
-            Clevers' Origin Announcements
-          </h1>
-          <p className="mt-2 text-base sm:text-lg md:text-xl text-gray-600 max-w-2xl mx-auto">
-            Stay updated with events, achievements, and news at Clevers' Origin Schools.
-          </p>
-        </motion.div>
+  if (error) {
+    return (
+      <Card className="w-full max-w-4xl mx-auto">
+        <CardHeader>
+          <CardTitle className="text-2xl font-bold text-center">Latest Announcements</CardTitle>
+          <CardDescription className="text-center text-red-500">{error}</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <p className="text-center py-4">Unable to load announcements at this time.</p>
+        </CardContent>
+      </Card>
+    );
+  }
 
-        {/* Tabs Section */}
-        <Tabs defaultValue="all" onValueChange={setActiveTab}>
-          <TabsList className="mb-4 sm:mb-6 flex flex-wrap justify-center gap-1 sm:gap-2 bg-transparent py-2 sm:sticky sm:top-0 sm:z-10 sm:backdrop-blur-sm">
-            <TabsTrigger
-              value="all"
-              className="px-3 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm font-medium rounded-full transition-all bg-gray-200 text-gray-800 hover:bg-gray-300 data-[state=active]:bg-blue-600 data-[state=active]:text-white shadow-sm min-w-[80px] sm:min-w-[100px] text-center"
-            >
-              All
-            </TabsTrigger>
-            {Object.entries(categories).map(([key, { label, color }]) => (
-              <TabsTrigger
-                key={key}
-                value={key}
-                className={`px-3 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm font-medium rounded-full transition-all ${color} shadow-sm min-w-[80px] sm:min-w-[100px] text-center`}
+  // Function to render announcement content with optional image and CTA
+  const renderAnnouncementContent = (announcement: AnnouncementItem) => {
+    return (
+      <>
+        {announcement.image_url && (
+          <div className="mb-4">
+            <img
+              src={announcement.image_url}
+              alt={announcement.title}
+              className="w-full h-48 object-cover rounded-lg"
+            />
+          </div>
+        )}
+        <p className="text-gray-700 dark:text-gray-300">{announcement.content}</p>
+        {announcement.cta_text && announcement.cta_link && (
+          <div className="mt-4">
+            <Button asChild>
+              <a
+                href={announcement.cta_link}
+                target="_blank"
+                rel="noopener noreferrer"
               >
-                {label}
-              </TabsTrigger>
-            ))}
+                {announcement.cta_text}
+              </a>
+            </Button>
+          </div>
+        )}
+      </>
+    );
+  };
+
+  // Reusable announcement card for consistent, modern styling
+  const AnnouncementCard = ({
+    announcement,
+    categoryKey,
+    categoryData,
+  }: {
+    announcement: AnnouncementItem;
+    categoryKey?: string;
+    categoryData?: { label: string; color: string; icon: any };
+  }) => {
+    const CategoryIcon = categoryData?.icon || Megaphone;
+
+    return (
+      <Card className="w-full hover:shadow-xl transition-shadow duration-300 border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-950 rounded-xl overflow-hidden">
+        <div className="flex flex-col md:flex-row items-start gap-4">
+          {announcement.image_url && (
+            <div className="w-full md:w-44 h-36 flex-shrink-0">
+              <img
+                src={announcement.image_url}
+                alt={announcement.title}
+                className="w-full h-full object-cover"
+              />
+            </div>
+          )}
+
+          <div className="flex-1 p-4 md:p-6">
+            <div className="flex items-start justify-between gap-4">
+              <div className="min-w-0">
+                <CardTitle className="text-lg md:text-xl font-semibold truncate">
+                  {announcement.title}
+                </CardTitle>
+                <CardDescription className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                  {new Date(announcement.created_at).toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric',
+                  })}
+                </CardDescription>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <Badge className={`${categoryData?.color} text-xs font-medium px-2 py-1 rounded-full flex items-center gap-1`}>
+                  <CategoryIcon className="w-3 h-3" />
+                  <span className="hidden sm:inline-block">{categoryData?.label}</span>
+                </Badge>
+              </div>
+            </div>
+
+            <div className="mt-3 text-gray-700 dark:text-gray-300">
+              {renderAnnouncementContent(announcement)}
+            </div>
+
+            <div className="mt-4 flex items-center justify-between gap-4">
+              {announcement.author ? (
+                <div className="text-sm text-gray-500 dark:text-gray-400">By {announcement.author}</div>
+              ) : (
+                <div />
+              )}
+
+              {announcement.cta_text && announcement.cta_link && (
+                <div>
+                  <Button asChild size={"sm"}>
+                    <a href={announcement.cta_link} target="_blank" rel="noopener noreferrer">
+                      {announcement.cta_text}
+                    </a>
+                  </Button>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </Card>
+    );
+  };
+
+  return (
+    <Card className="w-full max-w-4xl mx-auto">
+      <CardHeader>
+        <CardTitle className="text-2xl font-bold text-center">Latest Announcements</CardTitle>
+        <CardDescription className="text-center">Stay updated with the latest school news</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <Tabs defaultValue="all" className="w-full">
+          <TabsList className="grid w-full grid-cols-4 md:grid-cols-6">
+            <TabsTrigger value="all">All</TabsTrigger>
+            <TabsTrigger value="general">General</TabsTrigger>
+            <TabsTrigger value="academic">Academic</TabsTrigger>
+            <TabsTrigger value="event">Events</TabsTrigger>
+            <TabsTrigger value="achievement">Achievements</TabsTrigger>
+            <TabsTrigger value="community">Community</TabsTrigger>
           </TabsList>
 
-          <TabsContent value={activeTab} className="mt-0 pt-4 sm:pt-0">
-            {sortedAnnouncements.length === 0 ? (
-              <Card className="p-6 sm:p-8 text-center shadow-lg bg-white rounded-xl border border-gray-200">
-                <CardContent className="p-0">
-                  <p className="text-gray-500 text-base sm:text-lg font-medium">
-                    No announcements in this category.
-                  </p>
-                </CardContent>
-              </Card>
-            ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-5">
+          <TabsContent value="all" className="mt-4">
+            <div className="space-y-6">
+              <AnimatePresence>
+                {latestAnnouncements.map((announcement) => {
+                  const category = announcement.category || 'general';
+
+                  return (
+                    <motion.div
+                      key={announcement.id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -20 }}
+                      transition={{ duration: 0.3 }}
+                    >
+                      <AnnouncementCard
+                        announcement={announcement}
+                        categoryKey={category}
+                        categoryData={categories[category]}
+                      />
+                    </motion.div>
+                  );
+                })}
+              </AnimatePresence>
+            </div>
+          </TabsContent>
+
+          {Object.entries(categories).map(([categoryKey, categoryData]) => (
+            <TabsContent key={categoryKey} value={categoryKey} className="mt-4">
+              <div className="space-y-6">
                 <AnimatePresence>
-                  {sortedAnnouncements.map((announcement, index) => {
-                    const CategoryIcon = categories[announcement.category].icon;
+                  {(groupedAnnouncements[categoryKey] || []).map((announcement) => {
                     return (
                       <motion.div
-                        key={announcement._id}
+                        key={announcement.id}
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -20 }}
-                        transition={{ duration: 0.2, delay: index * 0.05 }}
-                        className="relative"
+                        transition={{ duration: 0.3 }}
                       >
-                        <Card
-                          className={`bg-white shadow-md rounded-xl overflow-hidden border-l-6 ${
-                            announcement.pinned
-                              ? "border-blue-600 shadow-lg"
-                              : "border-gray-200"
-                          } transition-transform hover:scale-[1.02] hover:shadow-lg`}
-                        >
-                          {announcement.pinned && (
-                            <div className="absolute top-0 right-2 w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center shadow-sm translate-y-[-50%]">
-                              <svg
-                                className="w-4 h-4 text-white"
-                                fill="currentColor"
-                                viewBox="0 0 20 20"
-                              >
-                                <path d="M13.586 2.586A2 2 0 0115 2h2a2 2 0 012 2v12a2 2 0 01-2 2H3a2 2 0 01-2-2V4a2 2 0 012-2h2a2 2 0 011.414.586L10 6.172l3.586-3.586z" />
-                              </svg>
-                            </div>
-                          )}
-                          <CardHeader className="pb-2 px-4 sm:px-5 bg-gradient-to-r from-gray-50 to-gray-100">
-                            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
-                              <div className="flex items-center gap-2">
-                                <CategoryIcon className="h-5 w-5 sm:h-6 sm:w-6 text-gray-700 flex-shrink-0" />
-                                <CardTitle className="text-base sm:text-lg font-bold text-gray-900">
-                                  {announcement.title}
-                                </CardTitle>
-                              </div>
-                              {announcement.pinned && (
-                                <Badge className="bg-blue-600 text-white hover:bg-blue-700 font-semibold text-xs sm:text-sm">
-                                  Pinned
-                                </Badge>
-                              )}
-                            </div>
-                            <CardDescription className="text-xs sm:text-sm text-gray-500 mt-1">
-                              {formatDate(announcement.date)}
-                            </CardDescription>
-                          </CardHeader>
-                          <CardContent className="pt-3 px-4 sm:px-5">
-                            {renderContentWithLinks(announcement.content)}
-                          </CardContent>
-                          <CardFooter className="pt-0 pb-3 px-4 sm:px-5">
-                            <Badge
-                              className={`${categories[announcement.category].color} px-2 sm:px-3 py-1 text-xs sm:text-sm font-semibold`}
-                            >
-                              {categories[announcement.category].label}
-                            </Badge>
-                          </CardFooter>
-                        </Card>
+                        <AnnouncementCard
+                          announcement={announcement}
+                          categoryKey={categoryKey}
+                          categoryData={categoryData as any}
+                        />
                       </motion.div>
                     );
                   })}
                 </AnimatePresence>
+
+                {(!groupedAnnouncements[categoryKey] || groupedAnnouncements[categoryKey].length === 0) && (
+                  <div className="text-center py-8">
+                    <p className="text-gray-500 dark:text-gray-400">
+                      No {categoryData.label.toLowerCase()} announcements at this time.
+                    </p>
+                  </div>
+                )}
               </div>
-            )}
-          </TabsContent>
+            </TabsContent>
+          ))}
         </Tabs>
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 };
 

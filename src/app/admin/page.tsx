@@ -27,17 +27,28 @@ import {
   getEvents,
   getGalleryImages,
   getResources,
+  getMessages,
   deleteApplication,
   deleteAnnouncement,
   deleteEvent,
   deleteGalleryImage,
   deleteResource,
-  createAnnouncement
+  createAnnouncement,
+  createGalleryImage,
+  updateGalleryImage,
+  updateAnnouncement,
+  createEvent,
+  updateEvent
 } from "@/lib/admin/services";
 import ApplicationDetailModal from "@/components/admin/ApplicationDetailModal";
 import AnnouncementForm from "@/components/admin/AnnouncementForm";
+import EventForm from "@/components/admin/EventForm";
+import Messages from "@/components/admin/Messages";
 import JotformMessages from "@/components/admin/JotformMessages";
 import ApplicationFormModal from "@/components/admin/ApplicationFormModal";
+import ResourceForm from "@/components/admin/ResourceForm";
+import GalleryForm from "@/components/admin/GalleryForm";
+import MultiImageGalleryForm from "@/components/admin/MultiImageGalleryForm";
 
 // Types
 interface Application {
@@ -66,6 +77,9 @@ interface Announcement {
   category: string;
   pinned: boolean;
   _createdAt: string;
+  imageUrl?: string;
+  ctaText?: string;
+  ctaLink?: string;
 }
 
 interface EventItem {
@@ -77,14 +91,19 @@ interface EventItem {
   location: string;
   type: string;
   _createdAt: string;
+  start_date: string;
+  end_date?: string;
+  is_all_day?: boolean;
 }
 
 interface GalleryImage {
   _id: string;
   title: string;
-  images: any[];
-  category: string;
-  location: string;
+  file_url: string;
+  file_name: string;
+  alt_text?: string;
+  caption?: string;
+  category?: string;
   _createdAt: string;
 }
 
@@ -109,6 +128,7 @@ export default function AdminDashboard() {
   const [events, setEvents] = useState<EventItem[]>([]);
   const [galleryImages, setGalleryImages] = useState<GalleryImage[]>([]);
   const [resources, setResources] = useState<Resource[]>([]);
+  const [messages, setMessages] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [selectedApplication, setSelectedApplication] = useState<Application | null>(null);
@@ -117,7 +137,15 @@ export default function AdminDashboard() {
   const [creatingAnnouncement, setCreatingAnnouncement] = useState(false);
   const [showApplicationFormModal, setShowApplicationFormModal] = useState(false);
   const [editingApplication, setEditingApplication] = useState<Application | null>(null);
-
+  const [showResourceForm, setShowResourceForm] = useState(false);
+  const [editingResource, setEditingResource] = useState<Resource | null>(null);
+  const [showGalleryForm, setShowGalleryForm] = useState(false);
+  const [useMultiImageForm, setUseMultiImageForm] = useState(false);
+  const [editingGalleryImage, setEditingGalleryImage] = useState<GalleryImage | null>(null);
+  const [editingEvent, setEditingEvent] = useState<EventItem | null>(null);
+  const [showEventForm, setShowEventForm] = useState(false);
+  const [editingAnnouncement, setEditingAnnouncement] = useState<Announcement | null>(null);
+  
   // Redirect to login if not authenticated
   useEffect(() => {
     if (!isAuthenticated) {
@@ -152,18 +180,20 @@ export default function AdminDashboard() {
       switch (activeTab) {
         case "overview":
           // Load all data for overview
-          const [apps, anns, evts, imgs, res] = await Promise.all([
+          const [apps, anns, evts, imgs, res, msgs] = await Promise.all([
             getApplications(),
             getAnnouncements(),
             getEvents(),
             getGalleryImages(),
-            getResources()
+            getResources(),
+            getMessages()
           ]);
           setApplications(apps);
           setAnnouncements(anns);
           setEvents(evts);
           setGalleryImages(imgs);
           setResources(res);
+          setMessages(msgs);
           break;
         case "applications":
           const appsData = await getApplications();
@@ -184,6 +214,10 @@ export default function AdminDashboard() {
         case "resources":
           const resourcesData = await getResources();
           setResources(resourcesData);
+          break;
+        case "messages":
+          const messagesData = await getMessages();
+          setMessages(messagesData);
           break;
       }
     } catch (error) {
@@ -288,7 +322,14 @@ export default function AdminDashboard() {
   const handleCreateAnnouncement = async (data: any) => {
     try {
       setCreatingAnnouncement(true);
-      await createAnnouncement(data);
+      await createAnnouncement({
+        title: data.title,
+        content: data.content,
+        published_at: data.date,
+        image_url: data.imageUrl,
+        cta_text: data.ctaText,
+        cta_link: data.ctaLink
+      });
       const annData = await getAnnouncements();
       setAnnouncements(annData);
       setShowAnnouncementForm(false);
@@ -298,6 +339,174 @@ export default function AdminDashboard() {
       alert("Failed to create announcement");
     } finally {
       setCreatingAnnouncement(false);
+    }
+  };
+
+  // Handle edit announcement
+  const handleEditAnnouncement = (announcement: Announcement) => {
+    setEditingAnnouncement(announcement);
+    setShowAnnouncementForm(true);
+  };
+
+  // Handle announcement save (create or update)
+  const handleAnnouncementSave = async (data: any) => {
+    try {
+      if (editingAnnouncement) {
+        // Update existing announcement
+        await updateAnnouncement(editingAnnouncement._id, {
+          title: data.title,
+          content: data.content,
+          published_at: data.date,
+          image_url: data.imageUrl,
+          cta_text: data.ctaText,
+          cta_link: data.ctaLink
+        });
+        alert("Announcement updated successfully!");
+      } else {
+        // Create new announcement
+        await createAnnouncement({
+          title: data.title,
+          content: data.content,
+          published_at: data.date,
+          image_url: data.imageUrl,
+          cta_text: data.ctaText,
+          cta_link: data.ctaLink
+        });
+        alert("Announcement created successfully!");
+      }
+      
+      // Close the form and refresh data
+      setShowAnnouncementForm(false);
+      setEditingAnnouncement(null);
+      loadData();
+    } catch (error) {
+      console.error("Error saving announcement:", error);
+      alert("Failed to save announcement");
+    }
+  };
+
+  // Handle edit resource
+  const handleEditResource = (resource: Resource) => {
+    setEditingResource(resource);
+    setShowResourceForm(true);
+  };
+
+  // Handle create new resource
+  const handleCreateResource = () => {
+    setEditingResource(null);
+    setShowResourceForm(true);
+  };
+
+  // Handle resource save (create or update)
+  const handleResourceSave = () => {
+    // Refresh the resources list
+    loadData();
+  };
+
+  const handleViewResource = (resource: Resource) => {
+    window.open(resource.fileUrl, '_blank');
+  };
+
+  // Handle edit gallery image
+  const handleEditGalleryImage = (image: GalleryImage) => {
+    setEditingGalleryImage(image);
+    setUseMultiImageForm(false);
+    setShowGalleryForm(true);
+  };
+
+  // Handle create new gallery image
+  const handleCreateGalleryImage = () => {
+    setEditingGalleryImage(null);
+    setShowGalleryForm(true);
+  };
+
+  // Handle gallery image save (create or update)
+  const handleGalleryImageSave = async (data: Omit<GalleryImage, '_id'> | Omit<GalleryImage, '_id'>[]) => {
+    try {
+      const dataArray = Array.isArray(data) ? data : [data];
+      
+      for (const item of dataArray) {
+        if (editingGalleryImage) {
+          // Update existing gallery image
+          await updateGalleryImage(editingGalleryImage._id, {
+            title: item.title,
+            file_url: item.file_url,
+            file_name: item.file_name,
+            alt_text: item.alt_text,
+            caption: item.caption,
+            category: item.category
+          });
+        } else {
+          // Create new gallery image
+          await createGalleryImage({
+            title: item.title,
+            file_url: item.file_url,
+            file_name: item.file_name,
+            alt_text: item.alt_text,
+            caption: item.caption,
+            category: item.category
+          });
+        }
+      }
+      
+      alert(`Gallery ${dataArray.length > 1 ? 'images' : 'image'} ${editingGalleryImage ? 'updated' : 'created'} successfully!`);
+      
+      // Close the form and refresh data
+      setShowGalleryForm(false);
+      setEditingGalleryImage(null);
+      loadData();
+    } catch (error) {
+      console.error("Error saving gallery image:", error);
+      alert("Failed to save gallery image");
+    }
+  };
+
+  // Handle edit event
+  const handleEditEvent = (event: EventItem) => {
+    setEditingEvent(event);
+    setShowEventForm(true);
+  };
+
+  // Handle create new event
+  const handleCreateEvent = () => {
+    setEditingEvent(null);
+    setShowEventForm(true);
+  };
+
+  // Handle event save (create or update)
+  const handleEventSave = async (data: any) => {
+    try {
+      if (editingEvent) {
+        // Update existing event
+        await updateEvent(editingEvent._id, {
+          title: data.title,
+          description: data.description,
+          start_date: data.start_date,
+          end_date: data.end_date,
+          location: data.location,
+          is_all_day: data.is_all_day
+        });
+        alert("Event updated successfully!");
+      } else {
+        // Create new event
+        await createEvent({
+          title: data.title,
+          description: data.description,
+          start_date: data.start_date,
+          end_date: data.end_date,
+          location: data.location,
+          is_all_day: data.is_all_day
+        });
+        alert("Event created successfully!");
+      }
+      
+      // Close the form and refresh data
+      setShowEventForm(false);
+      setEditingEvent(null);
+      loadData();
+    } catch (error) {
+      console.error("Error saving event:", error);
+      alert("Failed to save event");
     }
   };
 
@@ -374,7 +583,7 @@ export default function AdminDashboard() {
                   <MessageSquare className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">0</div>
+                  <div className="text-2xl font-bold">{messages.length}</div>
                   <p className="text-xs text-muted-foreground">Messages received</p>
                 </CardContent>
               </Card>
@@ -427,9 +636,30 @@ export default function AdminDashboard() {
                   <CardTitle>Recent Messages</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-center py-8 text-muted-foreground">
-                    No messages received yet
-                  </div>
+                  {loading ? (
+                    <div className="text-center py-4">Loading...</div>
+                  ) : messages.length > 0 ? (
+                    <div className="space-y-4">
+                      {messages.slice(0, 5).map((msg) => (
+                        <div key={msg.id} className="flex items-start justify-between border-b pb-3 last:border-0 last:pb-0">
+                          <div>
+                            <p className="font-medium">{msg.name}</p>
+                            <p className="text-sm text-muted-foreground truncate max-w-xs">{msg.subject}</p>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-sm">{formatDate(msg.created_at)}</p>
+                            <p className="text-xs text-muted-foreground">
+                              {msg.read ? "Read" : "Unread"}
+                            </p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-8 text-muted-foreground">
+                      No recent messages
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </div>
@@ -533,7 +763,7 @@ export default function AdminDashboard() {
           <TabsContent value="resources" className="space-y-4">
             <div className="flex justify-between items-center">
               <h2 className="text-2xl font-bold">Resources</h2>
-              <Button>
+              <Button onClick={handleCreateResource}>
                 <Plus className="mr-2 h-4 w-4" /> Add Resource
               </Button>
             </div>
@@ -572,13 +802,18 @@ export default function AdminDashboard() {
                             <td className="py-3 px-2">{formatDate(resource.uploadDate)}</td>
                             <td className="py-3 px-2">
                               <div className="flex space-x-2">
-                                <Button variant="outline" size="sm">
+                                <Button 
+                                  variant="outline" 
+                                  size="sm" 
+                                  onClick={() => handleViewResource(resource)}
+                                >
                                   <Eye className="h-4 w-4" />
                                 </Button>
-                                <Button variant="outline" size="sm">
-                                  <ExternalLink className="h-4 w-4" />
-                                </Button>
-                                <Button variant="outline" size="sm">
+                                <Button 
+                                  variant="outline" 
+                                  size="sm"
+                                  onClick={() => handleEditResource(resource)}
+                                >
                                   <Edit className="h-4 w-4" />
                                 </Button>
                                 <Button 
@@ -610,21 +845,37 @@ export default function AdminDashboard() {
           </TabsContent>
 
           <TabsContent value="messages" className="space-y-4">
-            <JotformMessages />
+            <Messages />
           </TabsContent>
 
           <TabsContent value="announcements" className="space-y-4">
             <div className="flex justify-between items-center">
               <h2 className="text-2xl font-bold">Announcements</h2>
-              <Button onClick={() => setShowAnnouncementForm(true)}>
+              <Button onClick={() => {
+                setEditingAnnouncement(null);
+                setShowAnnouncementForm(true);
+              }}>
                 <Plus className="mr-2 h-4 w-4" /> Add Announcement
               </Button>
             </div>
             
             {showAnnouncementForm ? (
               <AnnouncementForm
-                onSubmit={handleCreateAnnouncement}
-                onCancel={() => setShowAnnouncementForm(false)}
+                initialData={editingAnnouncement ? {
+                  title: editingAnnouncement.title,
+                  content: editingAnnouncement.content,
+                  date: editingAnnouncement.date,
+                  category: editingAnnouncement.category,
+                  pinned: editingAnnouncement.pinned,
+                  imageUrl: editingAnnouncement.imageUrl,
+                  ctaText: editingAnnouncement.ctaText,
+                  ctaLink: editingAnnouncement.ctaLink
+                } : undefined}
+                onSubmit={handleAnnouncementSave}
+                onCancel={() => {
+                  setShowAnnouncementForm(false);
+                  setEditingAnnouncement(null);
+                }}
                 isLoading={creatingAnnouncement}
               />
             ) : (
@@ -669,10 +920,11 @@ export default function AdminDashboard() {
                             </td>
                             <td className="py-3 px-2">
                               <div className="flex space-x-2">
-                                <Button variant="outline" size="sm">
-                                  <Eye className="h-4 w-4" />
-                                </Button>
-                                <Button variant="outline" size="sm">
+                                <Button 
+                                  variant="outline" 
+                                  size="sm"
+                                  onClick={() => handleEditAnnouncement(announcement)}
+                                >
                                   <Edit className="h-4 w-4" />
                                 </Button>
                                 <Button 
@@ -707,131 +959,213 @@ export default function AdminDashboard() {
           <TabsContent value="events" className="space-y-4">
             <div className="flex justify-between items-center">
               <h2 className="text-2xl font-bold">Events</h2>
-              <Button>
+              <Button onClick={handleCreateEvent}>
                 <Plus className="mr-2 h-4 w-4" /> Add Event
               </Button>
             </div>
             
-            <Card>
-              <CardContent>
-                {loading ? (
-                  <div className="text-center py-8">Loading events...</div>
-                ) : events.length > 0 ? (
-                  <div className="overflow-x-auto">
-                    <table className="w-full">
-                      <thead>
-                        <tr className="border-b">
-                          <th className="text-left py-3 px-2">Title</th>
-                          <th className="text-left py-3 px-2">Description</th>
-                          <th className="text-left py-3 px-2">Date & Time</th>
-                          <th className="text-left py-3 px-2">Location</th>
-                          <th className="text-left py-3 px-2">Type</th>
-                          <th className="text-left py-3 px-2">Actions</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {events.map((event) => (
-                          <tr key={event._id} className="border-b hover:bg-gray-50">
-                            <td className="py-3 px-2 font-medium">{event.title}</td>
-                            <td className="py-3 px-2 line-clamp-2 max-w-xs">{event.description}</td>
-                            <td className="py-3 px-2">
-                              <div>{formatDate(event.date)}</div>
-                              <div className="text-sm text-muted-foreground">{event.time}</div>
-                            </td>
-                            <td className="py-3 px-2">{event.location}</td>
-                            <td className="py-3 px-2">
-                              <span className="px-2 py-1 rounded-full text-xs bg-indigo-100 text-indigo-800">
-                                {event.type}
-                              </span>
-                            </td>
-                            <td className="py-3 px-2">
-                              <div className="flex space-x-2">
-                                <Button variant="outline" size="sm">
-                                  <Eye className="h-4 w-4" />
-                                </Button>
-                                <Button variant="outline" size="sm">
-                                  <Edit className="h-4 w-4" />
-                                </Button>
-                                <Button 
-                                  variant="outline" 
-                                  size="sm"
-                                  onClick={() => handleDeleteEvent(event._id)}
-                                  disabled={deletingId === event._id}
-                                >
-                                  {deletingId === event._id ? (
-                                    <div className="h-4 w-4 animate-spin rounded-full border-b-2 border-gray-900" />
-                                  ) : (
-                                    <Trash2 className="h-4 w-4" />
-                                  )}
-                                </Button>
-                              </div>
-                            </td>
+            {showEventForm ? (
+              <EventForm
+                initialData={editingEvent ? {
+                  id: editingEvent._id,
+                  title: editingEvent.title,
+                  description: editingEvent.description,
+                  start_date: editingEvent.start_date,
+                  end_date: editingEvent.end_date,
+                  location: editingEvent.location,
+                  is_all_day: editingEvent.is_all_day
+                } : undefined}
+                onSubmit={handleEventSave}
+                onCancel={() => {
+                  setShowEventForm(false);
+                  setEditingEvent(null);
+                }}
+                isLoading={loading}
+              />
+            ) : (
+              <Card>
+                <CardContent>
+                  {loading ? (
+                    <div className="text-center py-8">Loading events...</div>
+                  ) : events.length > 0 ? (
+                    <div className="overflow-x-auto">
+                      <table className="w-full">
+                        <thead>
+                          <tr className="border-b">
+                            <th className="text-left py-3 px-2">Title</th>
+                            <th className="text-left py-3 px-2">Description</th>
+                            <th className="text-left py-3 px-2">Date & Time</th>
+                            <th className="text-left py-3 px-2">Location</th>
+                            <th className="text-left py-3 px-2">Type</th>
+                            <th className="text-left py-3 px-2">Actions</th>
                           </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                ) : (
-                  <div className="text-center py-8 text-muted-foreground">
-                    No events found
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+                        </thead>
+                        <tbody>
+                          {events.map((event) => (
+                            <tr key={event._id} className="border-b hover:bg-gray-50">
+                              <td className="py-3 px-2 font-medium">{event.title}</td>
+                              <td className="py-3 px-2 line-clamp-2 max-w-xs">{event.description}</td>
+                              <td className="py-3 px-2">
+                                <div>{formatDate(event.date)}</div>
+                                <div className="text-sm text-muted-foreground">{event.time}</div>
+                              </td>
+                              <td className="py-3 px-2">{event.location}</td>
+                              <td className="py-3 px-2">
+                                <span className="px-2 py-1 rounded-full text-xs bg-indigo-100 text-indigo-800">
+                                  {event.type}
+                                </span>
+                              </td>
+                              <td className="py-3 px-2">
+                                <div className="flex space-x-2">
+                                  <Button 
+                                    variant="outline" 
+                                    size="sm"
+                                    onClick={() => handleEditEvent(event)}
+                                  >
+                                    <Edit className="h-4 w-4" />
+                                  </Button>
+                                  <Button 
+                                    variant="outline" 
+                                    size="sm"
+                                    onClick={() => handleDeleteEvent(event._id)}
+                                    disabled={deletingId === event._id}
+                                  >
+                                    {deletingId === event._id ? (
+                                      <div className="h-4 w-4 animate-spin rounded-full border-b-2 border-gray-900" />
+                                    ) : (
+                                      <Trash2 className="h-4 w-4" />
+                                    )}
+                                  </Button>
+                                </div>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  ) : (
+                    <div className="text-center py-8 text-muted-foreground">
+                      No events found
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            )}
           </TabsContent>
 
           <TabsContent value="gallery" className="space-y-4">
             <div className="flex justify-between items-center">
               <h2 className="text-2xl font-bold">Gallery Images</h2>
-              <Button>
-                <Plus className="mr-2 h-4 w-4" /> Add Image
-              </Button>
+              <div className="flex space-x-2">
+                <Button 
+                  onClick={() => {
+                    setUseMultiImageForm(false);
+                    setEditingGalleryImage(null);
+                    setShowGalleryForm(true);
+                  }} 
+                  variant="outline"
+                >
+                  <Plus className="mr-2 h-4 w-4" /> Single Image
+                </Button>
+                <Button 
+                  onClick={() => {
+                    setUseMultiImageForm(true);
+                    setEditingGalleryImage(null);
+                    setShowGalleryForm(true);
+                  }}
+                >
+                  <Plus className="mr-2 h-4 w-4" /> Multiple Images
+                </Button>
+              </div>
             </div>
             
-            <Card>
-              <CardContent>
-                {loading ? (
-                  <div className="text-center py-8">Loading gallery images...</div>
-                ) : galleryImages.length > 0 ? (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                    {galleryImages.map((image) => (
-                      <div key={image._id} className="border rounded-lg overflow-hidden">
-                        <div className="bg-gray-200 border-2 border-dashed rounded-t-lg w-full h-48" />
-                        <div className="p-3">
-                          <h3 className="font-medium">{image.title}</h3>
-                          <div className="flex justify-between items-center mt-2">
-                            <span className="px-2 py-1 rounded-full text-xs bg-pink-100 text-pink-800">
-                              {image.category}
-                            </span>
-                            <div className="flex space-x-1">
-                              <Button variant="outline" size="sm">
-                                <Edit className="h-3 w-3" />
-                              </Button>
-                              <Button 
-                                variant="outline" 
-                                size="sm"
-                                onClick={() => handleDeleteGalleryImage(image._id)}
-                                disabled={deletingId === image._id}
-                              >
-                                {deletingId === image._id ? (
-                                  <div className="h-3 w-3 animate-spin rounded-full border-b-2 border-gray-900" />
-                                ) : (
-                                  <Trash2 className="h-3 w-3" />
-                                )}
-                              </Button>
+            {showGalleryForm ? (
+              useMultiImageForm ? (
+                <MultiImageGalleryForm
+                  onSubmit={handleGalleryImageSave}
+                  onCancel={() => {
+                    setShowGalleryForm(false);
+                    setUseMultiImageForm(false);
+                    setEditingGalleryImage(null);
+                  }}
+                  isLoading={loading}
+                />
+              ) : (
+                <GalleryForm
+                  initialData={editingGalleryImage}
+                  onSubmit={handleGalleryImageSave}
+                  onCancel={() => {
+                    setShowGalleryForm(false);
+                    setEditingGalleryImage(null);
+                  }}
+                  isLoading={loading}
+                />
+              )
+            ) : (
+              <Card>
+                <CardContent>
+                  {loading ? (
+                    <div className="text-center py-8">Loading gallery images...</div>
+                  ) : galleryImages.length > 0 ? (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                      {galleryImages.map((image) => (
+                        <div key={image._id} className="border rounded-lg overflow-hidden">
+                          <div className="bg-gray-200 border-2 border-dashed rounded-t-lg w-full h-48 flex items-center justify-center">
+                            {image.file_url ? (
+                              <img 
+                                src={image.file_url} 
+                                alt={image.title} 
+                                className="w-full h-full object-cover"
+                              />
+                            ) : (
+                              <span className="text-gray-500">No image</span>
+                            )}
+                          </div>
+                          <div className="p-3">
+                            <h3 className="font-medium truncate">{image.title}</h3>
+                            <div className="flex justify-between items-center mt-2">
+                              {image.category && (
+                                <span className="px-2 py-1 rounded-full text-xs bg-pink-100 text-pink-800">
+                                  {image.category}
+                                </span>
+                              )}
+                              <div className="flex space-x-1">
+                                <Button 
+                                  variant="outline" 
+                                  size="sm"
+                                  onClick={() => {
+                                    setUseMultiImageForm(false);
+                                    handleEditGalleryImage(image);
+                                  }}
+                                >
+                                  <Edit className="h-3 w-3" />
+                                </Button>
+                                <Button 
+                                  variant="outline" 
+                                  size="sm"
+                                  onClick={() => handleDeleteGalleryImage(image._id)}
+                                  disabled={deletingId === image._id}
+                                >
+                                  {deletingId === image._id ? (
+                                    <div className="h-3 w-3 animate-spin rounded-full border-b-2 border-gray-900" />
+                                  ) : (
+                                    <Trash2 className="h-3 w-3" />
+                                  )}
+                                </Button>
+                              </div>
                             </div>
                           </div>
                         </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-center py-8 text-muted-foreground">
-                    No images found
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-8 text-muted-foreground">
+                      No images found
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            )}
           </TabsContent>
         </Tabs>
       </main>
@@ -847,6 +1181,13 @@ export default function AdminDashboard() {
         onOpenChange={setShowApplicationFormModal}
         application={editingApplication}
         onSave={handleApplicationSave}
+      />
+      
+      <ResourceForm
+        open={showResourceForm}
+        onOpenChange={setShowResourceForm}
+        resource={editingResource}
+        onSave={handleResourceSave}
       />
     </div>
   );

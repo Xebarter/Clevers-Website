@@ -7,7 +7,7 @@ import ContactForm from "@/components/ContactForm";
 
 export const metadata: Metadata = {
   title: "Contact Us | Clevers' Origin Schools",
-  description: "Get in touch with Clevers' Origin Schools. Contact information for all our campuses, admission inquiries, and general questions.",
+  description: "Get in touch with Clevers' Origin Schools. Contact information for all our campuses, and general questions.",
 };
 
 // Contact information for each campus
@@ -15,22 +15,22 @@ const campusContacts = [
   {
     name: "Kitintale Campus",
     address: "Plot 45, Kitintale Road, Kampala, Uganda",
-    phone: "+256 700 123456",
-    email: "kitintale@cleversoriginschools.com",
+    phone: "+256 772 470 972",
+    email: "cleversorigin@gmail.com",
     color: "kinder-blue"
   },
   {
     name: "Kasokoso Campus",
     address: "Kasokoso, Kireka",
-    phone: "+256 788 409 947",
-    email: "kasokoso@cleversoriginschools.com",
+    phone: "+256 750 054 361",
+    email: "cleversorigin@gmail.com",
     color: "kinder-red"
   },
   {
     name: "Maganjo Campus",
     address: "Plot 13, Maganjo Road, Kampala, Uganda",
     phone: "+256 753 252 716",
-    email: "maganjo@cleversoriginschools.com",
+    email: "cleversorigin@gmail.com",
     color: "kinder-green"
   }
 ];
@@ -109,7 +109,12 @@ export default function ContactPage() {
                     </div>
                     <div>
                       <h3 className="font-medium text-gray-700 font-heading">Phone</h3>
-                      <p className="text-gray-600 font-body">{campus.phone}</p>
+                      <a 
+                        href={`tel:${campus.phone.replace(/\s/g, '')}`} 
+                        className="text-gray-600 font-body text-blue-600 hover:underline"
+                      >
+                        {campus.phone}
+                      </a>
                     </div>
                   </div>
 
@@ -119,7 +124,12 @@ export default function ContactPage() {
                     </div>
                     <div>
                       <h3 className="font-medium text-gray-700 font-heading">Email</h3>
-                      <p className="text-gray-600 font-body">{campus.email}</p>
+                      <a 
+                        href={`mailto:${campus.email}`} 
+                        className="text-gray-600 font-body text-blue-600 hover:underline"
+                      >
+                        {campus.email}
+                      </a>
                     </div>
                   </div>
 
@@ -168,13 +178,16 @@ export default function ContactPage() {
                       <HelpCircle className="h-5 w-5 text-kinder-yellow" />
                     </div>
                     <div>
-                      <h3 className="font-bold text-gray-800 mb-1 font-heading">Admission Inquiries</h3>
+                      <h3 className="font-bold text-gray-800 mb-1 font-heading">General Inquiries</h3>
                       <p className="text-gray-600 font-body">
-                        Contact our admission team for questions about application, enrollment, or campus tours.
+                        For general questions or feedback about our schools and programs.
                       </p>
-                      <p className="text-kinder-blue mt-2 font-medium font-body">
-                        admissions@cleversoriginschools.com
-                      </p>
+                      <a 
+                        href="mailto:cleversorigin@gmail.com" 
+                        className="text-kinder-blue mt-2 font-medium font-body text-blue-600 hover:underline"
+                      >
+                        cleversorigin@gmail.com
+                      </a>
                     </div>
                   </div>
 
@@ -187,9 +200,12 @@ export default function ContactPage() {
                       <p className="text-gray-600 font-body">
                         We'd love to show you around! Schedule a visit to see our facilities and meet our staff.
                       </p>
-                      <p className="text-kinder-green mt-2 font-medium font-body">
-                        +256 762 474 822
-                      </p>
+                      <a 
+                        href="tel:+256772470972" 
+                        className="text-kinder-green mt-2 font-medium font-body text-blue-600 hover:underline"
+                      >
+                        +256772470972
+                      </a>
                     </div>
                   </div>
 
@@ -198,13 +214,16 @@ export default function ContactPage() {
                       <MessageSquare className="h-5 w-5 text-kinder-red" />
                     </div>
                     <div>
-                      <h3 className="font-bold text-gray-800 mb-1 font-heading">General Inquiries</h3>
+                      <h3 className="font-bold text-gray-800 mb-1 font-heading">Admission Inquiries</h3>
                       <p className="text-gray-600 font-body">
-                        For general questions or feedback about our schools and programs.
+                        Contact our admission team for questions about application, enrollment, or campus tours.
                       </p>
-                      <p className="text-kinder-red mt-2 font-medium font-body">
-                        info@cleversoriginschools.com
-                      </p>
+                      <a 
+                        href="tel:+256772470972" 
+                        className="text-kinder-red mt-2 font-medium font-body text-blue-600 hover:underline"
+                      >
+                        +256772470972
+                      </a>
                     </div>
                   </div>
                 </div>

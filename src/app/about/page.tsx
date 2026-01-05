@@ -43,7 +43,7 @@ export default function AboutPage() {
             <div className="order-2 md:order-1">
               <h2 className="text-3xl font-bold mb-6 text-kinder-blue font-heading">Our Humble Beginnings</h2>
               <p className="text-gray-700 mb-4 font-body">
-                Clevers' Origin Schools began as a small kindergarten in Kitintale, Kampala in <span className="font-semibold text-kinder-blue drop-shadow-sm">2005</span>. Founded by a visionary educator, Mrs. Sarah Nantongo, who believed that early childhood education should be both joyful and rigorous.
+                Clevers' Origin Schools had its genesis in Kitintale, Kampala in <span className="font-semibold text-kinder-blue drop-shadow-sm">2005</span>. Founded by a visionary educator, Mr. Mugwanya Christopher, who believed that early childhood education should be both joyful and rigorous.
               </p>
               <p className="text-gray-700 mb-4 font-body">
                 Starting with just one classroom and 15 students, our school was built on the principle that every child deserves a colorful, engaging, and supportive learning environment.
@@ -54,15 +54,15 @@ export default function AboutPage() {
                 </div>
                 <div className="h-1 w-12 bg-gradient-to-r from-kinder-blue to-kinder-green"></div>
                 <div className="h-8 w-8 rounded-full flex items-center justify-center bg-kinder-green text-white font-bold font-heading shadow-md">
-                  <span className="drop-shadow-sm">2010</span>
+                  <span className="drop-shadow-sm">2019</span>
                 </div>
                 <div className="h-1 w-12 bg-gradient-to-r from-kinder-green to-kinder-red"></div>
                 <div className="h-8 w-8 rounded-full flex items-center justify-center bg-kinder-red text-white font-bold font-heading shadow-md">
-                  <span className="drop-shadow-sm">2017</span>
+                  <span className="drop-shadow-sm">2020</span>
                 </div>
                 <div className="h-1 w-12 bg-gradient-to-r from-kinder-red to-kinder-purple"></div>
                 <div className="h-8 w-8 rounded-full flex items-center justify-center bg-kinder-purple text-white font-bold font-heading shadow-md">
-                  <span className="drop-shadow-sm">2023</span>
+                  <span className="drop-shadow-sm">2026</span>
                 </div>
               </div>
             </div>

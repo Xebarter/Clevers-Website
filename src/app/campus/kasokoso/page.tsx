@@ -22,8 +22,8 @@ const kasokosoCampusInfo: CampusInfo = {
   principalTitle: "Campus Principal",
   principalMessage: "We believe every child is born with unique talents and capabilities. At Kasokoso Campus, we create a colorful environment where these talents are discovered, nurtured, and celebrated through music, arts, and play-based learning.",
   address: "Plot 27, Kasokoso Lane, Kampala, Uganda",
-  phone: "+256 700 234567",
-  email: "kasokoso@cleversoriginschools.com",
+  phone: "+256 750 054 361",
+  email: "cleversorigin@gmail.com",
   hours: "Monday to Friday: 7:30am - 4:30pm",
   accentColor: "kinder-red",
 
@@ -76,7 +76,13 @@ const kasokosoCampusInfo: CampusInfo = {
     "Cultural Exchange Days: Learning about global cultures and traditions"
   ],
 
-  galleryImages: [],
+  galleryImages: [
+    { url: "/kasokoso/kasokoso1.jpg", alt: "Kasokoso Campus Image 1" },
+    { url: "/kasokoso/kasokoso2.jpg", alt: "Kasokoso Campus Image 2" },
+    { url: "/kasokoso/kasokoso3.jpg", alt: "Kasokoso Campus Image 3" },
+    { url: "/kasokoso/kasokoso4.jpg", alt: "Kasokoso Campus Image 4" },
+    { url: "/kasokoso/kasokoso5.jpg", alt: "Kasokoso Campus Image 5" },
+  ],
 
   imagePlaceholder: (
     <ImageCarousel

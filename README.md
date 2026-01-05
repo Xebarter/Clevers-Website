@@ -20,6 +20,39 @@ You can start editing the page by modifying `app/page.tsx`. The page auto-update
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
+## Environment Variables
+
+The application requires several environment variables to function properly. Create a `.env.local` file in the root directory with the following variables:
+
+### Supabase Configuration
+```
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
+```
+
+### Pesapal Payment Configuration
+```
+PESAPAL_CONSUMER_KEY=your_pesapal_consumer_key
+PESAPAL_CONSUMER_SECRET=your_pesapal_consumer_secret
+PESAPAL_SANDBOX=true  # Set to false for production
+NEXT_PUBLIC_BASE_URL=http://localhost:3000  # Update to your production URL
+```
+
+> **Note**: The PESAPAL_CONSUMER_KEY and PESAPAL_CONSUMER_SECRET variables should NOT be prefixed with NEXT_PUBLIC_ as they are used server-side only to maintain security.
+
+## Supabase Migration
+
+This project has been migrated to use Supabase as the primary backend instead of Sanity CMS for handling:
+- Applications
+- Messages
+- Resources
+- Announcements
+- Events
+- Gallery Images
+
+See [SUPABASE_SETUP.md](SUPABASE_SETUP.md) for detailed setup instructions.
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:

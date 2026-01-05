@@ -21,8 +21,8 @@ const kitintaleCampusInfo: CampusInfo = {
   principalTitle: "Campus Principal",
   principalMessage: "At Kitintale Campus, we create an environment where children feel safe to explore, question, and learn. Our approach combines academic excellence with joy and creativity, ensuring each child develops a lifelong love for learning.",
   address: "Plot 45, Kitintale Road, Kampala, Uganda",
-  phone: "+256 700 123456",
-  email: "kitintale@cleversoriginschools.com",
+  phone: "+256 772 470 972",
+  email: "cleversorigin@gmail.com",
   hours: "Monday to Friday: 7:30am - 4:30pm",
   accentColor: "kinder-blue",
 
@@ -75,7 +75,13 @@ const kitintaleCampusInfo: CampusInfo = {
     "Parent-Child Workshops: Special sessions where parents join classroom activities"
   ],
 
-  galleryImages: [] // Required but unused
+  galleryImages: [
+    { url: "/kitintale/kitintale1.jpg", alt: "Kitintale Campus Image 1" },
+    { url: "/kitintale/kitintale2.jpg", alt: "Kitintale Campus Image 2" },
+    { url: "/kitintale/kitintale3.jpg", alt: "Kitintale Campus Image 3" },
+    { url: "/kitintale/kitintale4.jpg", alt: "Kitintale Campus Image 4" },
+    { url: "/kitintale/kitintale5.jpg", alt: "Kitintale Campus Image 5" },
+  ]
 
 };
 

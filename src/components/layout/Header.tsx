@@ -17,12 +17,7 @@ import { usePathname } from "next/navigation";
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const pathname = usePathname();
-  const [isApplyPage, setIsApplyPage] = useState(false);
   const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>({});
-
-  useEffect(() => {
-    setIsApplyPage(pathname === "/apply");
-  }, [pathname]);
 
   const menuItems = [
     { name: "Home", href: "/" },
@@ -32,24 +27,6 @@ const Header = () => {
       submenu: [
         { name: "Our Story", href: "/about" },
         { name: "Mission & Vision", href: "/about/mission" },
-        {
-          name: "Academics",
-          href: "#",
-          submenu: [
-            { name: "Overview", href: "/academics" },
-            { name: "Curriculum", href: "/academics/curriculum" },
-            { name: "Academic Calendar", href: "/academics/calendar" },
-          ],
-        },
-        {
-          name: "Student Life",
-          href: "#",
-          submenu: [
-            { name: "Activities", href: "/student-life/activities" },
-            { name: "Arts & Culture", href: "/student-life/arts" },
-            { name: "Sports", href: "/student-life/sports" },
-          ],
-        },
       ],
     },
     {
@@ -133,122 +110,106 @@ const Header = () => {
             <span className="font-bold text-xl font-heading sm:hidden">COJS</span>
           </Link>
 
-          {isApplyPage ? (
-            <div className="flex items-center gap-4">
-              <Link href="/contact" className="text-sm text-gray-600 hover:text-gray-900 flex items-center gap-1">
-                <HelpCircle className="h-4 w-4" />
-                <span className="hidden sm:inline">Need Help?</span>
-              </Link>
-            </div>
-          ) : (
-            <>
-              {/* Desktop Navigation */}
-              <nav className="hidden md:flex items-center space-x-6">
-                {menuItems.map((item) => (
-                  <div key={item.name} className="relative group">
-                    {item.submenu ? (
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <button className="flex items-center text-gray-700 hover:text-gray-900 py-2">
-                            {item.name} <ChevronDown className="ml-1 h-4 w-4" />
-                          </button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="center" className="bg-white rounded-md shadow-lg p-2 min-w-[200px]">
-                          {item.submenu.map((subItem) => (
-                            <DropdownMenuItem key={subItem.name} asChild>
-                              {subItem.submenu ? (
-                                <div className="relative group">
-                                  <DropdownMenu>
-                                    <DropdownMenuTrigger className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100 rounded-md flex justify-between items-center">
-                                      {subItem.name}
-                                      <ChevronDown className="ml-1 h-4 w-4" />
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent className="ml-2 bg-white rounded-md shadow-lg p-2 min-w-[200px]">
-                                      {subItem.submenu.map((nestedItem) => (
-                                        <DropdownMenuItem key={nestedItem.name} asChild>
-                                          <Link
-                                            href={nestedItem.href}
-                                            className="block px-4 py-2 text-sm hover:bg-gray-100 rounded-md w-full text-left"
-                                          >
-                                            {nestedItem.name}
-                                          </Link>
-                                        </DropdownMenuItem>
-                                      ))}
-                                    </DropdownMenuContent>
-                                  </DropdownMenu>
-                                </div>
-                              ) : (
-                                <Link
-                                  href={subItem.href}
-                                  className="block px-4 py-2 text-sm hover:bg-gray-100 rounded-md w-full text-left"
-                                >
+          {/* Desktop Navigation */}
+          <nav className="hidden md:flex items-center space-x-6">
+            {menuItems.map((item) => (
+              <div key={item.name} className="relative group">
+                {item.submenu ? (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <button className="flex items-center text-gray-700 hover:text-gray-900 py-2">
+                        {item.name} <ChevronDown className="ml-1 h-4 w-4" />
+                      </button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="center" className="bg-white rounded-md shadow-lg p-2 min-w-[200px]">
+                      {item.submenu.map((subItem) => (
+                        <DropdownMenuItem key={subItem.name} asChild>
+                          {subItem.submenu ? (
+                            <div className="relative group">
+                              <DropdownMenu>
+                                <DropdownMenuTrigger className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100 rounded-md flex justify-between items-center">
                                   {subItem.name}
-                                </Link>
-                              )}
-                            </DropdownMenuItem>
-                          ))}
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    ) : (
-                      <Link href={item.href} className="text-gray-700 hover:text-gray-900 py-2">
-                        {item.name}
-                      </Link>
-                    )}
-                  </div>
-                ))}
-              </nav>
-
-              <div className="hidden md:flex items-center space-x-4">
-                <Link href="https://tipac.co.ug/tickets" target="_blank">
-                  <Button>Buy Tickets</Button>
-                </Link>
+                                  <ChevronDown className="ml-1 h-4 w-4" />
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent className="ml-2 bg-white rounded-md shadow-lg p-2 min-w-[200px]">
+                                  {subItem.submenu.map((nestedItem) => (
+                                    <DropdownMenuItem key={nestedItem.name} asChild>
+                                      <Link
+                                        href={nestedItem.href}
+                                        className="block px-4 py-2 text-sm hover:bg-gray-100 rounded-md w-full text-left"
+                                      >
+                                        {nestedItem.name}
+                                      </Link>
+                                    </DropdownMenuItem>
+                                  ))}
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            </div>
+                          ) : (
+                            <Link
+                              href={subItem.href}
+                              className="block px-4 py-2 text-sm hover:bg-gray-100 rounded-md w-full text-left"
+                            >
+                              {subItem.name}
+                            </Link>
+                          )}
+                        </DropdownMenuItem>
+                      ))}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                ) : (
+                  <Link href={item.href} className="text-gray-700 hover:text-gray-900 py-2">
+                    {item.name}
+                  </Link>
+                )}
               </div>
+            ))}
+          </nav>
 
-              {/* Mobile Navigation */}
-              <div className="md:hidden flex items-center space-x-2">
-                <Link href="https://tipac.co.ug/tickets" target="_blank" className="mr-1">
-                  <Button size="sm" className="px-3 py-1">
-                    Tickets
-                  </Button>
-                </Link>
+          <div className="hidden md:flex items-center space-x-4">
+            <Link href="/apply">
+              <Button>Apply Now</Button>
+            </Link>
+          </div>
 
-                <Sheet open={isMenuOpen} onOpenChange={setIsMenuOpen}>
-                  <SheetTrigger asChild>
-                    <Button variant="ghost" size="icon" className="p-1">
-                      <Menu className="h-5 w-5" />
-                      <span className="sr-only">Toggle menu</span>
-                    </Button>
-                  </SheetTrigger>
-                  <SheetContent side="right" className="w-[300px] p-0">
-                    <div className="flex flex-col h-full">
-                      <div className="flex items-center justify-between p-4 border-b">
-                        <span className="font-bold text-lg">Menu</span>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8"
-                          onClick={() => setIsMenuOpen(false)}
-                        >
-                          <X className="h-5 w-5" />
-                          <span className="sr-only">Close menu</span>
-                        </Button>
-                      </div>
+          {/* Mobile Navigation */}
+          <div className="md:hidden flex items-center space-x-2">
+            <Link href="/apply" className="mr-1">
+              <Button size="sm" className="px-3 py-1">
+                Apply
+              </Button>
+            </Link>
 
-                      <div className="overflow-y-auto flex-grow">
-                        <nav className="flex flex-col">{renderMobileSubmenu(menuItems)}</nav>
-                      </div>
-
-                      <div className="mt-auto p-4 border-t">
-                        <Link href="https://tipac.co.ug/tickets" target="_blank" onClick={() => setIsMenuOpen(false)}>
-                          <Button className="w-full">Buy Tickets</Button>
-                        </Link>
-                      </div>
+            <Sheet open={isMenuOpen} onOpenChange={setIsMenuOpen}>
+              <SheetTrigger asChild>
+                <Button variant="ghost" size="icon" className="md:hidden">
+                  <Menu className="h-6 w-6" />
+                  <span className="sr-only">Toggle Menu</span>
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="left" className="w-[300px] sm:w-[400px] p-0">
+                <div className="flex items-center justify-between p-4 border-b">
+                  <Link href="/" className="flex items-center space-x-2" onClick={() => setIsMenuOpen(false)}>
+                    <div className="relative w-8 h-8">
+                      <Image src="/logo.svg" alt="Clevers' Origin Schools Logo" fill className="object-contain" />
                     </div>
-                  </SheetContent>
-                </Sheet>
-              </div>
-            </>
-          )}
+                    <span className="font-bold">Clevers' Origin</span>
+                  </Link>
+                  <Button variant="ghost" size="icon" onClick={() => setIsMenuOpen(false)}>
+                    <X className="h-5 w-5" />
+                    <span className="sr-only">Close menu</span>
+                  </Button>
+                </div>
+                <div className="p-4 overflow-y-auto h-[calc(100vh-73px)]">
+                  {menuItems.map((item) => (
+                    <div key={item.name} className="mb-1">
+                      {renderMobileSubmenu([item])}
+                    </div>
+                  ))}
+                </div>
+              </SheetContent>
+            </Sheet>
+          </div>
         </div>
       </div>
     </header>

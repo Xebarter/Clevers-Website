@@ -5,7 +5,7 @@ import Image from "next/image";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { MapPin, Phone, Users, ArrowRight, Book, Star } from "lucide-react";
+import { MapPin, Phone, Mail, Users, ArrowRight, Book, Star } from "lucide-react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 
@@ -16,7 +16,8 @@ const campuses = [
     shortName: "Kitintale",
     color: "red",
     address: "Kitintale, Along Kitintale-Kunya Road",
-    phone: "+256 762 494 822",
+    phone: "+256 772 470 972",
+    email: "cleversorigin@gmail.com",
     description: "Our flagship campus with state-of-the-art facilities including a spacious kindergarten play area, and a performing arts center.",
     badgeColor: "bg-red-100 text-red-800",
     keyFeatures: [
@@ -32,7 +33,8 @@ const campuses = [
     shortName: "Kasokoso",
     color: "blue",
     address: "Kasokoso, Kireka",
-    phone: "+256 762 494 822",
+    phone: "+256 750 054 361",
+    email: "cleversorigin@gmail.com",
     description: "A modern and distinguished institution offering exclusively day-school education.",
     badgeColor: "bg-blue-100 text-blue-800",
     keyFeatures: [
@@ -48,7 +50,8 @@ const campuses = [
     shortName: "Maganjo",
     color: "green",
     address: "Maganjo, Bombo Road",
-    phone: "+256 762 494 822",
+    phone: "+256 753 252 716",
+    email: "cleversorigin@gmail.com",
     description: "Our newest campus, committed to academic excellence and the discovery and development of learner talent.",
     badgeColor: "bg-green-100 text-green-800",
     keyFeatures: [
@@ -112,6 +115,10 @@ const CampusShowcase = () => {
                   <div className="flex items-start">
                     <Phone className={`h-5 w-5 mr-3 text-${campus.color} flex-shrink-0 mt-0.5`} />
                     <span>{campus.phone}</span>
+                  </div>
+                  <div className="flex items-start">
+                    <Mail className={`h-5 w-5 mr-3 text-${campus.color} flex-shrink-0 mt-0.5`} />
+                    <span>{campus.email}</span>
                   </div>
 
                   <div className="pt-4">

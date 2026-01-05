@@ -49,13 +49,8 @@ export default function Home() {
             </p>
             <div className="flex flex-wrap gap-4 pt-4">
               <Link href="/apply">
-                <Button size="lg" variant="outline" className="border-pink-400 text-pink-600 hover:bg-pink-50 px-6 py-3 gap-2">
+                <Button size="lg" className="bg-gradient-to-r from-pink-500 via-yellow-400 to-green-500 text-white hover:from-pink-600 hover:via-yellow-500 hover:to-green-600 px-6 py-3 gap-2">
                   Apply Now <ArrowRight className="h-5 w-5" />
-                </Button>
-              </Link>
-              <Link href="https://tipac.co.ug/tickets" target="_blank">
-                <Button size="lg" className="bg-pink-500 hover:bg-pink-600 text-white px-6 py-3">
-                  Buy Tickets
                 </Button>
               </Link>
             </div>

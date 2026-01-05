@@ -30,20 +30,22 @@ export default function ApplicationFormModal({
   onSave
 }: ApplicationFormModalProps) {
   const [formData, setFormData] = useState({
-    studentName: "",
-    dateOfBirth: "",
+    name: "",
+    date_of_birth: "",
     gender: "",
-    gradeLevel: "",
-    parentName: "",
-    relationship: "",
-    phone: "",
+    grade_level: "",
+    parent_name: "",
+    parent_email: "",
+    parent_phone: "",
     email: "",
+    phone: "",
     campus: "",
     boarding: "",
     previousSchool: "",
     specialNeeds: "",
     howHeard: "",
-    paymentStatus: "pending",
+    relationship: "",
+    status: "pending",
   });
   
   const [boardingOptions, setBoardingOptions] = useState<string[]>([]);
@@ -51,20 +53,22 @@ export default function ApplicationFormModal({
   useEffect(() => {
     if (application) {
       setFormData({
-        studentName: application.studentName || "",
-        dateOfBirth: application.dateOfBirth || "",
+        name: application.studentName || application.name || "",
+        date_of_birth: application.dateOfBirth || application.date_of_birth || "",
         gender: application.gender || "",
-        gradeLevel: application.gradeLevel || "",
-        parentName: application.parentName || "",
-        relationship: application.relationship || "",
-        phone: application.phone || "",
+        grade_level: application.gradeLevel || application.grade_level || "",
+        parent_name: application.parentName || application.parent_name || "",
+        parent_email: application.email || application.parent_email || "",
+        parent_phone: application.phone || application.parent_phone || "",
         email: application.email || "",
+        phone: application.phone || "",
         campus: application.campus || "",
         boarding: application.boarding || "",
         previousSchool: application.previousSchool || "",
         specialNeeds: application.specialNeeds || "",
-        howHeard: application.howHeard || "",
-        paymentStatus: application.paymentStatus || "pending",
+        howHeard: application.howHeard || application.how_heard || "",
+        relationship: application.relationship || "",
+        status: application.paymentStatus || application.status || "pending",
       });
       
       // Set boarding options based on campus
@@ -75,20 +79,22 @@ export default function ApplicationFormModal({
     } else {
       // Reset form for new application
       setFormData({
-        studentName: "",
-        dateOfBirth: "",
+        name: "",
+        date_of_birth: "",
         gender: "",
-        gradeLevel: "",
-        parentName: "",
-        relationship: "",
-        phone: "",
+        grade_level: "",
+        parent_name: "",
+        parent_email: "",
+        parent_phone: "",
         email: "",
+        phone: "",
         campus: "",
         boarding: "",
         previousSchool: "",
         specialNeeds: "",
         howHeard: "",
-        paymentStatus: "pending",
+        relationship: "",
+        status: "pending",
       });
       setBoardingOptions([]);
     }
@@ -123,7 +129,14 @@ export default function ApplicationFormModal({
         // Generate a unique application ID
         const applicationData = {
           ...formData,
-          applicationId: `APP-${Date.now()}`,
+          message: JSON.stringify({
+            applicationId: `APP-${Date.now()}`,
+            howHeard: formData.howHeard,
+            previousSchool: formData.previousSchool || null,
+            specialNeeds: formData.specialNeeds || null,
+            paymentStatus: formData.status,
+            submittedAt: new Date().toISOString(),
+          }),
         };
         await createApplication(applicationData);
       }
@@ -154,21 +167,21 @@ export default function ApplicationFormModal({
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="studentName">Full Name *</Label>
+                <Label htmlFor="name">Full Name *</Label>
                 <Input
-                  id="studentName"
-                  value={formData.studentName}
-                  onChange={(e) => handleChange("studentName", e.target.value)}
+                  id="name"
+                  value={formData.name}
+                  onChange={(e) => handleChange("name", e.target.value)}
                   required
                 />
               </div>
               <div>
-                <Label htmlFor="dateOfBirth">Date of Birth *</Label>
+                <Label htmlFor="date_of_birth">Date of Birth *</Label>
                 <Input
-                  id="dateOfBirth"
+                  id="date_of_birth"
                   type="date"
-                  value={formData.dateOfBirth}
-                  onChange={(e) => handleChange("dateOfBirth", e.target.value)}
+                  value={formData.date_of_birth}
+                  onChange={(e) => handleChange("date_of_birth", e.target.value)}
                   required
                 />
               </div>
@@ -186,8 +199,8 @@ export default function ApplicationFormModal({
                 </Select>
               </div>
               <div>
-                <Label htmlFor="gradeLevel">Grade Level *</Label>
-                <Select value={formData.gradeLevel} onValueChange={(value) => handleChange("gradeLevel", value)}>
+                <Label htmlFor="grade_level">Grade Level *</Label>
+                <Select value={formData.grade_level} onValueChange={(value) => handleChange("grade_level", value)}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select grade level" />
                   </SelectTrigger>
@@ -215,11 +228,11 @@ export default function ApplicationFormModal({
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="parentName">Full Name *</Label>
+                <Label htmlFor="parent_name">Full Name *</Label>
                 <Input
-                  id="parentName"
-                  value={formData.parentName}
-                  onChange={(e) => handleChange("parentName", e.target.value)}
+                  id="parent_name"
+                  value={formData.parent_name}
+                  onChange={(e) => handleChange("parent_name", e.target.value)}
                   required
                 />
               </div>
@@ -253,6 +266,16 @@ export default function ApplicationFormModal({
                   type="email"
                   value={formData.email}
                   onChange={(e) => handleChange("email", e.target.value)}
+                  required
+                />
+              </div>
+              <div>
+                <Label htmlFor="parent_email">Parent Email *</Label>
+                <Input
+                  id="parent_email"
+                  type="email"
+                  value={formData.parent_email}
+                  onChange={(e) => handleChange("parent_email", e.target.value)}
                   required
                 />
               </div>
@@ -342,15 +365,16 @@ export default function ApplicationFormModal({
                 </Select>
               </div>
               <div>
-                <Label htmlFor="paymentStatus">Payment Status</Label>
-                <Select value={formData.paymentStatus} onValueChange={(value) => handleChange("paymentStatus", value)}>
+                <Label htmlFor="status">Application Status</Label>
+                <Select value={formData.status} onValueChange={(value) => handleChange("status", value)}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Select payment status" />
+                    <SelectValue placeholder="Select application status" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="pending">Pending</SelectItem>
-                    <SelectItem value="completed">Completed</SelectItem>
-                    <SelectItem value="failed">Failed</SelectItem>
+                    <SelectItem value="review">Under Review</SelectItem>
+                    <SelectItem value="accepted">Accepted</SelectItem>
+                    <SelectItem value="rejected">Rejected</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

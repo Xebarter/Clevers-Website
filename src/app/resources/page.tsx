@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { groq } from "next-sanity";
-import { client } from "@/sanity/lib/client"; // Adjust the path to your sanity client
+import { resourcesService } from "../../../lib/supabase/services"; // Use relative path for Supabase services
+import { Resource } from "../../../lib/supabase/client"; // Use relative path for Supabase client
 
 // UI components
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -41,45 +41,39 @@ const resourceCategories = [
   { id: "newsletters", name: "Newsletters" },
 ];
 
-interface SanityResource {
-  _id: string;
-  title: string;
-  description: string;
-  category: string;
-  type: string;
-  fileSize: string;
-  uploadDate: string;
-  file: {
-    asset: {
-      url: string;
-    };
-  };
+// Updated interface to match Supabase resource structure
+interface SupabaseResource extends Resource {
+  type?: string; // We'll derive this from file_name if needed
+  fileSize?: string; // We'll need to handle this differently as Supabase doesn't store it directly
+  uploadDate?: string; // Using created_at from Supabase
 }
 
 const ResourcesPage = () => {
-  const [resources, setResources] = useState<SanityResource[]>([]);
+  const [resources, setResources] = useState<SupabaseResource[]>([]);
   const [activeTab, setActiveTab] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchResources = async () => {
-      const query = groq`*[_type == "resource"] | order(uploadDate desc) {
-        _id,
-        title,
-        description,
-        category,
-        type,
-        fileSize,
-        uploadDate,
-        file {
-          asset->{
-            url
-          }
-        }
-      }`;
-
-      const data: SanityResource[] = await client.fetch(query);
-      setResources(data);
+      try {
+        setLoading(true);
+        const data = await resourcesService.getAll();
+        
+        // Transform Supabase resources to match the expected format
+        const transformedResources = data.map(resource => ({
+          ...resource,
+          type: resource.file_name ? resource.file_name.split('.').pop()?.toUpperCase() || 'FILE' : 'LINK',
+          fileSize: 'N/A', // Supabase doesn't store file sizes directly
+          uploadDate: resource.created_at || new Date().toISOString(), // Use created_at from Supabase
+        }));
+        
+        setResources(transformedResources);
+      } catch (error) {
+        console.error("Error fetching resources:", error);
+      } finally {
+        setLoading(false);
+      }
     };
 
     fetchResources();
@@ -88,13 +82,13 @@ const ResourcesPage = () => {
   const filteredResources = resources.filter((resource) => {
     const categoryMatch = activeTab === "all" || resource.category === activeTab;
     const searchMatch =
-      resource.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      resource.description.toLowerCase().includes(searchQuery.toLowerCase());
+      (resource.title && resource.title.toLowerCase().includes(searchQuery.toLowerCase())) ||
+      (resource.description && resource.description.toLowerCase().includes(searchQuery.toLowerCase()));
 
     return categoryMatch && searchMatch;
   });
 
-  const getFileIcon = (type: string) => {
+  const getFileIcon = (type: string = '') => {
     switch (type.toLowerCase()) {
       case "pdf":
         return <FileText className="h-5 w-5 text-red-500" />;
@@ -112,7 +106,7 @@ const ResourcesPage = () => {
     }
   };
 
-  const getCategoryIcon = (category: string) => {
+  const getCategoryIcon = (category: string = '') => {
     switch (category) {
       case "academic":
         return <BookOpen className="h-4 w-4 mr-1" />;
@@ -129,7 +123,7 @@ const ResourcesPage = () => {
     }
   };
 
-  const getCategoryBadgeClass = (category: string) => {
+  const getCategoryBadgeClass = (category: string = '') => {
     switch (category) {
       case "academic":
         return "bg-blue-100 text-blue-800 border-blue-200";
@@ -145,6 +139,21 @@ const ResourcesPage = () => {
         return "bg-gray-100 text-gray-800 border-gray-200";
     }
   };
+
+  if (loading) {
+    return (
+      <div className="container mx-auto px-4 py-12">
+        <div className="max-w-5xl mx-auto">
+          <div className="text-center">
+            <h1 className="text-4xl md:text-5xl font-bold mb-4">School Resources</h1>
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+              Loading resources...
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto px-4 py-12">
@@ -191,7 +200,7 @@ const ResourcesPage = () => {
             </Card>
           ) : (
             filteredResources.map((resource) => (
-              <Card key={resource._id} className="overflow-hidden group hover:shadow-md transition-all">
+              <Card key={resource.id} className="overflow-hidden group hover:shadow-md transition-all">
                 <div className="flex flex-col md:flex-row">
                   <div className="bg-gray-50 p-6 flex items-center justify-center md:w-24">
                     {getFileIcon(resource.type)}
@@ -202,7 +211,7 @@ const ResourcesPage = () => {
                         <h3 className="text-lg font-semibold">{resource.title}</h3>
                         <p className="text-gray-600 text-sm mt-1">{resource.description}</p>
                       </div>
-                      <Link href={resource.file.asset?.url || "#"} className="mt-2 md:mt-0" target="_blank">
+                      <Link href={resource.file_url || "#"} className="mt-2 md:mt-0" target="_blank">
                         <Button size="sm" className="gap-1">
                           <Download className="h-4 w-4" />
                           Download
@@ -210,17 +219,19 @@ const ResourcesPage = () => {
                       </Link>
                     </div>
                     <div className="flex flex-wrap items-center mt-4 text-xs text-gray-500 gap-x-4 gap-y-2">
-                      <Badge variant="outline" className={getCategoryBadgeClass(resource.category)}>
-                        <span className="flex items-center">
-                          {getCategoryIcon(resource.category)}
-                          {resourceCategories.find((c) => c.id === resource.category)?.name || resource.category}
-                        </span>
-                      </Badge>
+                      {resource.category && (
+                        <Badge variant="outline" className={getCategoryBadgeClass(resource.category)}>
+                          <span className="flex items-center">
+                            {getCategoryIcon(resource.category)}
+                            {resourceCategories.find((c) => c.id === resource.category)?.name || resource.category}
+                          </span>
+                        </Badge>
+                      )}
                       <span className="flex items-center">
                         <FileText className="h-4 w-4 mr-1" />
                         {resource.type} • {resource.fileSize}
                       </span>
-                      <span>Uploaded: {new Date(resource.uploadDate).toLocaleDateString()}</span>
+                      <span>Uploaded: {resource.uploadDate ? new Date(resource.uploadDate).toLocaleDateString() : 'N/A'}</span>
                     </div>
                   </div>
                 </div>

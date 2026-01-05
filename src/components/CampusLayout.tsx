@@ -48,12 +48,58 @@ interface CampusLayoutProps {
   campusInfo: CampusInfo;
 }
 
+// Helper to create some random positions and rotations for decorative images
+function rand(min: number, max: number) {
+  return Math.random() * (max - min) + min;
+}
+
+function pickRandom<T>(arr: T[], count: number) {
+  const copy = arr.slice();
+  const picked: T[] = [];
+  while (picked.length < count && copy.length > 0) {
+    const idx = Math.floor(Math.random() * copy.length);
+    picked.push(copy.splice(idx, 1)[0]);
+  }
+  return picked;
+}
+
 const CampusLayout: React.FC<CampusLayoutProps> = ({ campusInfo }) => {
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen relative">
+      {/* Decorative scattered images covering the whole page (non-interactive) */}
+      {campusInfo.galleryImages && campusInfo.galleryImages.length > 0 && (
+        <div className="pointer-events-none absolute inset-0 -z-20">
+          {pickRandom(campusInfo.galleryImages, Math.min(12, campusInfo.galleryImages.length)).map((img, i) => {
+            const top = rand(-5, 92);
+            const left = rand(-5, 95);
+            const rotate = rand(-25, 25);
+            const scale = rand(0.55, 1.15);
+            const opacity = rand(0.12, 0.45).toFixed(2);
+            const size = Math.floor(rand(70, 260));
+            return (
+              <img
+                key={`decor-${i}-${img.url}`}
+                src={img.url}
+                alt={img.alt || `${campusInfo.name} decorative`}
+                className={`absolute rounded-xl shadow-lg object-cover transition-transform duration-700`}
+                style={{
+                  top: `${top}%`,
+                  left: `${left}%`,
+                  width: `${size}px`,
+                  height: `${Math.floor(size * (3 / 4))}px`,
+                  transform: `rotate(${rotate}deg) scale(${scale})`,
+                  opacity: Number(opacity),
+                  filter: 'saturate(0.9) contrast(0.95) blur(0px)'
+                }}
+              />
+            );
+          })}
+        </div>
+      )}
+
       {/* Hero Section */}
-      <section className={`py-12 md:py-16 bg-gradient-to-b from-${campusInfo.accentColor}/20 to-white`}>
-        <div className="container mx-auto px-4">
+      <section className={`overflow-hidden py-12 md:py-16 bg-gradient-to-b from-${campusInfo.accentColor}/20 to-white`}>
+        <div className="container mx-auto px-4 relative z-10">
           <div className="flex items-center mb-4">
             <Link href="/campus" className="flex items-center text-gray-600 hover:text-gray-900">
               <Home className="h-4 w-4 mr-2" />
@@ -103,9 +149,6 @@ const CampusLayout: React.FC<CampusLayoutProps> = ({ campusInfo }) => {
                     <ArrowRight className="h-4 w-4" />
                   </Button>
                 </Link>
-                <Button variant="outline" className="gap-2 border-2">
-                  Schedule a Visit
-                </Button>
               </div>
             </div>
             <div className={`bg-${campusInfo.accentColor}/10 p-6 rounded-3xl border-2 border-${campusInfo.accentColor}/30 shadow-md`}>
@@ -179,20 +222,6 @@ const CampusLayout: React.FC<CampusLayoutProps> = ({ campusInfo }) => {
       <section className="py-12 md:py-16">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-            <div className="bg-white p-8 rounded-3xl shadow-md border-2 border-kinder-blue/30">
-              <h2 className="text-2xl font-bold mb-6 font-heading text-kinder-blue">Our Facilities</h2>
-              <ul className="space-y-3">
-                {campusInfo.facilities.map((facility, index) => (
-                  <li key={index} className="flex items-start gap-3">
-                    <div className="mt-1 text-kinder-blue">
-                      <div className="w-2 h-2 rounded-full bg-kinder-blue"></div>
-                    </div>
-                    <p className="text-gray-700 font-body">{facility}</p>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
             <div className="bg-white p-8 rounded-3xl shadow-md border-2 border-kinder-green/30">
               <h2 className="text-2xl font-bold mb-6 font-heading text-kinder-green">Extracurricular Activities</h2>
               <ul className="space-y-3">
@@ -220,13 +249,17 @@ const CampusLayout: React.FC<CampusLayoutProps> = ({ campusInfo }) => {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {campusInfo.galleryImages.map((image, index) => (
               <div key={index} className="bg-white rounded-xl overflow-hidden shadow-md">
-                <div className="aspect-video relative">
-                  <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
-                    <div className="text-center">
-                      <div className="text-4xl mb-2">{image.placeholder || '📸'}</div>
-                      <p className="text-gray-600 font-body text-sm">{image.alt}</p>
-                    </div>
-                  </div>
+                <div className="aspect-video relative w-full h-0" style={{ paddingBottom: '56.25%' }}>
+                  <Image
+                    src={image.url}
+                    alt={image.alt || `${campusInfo.name} gallery`}
+                    fill
+                    sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+                    className="object-cover"
+                  />
+                </div>
+                <div className="p-3">
+                  <p className="text-gray-600 font-body text-sm truncate">{image.alt}</p>
                 </div>
               </div>
             ))}

@@ -35,19 +35,19 @@ export default function ApplicationDetailModal({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
               <div>
                 <p className="text-sm text-muted-foreground">Full Name</p>
-                <p className="font-medium">{application.studentName}</p>
+                <p className="font-medium">{application.student_name || application.studentName || application.name || "N/A"}</p>
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Date of Birth</p>
-                <p className="font-medium">{application.dateOfBirth}</p>
+                <p className="font-medium">{application.date_of_birth || application.dateOfBirth || application.date_of_birth || "N/A"}</p>
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Gender</p>
-                <p className="font-medium">{application.gender}</p>
+                <p className="font-medium">{application.gender || "N/A"}</p>
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Grade Level</p>
-                <p className="font-medium">{application.gradeLevel}</p>
+                <p className="font-medium">{application.grade_level || application.gradeLevel || application.grade_level || "N/A"}</p>
               </div>
             </div>
           </div>
@@ -57,19 +57,19 @@ export default function ApplicationDetailModal({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
               <div>
                 <p className="text-sm text-muted-foreground">Parent Name</p>
-                <p className="font-medium">{application.parentName}</p>
+                <p className="font-medium">{application.parent_name || application.parentName || application.parent_name || "N/A"}</p>
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Relationship</p>
-                <p className="font-medium">{application.relationship}</p>
+                <p className="font-medium">{application.relationship || "N/A"}</p>
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Phone</p>
-                <p className="font-medium">{application.phone}</p>
+                <p className="font-medium">{application.phone || application.parent_phone || "N/A"}</p>
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Email</p>
-                <p className="font-medium">{application.email}</p>
+                <p className="font-medium">{application.email || application.parent_email || "N/A"}</p>
               </div>
             </div>
           </div>
@@ -79,11 +79,42 @@ export default function ApplicationDetailModal({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
               <div>
                 <p className="text-sm text-muted-foreground">Campus</p>
-                <p className="font-medium">{application.campus}</p>
+                <p className="font-medium">{application.campus || "N/A"}</p>
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Boarding</p>
-                <p className="font-medium">{application.boarding}</p>
+                <p className="font-medium">{application.boarding || "N/A"}</p>
+              </div>
+            </div>
+          </div>
+          
+          <div>
+            <h3 className="text-lg font-semibold">Payment Information</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
+              <div>
+                <p className="text-sm text-muted-foreground">Payment Status</p>
+                <Badge 
+                  variant={
+                    application.payment_status === "COMPLETED" || application.payment_status === "PAID" ? "default" : 
+                    application.payment_status === "PENDING" ? "secondary" : 
+                    application.payment_status === "FAILED" || application.payment_status === "CANCELLED" ? "destructive" :
+                    "default"
+                  }
+                >
+                  {application.payment_status || "PENDING"}
+                </Badge>
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Amount Paid</p>
+                <p className="font-medium">{application.payment_amount ? `UGX ${application.payment_amount}` : "N/A"}</p>
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Payment Date</p>
+                <p className="font-medium">{application.payment_date ? new Date(application.payment_date).toLocaleString() : "N/A"}</p>
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Confirmation Code</p>
+                <p className="font-mono text-xs break-all">{application.payment_confirmation_code || "N/A"}</p>
               </div>
             </div>
           </div>
@@ -93,17 +124,19 @@ export default function ApplicationDetailModal({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
               <div>
                 <p className="text-sm text-muted-foreground">How did you hear about us?</p>
-                <p className="font-medium">{application.howHeard}</p>
+                <p className="font-medium">{application.how_heard || application.howHeard || "N/A"}</p>
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Payment Status</p>
+                <p className="text-sm text-muted-foreground">Application Status</p>
                 <Badge 
                   variant={
-                    application.paymentStatus === "completed" ? "default" : 
-                    application.paymentStatus === "pending" ? "secondary" : "destructive"
+                    application.application_status === "ACCEPTED" ? "default" : 
+                    application.application_status === "SUBMITTED" || application.application_status === "PENDING" ? "secondary" : 
+                    application.application_status === "REJECTED" ? "destructive" :
+                    "default"
                   }
                 >
-                  {application.paymentStatus}
+                  {application.application_status || "SUBMITTED"}
                 </Badge>
               </div>
             </div>
@@ -111,7 +144,7 @@ export default function ApplicationDetailModal({
           
           <div>
             <p className="text-sm text-muted-foreground">Application ID</p>
-            <p className="font-mono text-sm">{application.applicationId}</p>
+            <p className="font-mono text-sm">{application.id || "N/A"}</p>
           </div>
           
           <div className="flex justify-end space-x-2">

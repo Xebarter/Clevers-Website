@@ -22,8 +22,8 @@ const maganjoCampusInfo: CampusInfo = {
   principalMessage:
     "At Maganjo Campus, we believe in developing well-rounded children through a balance of physical activity, technological literacy, and environmental stewardship. Our modern facilities and dynamic programs provide the perfect foundation for 21st-century learning.",
   address: "Plot 13, Maganjo Road, Kampala, Uganda",
-  phone: "+256 700 345678",
-  email: "maganjo@cleversoriginschools.com",
+  phone: "+256 753 252 716",
+  email: "cleversorigin@gmail.com",
   hours: "Monday to Friday: 7:30am - 4:30pm",
   accentColor: "kinder-green",
 
@@ -81,7 +81,13 @@ const maganjoCampusInfo: CampusInfo = {
     "Robotics Basics: Introduction to simple machines and movement",
   ],
 
-  galleryImages: [], // Optional — handled via imagePlaceholder
+  galleryImages: [
+    { url: "/maganjo/maganjo1.jpg", alt: "Maganjo Campus Image 1" },
+    { url: "/maganjo/maganjo2.jpg", alt: "Maganjo Campus Image 2" },
+    { url: "/maganjo/maganjo3.jpg", alt: "Maganjo Campus Image 3" },
+    { url: "/maganjo/maganjo4.jpg", alt: "Maganjo Campus Image 4" },
+    { url: "/maganjo/maganjo5.jpg", alt: "Maganjo Campus Image 5" },
+  ], // Optional — handled via imagePlaceholder
 };
 
 export default function MaganjoCampusPage() {

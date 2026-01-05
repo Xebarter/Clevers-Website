@@ -2,53 +2,26 @@
 
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
-import { client } from '@/sanity/lib/client';
+import { galleryService, GalleryImage } from '../../../lib/supabase/services';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Dialog } from '@headlessui/react';
+import { Dialog, DialogBackdrop } from '@headlessui/react';
 import { XMarkIcon } from '@heroicons/react/24/outline';
-
-interface GalleryImage {
-  _id: string;
-  title: string;
-  images?: {
-    asset: {
-      _id: string;
-      url: string;
-    };
-  }[];
-  category: string;
-  location: string;
-  date: string;
-  description?: string;
-}
+import Link from 'next/link';
+import { Button } from '@/components/ui/button';
+import { ArrowRight } from 'lucide-react';
 
 export default function GalleryPage() {
   const [images, setImages] = useState<GalleryImage[]>([]);
   const [activeTab, setActiveTab] = useState<string>('all');
-  const [activeCampus, setActiveCampus] = useState<string>('all');
   const [loading, setLoading] = useState(true);
 
-  const [currentGallery, setCurrentGallery] = useState<GalleryImage | null>(null);
-  const [currentImageIndex, setCurrentImageIndex] = useState<number>(0);
+  const [currentImage, setCurrentImage] = useState<GalleryImage | null>(null);
+  const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
     const fetchGalleryImages = async () => {
       try {
-        const query = `*[_type == "galleryImage"] | order(date desc) {
-          _id,
-          title,
-          images[] {
-            asset->{
-              _id,
-              url
-            }
-          },
-          category,
-          location,
-          date,
-          description
-        }`;
-        const data = await client.fetch(query);
+        const data = await galleryService.getAll();
         setImages(data);
       } catch (error) {
         console.error('Error fetching gallery images:', error);
@@ -60,16 +33,21 @@ export default function GalleryPage() {
     fetchGalleryImages();
   }, []);
 
-  const categories = Array.from(new Set(images.map((img) => img.category)));
-  const campuses = ['kitintale', 'kasokoso', 'maganjo'];
-
+  // Define campus categories
+  const campuses = ['Kitintale', 'Kasokoso', 'Maganjo'];
+  
+  // Filter images by campus if active tab is a campus, otherwise show all
   const filteredImages = images.filter((img) => {
-    const matchesCategory = activeTab === 'all' || img.category === activeTab;
-    const matchesCampus = activeCampus === 'all' || img.location === activeCampus;
-    return matchesCategory && matchesCampus;
+    if (activeTab === 'all') return true;
+    if (campuses.includes(activeTab)) {
+      return img.category && img.category.toLowerCase().includes(activeTab.toLowerCase());
+    }
+    // For other categories
+    return img.category === activeTab;
   });
 
-  const formatDate = (dateString: string) => {
+  const formatDate = (dateString?: string) => {
+    if (!dateString) return '';
     const date = new Date(dateString);
     return date.toLocaleDateString('en-US', {
       year: 'numeric',
@@ -78,214 +56,186 @@ export default function GalleryPage() {
     });
   };
 
-  const campusColors: Record<string, string> = {
-    kitintale: 'bg-blue-400 text-white hover:bg-blue-500',
-    kasokoso: 'bg-pink-400 text-white hover:bg-pink-500',
-    maganjo: 'bg-lime-400 text-white hover:bg-lime-500',
+  const handleImageClick = (image: GalleryImage) => {
+    setCurrentImage(image);
+    setIsOpen(true);
   };
-
-  const currentImage = currentGallery?.images?.[currentImageIndex];
-
-  const handleNext = () => {
-    if (
-      currentGallery &&
-      currentGallery.images &&
-      currentImageIndex < currentGallery.images.length - 1
-    ) {
-      setCurrentImageIndex((prev) => prev + 1);
-    }
-  };
-
-  const handlePrevious = () => {
-    if (currentImageIndex > 0) {
-      setCurrentImageIndex((prev) => prev - 1);
-    }
-  };
-
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center h-64">
-        <p>Loading gallery images...</p>
-      </div>
-    );
-  }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-yellow-50 via-pink-50 to-blue-50 px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
-      <div className="max-w-7xl mx-auto">
-        <h1 className="text-2xl font-extrabold text-center text-pink-600 mb-2 sm:text-3xl sm:mb-3 lg:text-4xl lg:mb-4">
-          🎉 School Gallery
-        </h1>
-        <p className="text-center text-gray-600 text-sm mb-6 max-w-md mx-auto sm:text-base sm:mb-8 lg:max-w-2xl">
-          Explore joyful moments, events, and everyday fun across our campuses.
-        </p>
+    <div className="min-h-screen bg-gradient-to-tl from-yellow-50 via-pink-50 to-blue-50 text-gray-800">
+      {/* Hero Section - Matching home page theme */}
+      <section className="py-16 md:py-24 bg-gradient-to-br from-pink-100 via-yellow-100 to-green-100 text-gray-800 overflow-hidden">
+        <div className="container mx-auto px-4 text-center relative z-10">
+          <h1 className="text-4xl md:text-6xl font-bold mb-4">
+            <span className="relative inline-block">
+              <span className="bg-gradient-to-r from-pink-500 via-yellow-400 to-green-500 bg-clip-text text-transparent">
+                Photo Gallery
+              </span>
+              <span className="absolute -bottom-1 left-0 w-full h-1 bg-gradient-to-r from-pink-400 via-yellow-300 to-green-400 rounded-full"></span>
+            </span>
+          </h1>
+          <p className="text-xl max-w-2xl mx-auto text-gray-700 mb-8">
+            Explore our collection of memorable moments from events, activities, and campus life
+          </p>
+          <div className="flex flex-wrap justify-center gap-4">
+            <Link href="/apply">
+              <Button size="lg" variant="outline" className="border-pink-400 text-pink-600 hover:bg-pink-50 px-6 py-3 gap-2">
+                Apply Now <ArrowRight className="h-5 w-5" />
+              </Button>
+            </Link>
+            <Link href="/">
+              <Button size="lg" className="bg-pink-500 hover:bg-pink-600 text-white px-6 py-3">
+                Back to Home
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </section>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="flex flex-wrap justify-center gap-2 mb-6 sm:gap-3 sm:mb-8 lg:gap-4">
-            <TabsTrigger
-              value="all"
-              className="px-3 py-1.5 text-xs rounded-full bg-purple-500 text-white hover:bg-purple-600 sm:px-4 sm:py-2 sm:text-sm lg:text-base"
-            >
-              All Categories
-            </TabsTrigger>
-            {categories.map((category) => (
-              <TabsTrigger
-                key={category}
-                value={category}
-                className="px-3 py-1.5 text-xs rounded-full bg-teal-400 text-white hover:bg-teal-500 sm:px-4 sm:py-2 sm:text-sm lg:text-base"
-              >
-                {category.charAt(0).toUpperCase() + category.slice(1)}
-              </TabsTrigger>
-            ))}
-          </TabsList>
+      {/* Gallery Section */}
+      <section className="py-16">
+        <div className="container mx-auto px-4">
+          <Tabs defaultValue="all" className="w-full" onValueChange={setActiveTab}>
+            <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 mb-12 bg-white shadow-md rounded-xl p-2">
+              <TabsTrigger value="all" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-pink-500 data-[state=active]:to-green-500 data-[state=active]:text-white">All Photos</TabsTrigger>
+              {campuses.map((campus) => (
+                <TabsTrigger key={campus} value={campus} className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-pink-500 data-[state=active]:to-green-500 data-[state=active]:text-white">
+                  {campus}
+                </TabsTrigger>
+              ))}
+            </TabsList>
 
-          {['all', ...categories].map((tab) => (
-            <TabsContent key={tab} value={tab} className="mt-0">
-              <div className="mb-8">
-                <div className="flex flex-col items-center gap-4">
-                  <h2 className="text-sm font-semibold text-center sm:text-base lg:text-lg">
-                    Filter by Campus
-                  </h2>
-                  <div className="flex flex-wrap justify-center gap-2 sm:gap-3 lg:gap-4">
-                    <button
-                      className={`px-3 py-1.5 text-xs rounded-full ${
-                        activeCampus === 'all'
-                          ? 'bg-orange-500 text-white'
-                          : 'bg-orange-100 text-orange-800 hover:bg-orange-200'
-                      } min-w-[90px] sm:px-4 sm:py-2 sm:text-sm sm:min-w-[100px] lg:text-base`}
-                      onClick={() => setActiveCampus('all')}
-                    >
-                      All Campuses
-                    </button>
-                    {campuses.map((campus) => (
-                      <button
-                        key={campus}
-                        className={`px-3 py-1.5 text-xs rounded-full transition ${
-                          activeCampus === campus
-                            ? campusColors[campus]
-                            : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                        } min-w-[90px] sm:px-4 sm:py-2 sm:text-sm sm:min-w-[100px] lg:text-base`}
-                        onClick={() => setActiveCampus(campus)}
-                      >
-                        {campus.charAt(0).toUpperCase() + campus.slice(1)}
-                      </button>
-                    ))}
-                  </div>
+            <TabsContent value="all" className="space-y-8">
+              {loading ? (
+                <div className="text-center py-12">
+                  <div className="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-pink-500"></div>
+                  <p className="mt-4 text-lg text-gray-600">Loading gallery images...</p>
                 </div>
-              </div>
-
-              {filteredImages.length === 0 ? (
-                <p className="text-center text-gray-500 py-6 text-xs sm:text-sm lg:text-base">
-                  No images found for this category and campus
-                </p>
+              ) : filteredImages.length === 0 ? (
+                <div className="text-center py-12">
+                  <p className="text-xl text-gray-600">No images found in the gallery</p>
+                </div>
               ) : (
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 md:grid-cols-3 lg:grid-cols-4">
-                  {filteredImages.map((gallery) =>
-                    gallery.images?.length ? (
-                      gallery.images.map((image, index) => (
-                        <div
-                          key={`${gallery._id}-${index}`}
-                          className="group relative overflow-hidden rounded-2xl border border-yellow-100 shadow-md hover:shadow-2xl hover:border-pink-200 transition-all duration-300 cursor-pointer"
-                          onClick={() => {
-                            setCurrentGallery(gallery);
-                            setCurrentImageIndex(index);
-                          }}
-                        >
-                          <Image
-                            src={image.asset.url}
-                            alt={gallery.title || 'Gallery image'}
-                            width={400}
-                            height={300}
-                            className="w-full h-40 object-cover transition-transform duration-300 group-hover:scale-105 sm:h-64"
-                            loading="lazy"
-                          />
-                          <div className="absolute inset-0 bg-gradient-to-t from-pink-800/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-2 sm:p-3 lg:p-4">
-                            <h3 className="text-white font-semibold text-xs sm:text-sm lg:text-base">
-                              {gallery.title}
-                            </h3>
-                            {gallery.description && (
-                              <p className="text-white/80 text-xs mt-1 line-clamp-2 sm:text-sm lg:text-base">
-                                {gallery.description}
-                              </p>
-                            )}
-                            <p className="text-white/60 text-xs mt-1 sm:mt-2 lg:text-sm">
-                              {formatDate(gallery.date)}
-                            </p>
-                            <p className="text-white/60 text-xs capitalize sm:text-sm lg:text-sm">
-                              {gallery.location}
-                            </p>
-                          </div>
-                        </div>
-                      ))
-                    ) : (
-                      <div
-                        key={gallery._id}
-                        className="bg-gray-200 w-full h-40 flex items-center justify-center text-xs text-gray-500 rounded-xl sm:h-64 lg:h-64"
-                      >
-                        No images available
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                  {filteredImages.map((img) => (
+                    <div 
+                      key={img.id} 
+                      className="group relative overflow-hidden rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 cursor-pointer border border-gray-100"
+                      onClick={() => handleImageClick(img)}
+                    >
+                      <div className="aspect-square overflow-hidden">
+                        <Image
+                          src={img.file_url}
+                          alt={img.alt_text || img.title}
+                          width={400}
+                          height={400}
+                          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                          loading="lazy"
+                        />
                       </div>
-                    )
-                  )}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-4">
+                        <h3 className="text-white font-bold text-lg">{img.title}</h3>
+                        {img.caption && (
+                          <p className="text-white/80 text-sm mt-1 line-clamp-2">{img.caption}</p>
+                        )}
+                        {img.category && (
+                          <p className="text-white/60 text-xs mt-2 uppercase tracking-wider">{img.category}</p>
+                        )}
+                        <p className="text-white/60 text-xs mt-1">{formatDate(img.created_at)}</p>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               )}
             </TabsContent>
-          ))}
-        </Tabs>
-      </div>
 
-      {/* Modal Preview */}
-      <Dialog open={!!currentGallery} onClose={() => setCurrentGallery(null)} className="relative z-50">
-        <div className="fixed inset-0 bg-black/50" aria-hidden="true" />
-        <div className="fixed inset-0 flex items-center justify-center p-2 sm:p-4 lg:p-6">
-          <Dialog.Panel className="relative bg-white w-full max-w-[95vw] rounded-lg shadow-lg max-h-[90vh] overflow-y-auto sm:max-w-4xl">
+            {/* Campus tabs */}
+            {campuses.map((campus) => (
+              <TabsContent key={campus} value={campus} className="space-y-8">
+                {loading ? (
+                  <div className="text-center py-12">
+                    <div className="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-pink-500"></div>
+                    <p className="mt-4 text-lg text-gray-600">Loading gallery images...</p>
+                  </div>
+                ) : filteredImages.length === 0 ? (
+                  <div className="text-center py-12">
+                    <p className="text-xl text-gray-600">No images found for {campus} campus</p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                    {filteredImages.map((img) => (
+                      <div 
+                        key={img.id} 
+                        className="group relative overflow-hidden rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 cursor-pointer border border-gray-100"
+                        onClick={() => handleImageClick(img)}
+                      >
+                        <div className="aspect-square overflow-hidden">
+                          <Image
+                            src={img.file_url}
+                            alt={img.alt_text || img.title}
+                            width={400}
+                            height={400}
+                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                            loading="lazy"
+                          />
+                        </div>
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-4">
+                          <h3 className="text-white font-bold text-lg">{img.title}</h3>
+                          {img.caption && (
+                            <p className="text-white/80 text-sm mt-1 line-clamp-2">{img.caption}</p>
+                          )}
+                          <p className="text-white/60 text-xs mt-2 uppercase tracking-wider">{img.category}</p>
+                          <p className="text-white/60 text-xs mt-1">{formatDate(img.created_at)}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </TabsContent>
+            ))}
+          </Tabs>
+        </div>
+      </section>
+
+      {/* Image Modal */}
+      <Dialog open={isOpen} onClose={() => setIsOpen(false)} className="relative z-50">
+        <DialogBackdrop className="fixed inset-0 bg-black/70" />
+        
+        <div className="fixed inset-0 flex items-center justify-center p-4">
+          <div className="relative max-w-4xl w-full max-h-[90vh]">
+            <button
+              onClick={() => setIsOpen(false)}
+              className="absolute top-4 right-4 bg-white rounded-full p-2 shadow-lg z-10"
+            >
+              <XMarkIcon className="h-6 w-6 text-gray-800" />
+            </button>
+            
             {currentImage && (
-              <>
-                <div className="relative w-full h-[60vh] bg-black sm:h-[70vh] lg:h-[75vh]">
+              <div className="bg-white rounded-xl overflow-hidden shadow-2xl">
+                <div className="relative aspect-video">
                   <Image
-                    src={currentImage.asset.url}
-                    alt={currentGallery?.title || 'Gallery image'}
+                    src={currentImage.file_url}
+                    alt={currentImage.alt_text || currentImage.title}
                     fill
                     className="object-contain"
                   />
-                  {currentImageIndex > 0 && (
-                    <button
-                      onClick={handlePrevious}
-                      className="absolute left-2 top-1/2 transform -translate-y-1/2 text-white bg-black/50 p-2 rounded-full hover:bg-black"
-                    >
-                      ‹
-                    </button>
-                  )}
-                  {currentGallery.images && currentImageIndex < currentGallery.images.length - 1 && (
-                    <button
-                      onClick={handleNext}
-                      className="absolute right-2 top-1/2 transform -translate-y-1/2 text-white bg-black/50 p-2 rounded-full hover:bg-black"
-                    >
-                      ›
-                    </button>
-                  )}
                 </div>
-                <div className="p-3 space-y-2 sm:p-4 sm:space-y-3 lg:p-6 lg:space-y-4">
-                  <h2 className="text-base font-semibold sm:text-lg lg:text-xl">
-                    {currentGallery?.title}
-                  </h2>
-                  {currentGallery?.description && (
-                    <p className="text-gray-700 text-xs sm:text-sm lg:text-base">
-                      {currentGallery.description}
-                    </p>
+                
+                <div className="p-6">
+                  <h3 className="text-2xl font-bold mb-2">{currentImage.title}</h3>
+                  {currentImage.caption && (
+                    <p className="text-gray-700 mb-2">{currentImage.caption}</p>
                   )}
-                  <p className="text-xs text-gray-500 sm:text-sm lg:text-base">
-                    {formatDate(currentGallery?.date || '')}
-                  </p>
+                  {currentImage.category && (
+                    <span className="inline-block bg-pink-100 text-pink-800 px-3 py-1 rounded-full text-sm mb-3">
+                      {currentImage.category}
+                    </span>
+                  )}
+                  <p className="text-gray-500 text-sm">{formatDate(currentImage.created_at)}</p>
                 </div>
-                <button
-                  className="absolute top-2 right-2 text-white bg-black/70 p-1 rounded-full hover:bg-black sm:top-4 sm:right-4 sm:p-2"
-                  onClick={() => setCurrentGallery(null)}
-                >
-                  <XMarkIcon className="h-4 w-4 sm:h-5 sm:w-5" />
-                </button>
-              </>
+              </div>
             )}
-          </Dialog.Panel>
+          </div>
         </div>
       </Dialog>
     </div>

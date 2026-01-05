@@ -1,9 +1,9 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Calendar, User, Phone, Mail, School, Home, BookOpen, CheckCircle, CreditCard, X } from "lucide-react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 
 const campuses = [
   { name: "Kitintale", options: ["Day", "Boarding"] },
@@ -11,25 +11,70 @@ const campuses = [
   { name: "Maganjo", options: ["Day", "Boarding"] },
 ];
 
+const INITIAL_FORM_STATE = {
+  studentName: "",
+  dateOfBirth: "",
+  gender: "",
+  gradeLevel: "",
+  parentName: "",
+  relationship: "",
+  phone: "",
+  email: "",
+  campus: "",
+  boarding: "",
+  previousSchool: "",
+  specialNeeds: "",
+  howHeard: "",
+};
+
 export default function ApplicationForm() {
-  const [formData, setFormData] = useState({
-    studentName: "",
-    dateOfBirth: "",
-    gender: "",
-    gradeLevel: "",
-    parentName: "",
-    relationship: "",
-    phone: "",
-    email: "",
-    campus: "",
-    boarding: "",
-    previousSchool: "",
-    specialNeeds: "",
-    howHeard: "",
-  });
+  const [formData, setFormData] = useState(() => ({ ...INITIAL_FORM_STATE }));
   const [status, setStatus] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [submissionDetails, setSubmissionDetails] = useState<{ applicationId?: string; submittedAt?: string, orderTrackingId?: string, studentName?: string, parentName?: string, email?: string, phone?: string, campus?: string, gradeLevel?: string } | null>(null);
+  const [isProcessingPayment, setIsProcessingPayment] = useState(false);
+  const [paymentStatus, setPaymentStatus] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!submissionDetails?.orderTrackingId) return;
+
+    const checkPaymentStatus = async () => {
+      try {
+        // Use the existing check-payment-status API
+        const response = await fetch(`/api/check-payment-status/${submissionDetails.orderTrackingId}`, {
+          method: "GET",
+        });
+
+        if (response.ok) {
+          const result = await response.json();
+
+          if (result.payment_status_description === "COMPLETED" || result.payment_status_description === "PAID") {
+            // Payment completed, show download button
+            setPaymentStatus("Payment completed successfully! You can now download your application form.");
+          } else if (result.payment_status_description === "FAILED" || result.payment_status_description === "CANCELLED") {
+            setPaymentStatus(`Payment ${result.payment_status_description.toLowerCase()}. Please try again.`);
+          }
+        } else {
+          console.error("Failed to check payment status:", response.status);
+        }
+      } catch (error) {
+        console.error("Error checking payment status:", error);
+      }
+    };
+
+    // Check status immediately
+    checkPaymentStatus();
+
+    // Then check every 10 seconds for up to 10 minutes
+    const intervalId = setInterval(checkPaymentStatus, 10000);
+    const timeoutId = setTimeout(() => clearInterval(intervalId), 600000); // 10 minutes
+
+    return () => {
+      clearInterval(intervalId);
+      clearTimeout(timeoutId);
+    };
+  }, [submissionDetails?.orderTrackingId]);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
@@ -55,14 +100,149 @@ export default function ApplicationForm() {
 
   const paymentLink = "https://store.pesapal.com/cleversapplication";
 
-  const handleRedirectToPayment = () => {
-    window.location.href = paymentLink;
+  const handlePayment = async () => {
+    if (!submissionDetails?.applicationId) return;
+
+    setIsProcessingPayment(true);
+    setPaymentStatus("Initiating payment...");
+
+    try {
+      // Extract first and last names: prefer current form values, otherwise use saved submissionDetails
+      const studentNameRaw = formData.studentName?.trim() || submissionDetails?.studentName?.trim() || "";
+      const parentNameRaw = formData.parentName?.trim() || submissionDetails?.parentName?.trim() || "";
+
+      const studentNameParts = studentNameRaw ? studentNameRaw.split(/\s+/) : [];
+      const parentNameParts = parentNameRaw ? parentNameRaw.split(/\s+/) : [];
+
+      let firstName, lastName;
+
+      // If we have student name, use it, otherwise use parent name
+      if (studentNameParts.length > 0 && studentNameParts[0]) {
+        firstName = studentNameParts[0];
+        lastName = studentNameParts.length > 1 ? studentNameParts.slice(1).join(' ') : firstName;
+      } else if (parentNameParts.length > 0 && parentNameParts[0]) {
+        firstName = parentNameParts[0];
+        lastName = parentNameParts.length > 1 ? parentNameParts.slice(1).join(' ') : firstName;
+      } else {
+        // If both are empty, we can't proceed
+        setPaymentStatus("Cannot initiate payment: student name or parent name is required");
+        return;
+      }
+
+      // Prepare billing data for the payment API. Use form values or fall back to saved submissionDetails.
+      const billingData = {
+        firstName: firstName || '',
+        lastName: lastName || '',
+        email: formData.email || submissionDetails?.email || '',
+        phoneNumber: formData.phone || submissionDetails?.phone || '',
+        amount: 50000, // UGX 50,000 as a number
+        campus: formData.campus || submissionDetails?.campus || '',
+        gradeLevel: formData.gradeLevel || submissionDetails?.gradeLevel || '',
+      };
+
+      // Call API to create Pesapal payment order for applications
+      const response = await fetch("/api/applications/pesapal", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(billingData),
+      });
+
+      const rawBody = await response.text();
+      const result = (() => {
+        try {
+          return rawBody ? JSON.parse(rawBody) : {};
+        } catch {
+          return {};
+        }
+      })();
+
+      if (response.ok && result.url) {
+        // Store the application ID as order tracking ID for status checking
+        setSubmissionDetails(prev => ({
+          ...prev,
+          orderTrackingId: result.applicationId  // Using application ID for tracking
+        }));
+
+        // Redirect to Pesapal
+        window.location.href = result.url;  // Direct redirect instead of opening in new tab
+        setPaymentStatus("Redirecting to payment gateway...");
+      } else {
+        const message =
+          result?.error ||
+          result?.detail ||
+          result?.details ||
+          `Failed to initiate payment (HTTP ${response.status})`;
+        setPaymentStatus(message);
+        console.error("Payment initiation failed:", {
+          status: response.status,
+          statusText: response.statusText,
+          body: rawBody,
+        });
+      }
+    } catch (error) {
+      setPaymentStatus("An error occurred during payment initiation");
+      console.error("Payment initiation error:", error);
+    } finally {
+      setIsProcessingPayment(false);
+    }
+  };
+
+  const handleDownloadPDF = async () => {
+    if (!submissionDetails?.applicationId) return;
+
+    try {
+      // Fetch application details to generate PDF
+      const response = await fetch(`/api/applications/${submissionDetails.applicationId}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (response.ok) {
+        const applicationData = await response.json();
+
+        // Dynamically import jsPDF to avoid SSR issues
+        const { generateApplicationPDF } = await import('../lib/pdf');
+        generateApplicationPDF(applicationData);
+      } else {
+        setStatus("Failed to download PDF. Application not found.");
+      }
+    } catch (error) {
+      setStatus("An error occurred while downloading the PDF.");
+      console.error("PDF download error:", error);
+    }
+  };
+
+  const resetForm = () => {
+    setFormData({ ...INITIAL_FORM_STATE });
+  };
+
+  const formatErrorDetails = (details: unknown) => {
+    if (!details || typeof details !== "object") {
+      return null;
+    }
+
+    const messages = Object.values(details as Record<string, unknown>)
+      .flatMap((value) => {
+        if (!value) return [];
+        if (Array.isArray(value)) return value;
+        return [value];
+      })
+      .map((value) => (typeof value === "string" ? value : String(value)))
+      .filter(Boolean);
+
+    return messages.length ? messages.join(" ") : null;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
     setStatus(null);
+    setSubmissionDetails(null);
+    setPaymentStatus(null);
 
     try {
       const response = await fetch("/api/submit-application", {
@@ -76,13 +256,35 @@ export default function ApplicationForm() {
       const result = await response.json();
 
       if (response.ok) {
-        setStatus("Application submitted successfully! Please proceed to payment.");
+        const applicationId: string | undefined = result.applicationId;
+        const submittedAt: string | undefined = result.metadata?.submittedAt;
+        const successMessage = result.message || "Application submitted successfully!";
+
+        setStatus(
+          applicationId
+            ? `${successMessage} Reference: ${applicationId}`
+            : `${successMessage} Please proceed to payment.`,
+        );
+        setSubmissionDetails({
+          applicationId,
+          submittedAt,
+          studentName: formData.studentName,
+          parentName: formData.parentName,
+          email: formData.email,
+          phone: formData.phone,
+          campus: formData.campus,
+          gradeLevel: formData.gradeLevel,
+        });
+        resetForm();
         setShowPaymentModal(true);
       } else {
-        setStatus(result.error || "Failed to submit application. Please try again.");
+        const detailedError = formatErrorDetails(result.details);
+        setStatus(detailedError || result.error || "Failed to submit application. Please try again.");
+        setShowPaymentModal(false);
       }
     } catch (error) {
       setStatus("An error occurred. Please try again later.");
+      setShowPaymentModal(false);
     } finally {
       setIsSubmitting(false);
     }
@@ -279,16 +481,16 @@ export default function ApplicationForm() {
             </div>
           </div>
 
-          {/* Campus and Boarding Preference */}
+          {/* Campus and Boarding Information */}
           <div className="bg-green-50 p-4 sm:p-5 lg:p-6 rounded-xl shadow-sm">
             <h3 className="text-base sm:text-lg lg:text-xl font-semibold mb-3 sm:mb-4 text-green-600 flex items-center">
               <School className="h-4 w-4 sm:h-5 sm:w-5 lg:h-6 lg:w-6 mr-2 text-green-500" />
-              Campus and Boarding Preference
+              Campus and Boarding Information
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 lg:gap-6">
               <div>
                 <label htmlFor="campus" className="block mb-1 text-xs sm:text-sm font-medium text-gray-700">
-                  Campus <span className="text-red-500">*</span>
+                  Preferred Campus <span className="text-red-500">*</span>
                 </label>
                 <div className="relative">
                   <select
@@ -310,7 +512,7 @@ export default function ApplicationForm() {
               </div>
               <div>
                 <label htmlFor="boarding" className="block mb-1 text-xs sm:text-sm font-medium text-gray-700">
-                  Boarding Preference <span className="text-red-500">*</span>
+                  Boarding Option <span className="text-red-500">*</span>
                 </label>
                 <div className="relative">
                   <select
@@ -416,7 +618,7 @@ export default function ApplicationForm() {
                 className="bg-white rounded-xl p-4 sm:p-6 w-full max-w-[90%] sm:max-w-md"
               >
                 <div className="flex justify-between items-center mb-3 sm:mb-4">
-                  <h3 className="text-base sm:text-lg lg:text-xl font-bold text-blue-600">Application Fee</h3>
+                  <h3 className="text-base sm:text-lg lg:text-xl font-bold text-blue-600">Application Fee Payment</h3>
                   <button
                     onClick={() => setShowPaymentModal(false)}
                     className="text-gray-500 hover:text-gray-700 rounded-full p-1 hover:bg-gray-100"
@@ -429,29 +631,65 @@ export default function ApplicationForm() {
                   <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-blue-100 flex items-center justify-center mx-auto mb-2 sm:mb-3">
                     <CreditCard className="h-5 w-5 sm:h-6 sm:w-6 text-blue-600" />
                   </div>
-                  <h4 className="text-sm sm:text-base font-medium mb-1 sm:mb-2">Application Fee Payment</h4>
+                  <h4 className="text-sm sm:text-base font-medium mb-1 sm:mb-2">Pay Application Fee</h4>
                   <p className="text-gray-600 text-xs sm:text-sm mb-2 sm:mb-3">
                     Pay <span className="font-bold text-blue-600">UGX 50,000</span> to complete your application.
                   </p>
-                  <div className="bg-blue-50 p-2 sm:p-3 rounded-lg border border-blue-100 text-blue-700 text-xs sm:text-sm mb-3 sm:mb-4">
-                    Application submitted successfully. Payment is required to finalize.
-                  </div>
+                  {submissionDetails?.applicationId && (
+                    <p className="text-xs sm:text-sm text-gray-600 mb-3 sm:mb-4">
+                      Reference: <span className="font-mono font-semibold text-blue-600">{submissionDetails.applicationId}</span>
+                    </p>
+                  )}
+
+                  {paymentStatus && (
+                    <div className={`p-3 rounded-lg mb-3 text-xs sm:text-sm ${typeof paymentStatus === 'string' && paymentStatus.includes('successfully') ? 'bg-green-100 text-green-600' : 'bg-yellow-100 text-yellow-600'}`}>
+                      {typeof paymentStatus === 'string' ? paymentStatus : String(paymentStatus)}
+                    </div>
+                  )}
+
+                  {isProcessingPayment && (
+                    <div className="flex justify-center mb-3">
+                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500"></div>
+                    </div>
+                  )}
                 </div>
-                <div className="flex gap-2 sm:gap-3">
-                  <Button
-                    type="button"
-                    className="w-full bg-gray-200 text-gray-700 hover:bg-gray-300 text-xs sm:text-sm py-2 sm:py-2.5"
-                    onClick={() => setShowPaymentModal(false)}
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    type="button"
-                    className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white text-xs sm:text-sm py-2 sm:py-2.5"
-                    onClick={handleRedirectToPayment}
-                  >
-                    Pay Now
-                  </Button>
+                <div className="flex flex-col gap-2 sm:gap-3">
+                  {!(typeof paymentStatus === 'string' && paymentStatus.includes("completed")) ? (
+                    <>
+                      <Button
+                        type="button"
+                        className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white text-xs sm:text-sm py-2 sm:py-2.5"
+                        onClick={handlePayment}
+                        disabled={isProcessingPayment}
+                      >
+                        {isProcessingPayment ? "Processing..." : "Pay Now with Pesapal"}
+                      </Button>
+                      <Button
+                        type="button"
+                        className="w-full bg-gray-200 text-gray-700 hover:bg-gray-300 text-xs sm:text-sm py-2 sm:py-2.5"
+                        onClick={() => setShowPaymentModal(false)}
+                      >
+                        Close
+                      </Button>
+                    </>
+                  ) : (
+                    <>
+                      <Button
+                        type="button"
+                        className="w-full bg-green-600 hover:bg-green-700 text-white text-xs sm:text-sm py-2 sm:py-2.5"
+                        onClick={handleDownloadPDF}
+                      >
+                        Download Application Form (PDF)
+                      </Button>
+                      <Button
+                        type="button"
+                        className="w-full bg-gray-200 text-gray-700 hover:bg-gray-300 text-xs sm:text-sm py-2 sm:py-2.5"
+                        onClick={() => setShowPaymentModal(false)}
+                      >
+                        Close
+                      </Button>
+                    </>
+                  )}
                 </div>
               </motion.div>
             </motion.div>
@@ -462,10 +700,10 @@ export default function ApplicationForm() {
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              className={`p-3 sm:p-4 rounded-lg ${status.includes("success") ? "bg-green-100 border border-green-300" : "bg-red-100 border border-red-300"}`}
+              className={`p-3 sm:p-4 rounded-lg ${typeof status === 'string' && status.includes("success") ? "bg-green-100 border border-green-300" : "bg-red-100 border border-red-300"}`}
             >
-              <p className={`text-xs sm:text-sm flex items-center ${status.includes("success") ? "text-green-600" : "text-red-600"}`}>
-                {status.includes("success") ? (
+              <p className={`text-xs sm:text-sm flex items-center ${typeof status === 'string' && status.includes("success") ? "text-green-600" : "text-red-600"}`}>
+                {typeof status === 'string' && status.includes("success") ? (
                   <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
                 ) : (
                   <span className="flex h-4 w-4 sm:h-5 sm:w-5 relative mr-2">
@@ -478,32 +716,14 @@ export default function ApplicationForm() {
             </motion.div>
           )}
 
-          <div className="flex justify-center pt-2 sm:pt-4">
+          {/* Submission Area */}
+          <div className="fixed bottom-0 left-0 right-0 p-4 bg-white border-t border-slate-200 md:relative md:bg-transparent md:border-0 md:p-0">
             <Button
               type="submit"
-              className="px-4 sm:px-6 lg:px-8 py-2 sm:py-2.5 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white text-sm sm:text-base font-medium rounded-full shadow-md transform transition hover:scale-105 flex items-center"
               disabled={isSubmitting}
+              className="w-full h-14 md:h-12 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-lg flex items-center justify-center gap-2 transition-transform active:scale-95"
             >
-              {isSubmitting ? (
-                <>
-                  <svg
-                    className="animate-spin -ml-1 mr-2 h-4 w-4 sm:h-5 sm:w-5 text-white"
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                  >
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                    <path
-                      className="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                    />
-                  </svg>
-                  Submitting...
-                </>
-              ) : (
-                "Submit Application"
-              )}
+              {isSubmitting ? "Submitting..." : "Submit & Proceed to Payment"}
             </Button>
           </div>
         </form>

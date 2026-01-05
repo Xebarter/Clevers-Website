@@ -4,6 +4,8 @@ import { GeistMono } from "geist/font/mono";
 import "./globals.css";
 import { AdminAuthProvider } from "@/contexts/AdminAuthContext";
 import Header from "@/components/layout/Header";
+import Footer from "@/components/layout/Footer";
+import ClientBody from "@/components/ClientBody";
 
 export const metadata: Metadata = {
   title: "Clevers International School",
@@ -21,8 +23,15 @@ export default function RootLayout({
         className={`${GeistSans.variable} ${GeistMono.variable} antialiased`}
       >
         <AdminAuthProvider>
-          <Header />
-          {children}
+          <ClientBody>
+            <div className="flex flex-col min-h-screen">
+              <Header />
+              <main className="flex-grow">
+                {children}
+              </main>
+              <Footer />
+            </div>
+          </ClientBody>
         </AdminAuthProvider>
       </body>
     </html>

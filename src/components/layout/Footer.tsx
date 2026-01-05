@@ -15,8 +15,9 @@ import {
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
-  const phoneNumber = "+256772470972";
-  const emailAddress = "admissions@cleversorigin.edu";
+  const phoneNumber = "+256 772470972";
+  const telNumber = "+256772470972";
+  const emailAddress = "cleversorigin@gmail.com";
 
   return (
     <footer className="bg-gray-800 text-white">
@@ -62,13 +63,18 @@ const Footer = () => {
                 </Link>
               </li>
               <li>
-                <Link href="/academics/programs" className="text-gray-300 hover:text-white">
-                  Academic Programs
+                <Link href="/campus/kitintale" className="text-gray-300 hover:text-white">
+                  Kitintale Campus
                 </Link>
               </li>
               <li>
-                <Link href="/student-life/activities" className="text-gray-300 hover:text-white">
-                  Student Activities
+                <Link href="/campus/kasokoso" className="text-gray-300 hover:text-white">
+                  Kasokoso Campus
+                </Link>
+              </li>
+              <li>
+                <Link href="/campus/maganjo" className="text-gray-300 hover:text-white">
+                  Maganjo Campus
                 </Link>
               </li>
               <li>
@@ -99,7 +105,7 @@ const Footer = () => {
                 </div>
                 <div>
                   <p className="font-bold">Kitintale Campus</p>
-                  <p className="text-gray-300">Plot 123, Kitintale Road, Kampala</p>
+                  <p className="text-gray-300">Along Kunya Road, Nakawa, Kampala</p>
                 </div>
               </li>
               <li className="flex">
@@ -108,7 +114,7 @@ const Footer = () => {
                 </div>
                 <div>
                   <p className="font-bold">Kasokoso Campus</p>
-                  <p className="text-gray-300">Plot 456, Kasokoso Avenue, Kampala</p>
+                  <p className="text-gray-300">Kireka, Kasokoso, Wakiso District</p>
                 </div>
               </li>
               <li className="flex">
@@ -117,7 +123,7 @@ const Footer = () => {
                 </div>
                 <div>
                   <p className="font-bold">Maganjo Campus</p>
-                  <p className="text-gray-300">Plot 789, Maganjo Road, Kampala</p>
+                  <p className="text-gray-300">Maganjo, Along Bombo Road</p>
                 </div>
               </li>
             </ul>
@@ -129,7 +135,7 @@ const Footer = () => {
             <ul className="space-y-3">
               <li className="flex items-start">
                 <Phone className="h-5 w-5 mr-2 mt-0.5 flex-shrink-0" />
-                <a href={`tel:${phoneNumber}`} className="text-white hover:text-gray-300">
+                <a href={`tel:${telNumber}`} className="text-white hover:text-gray-300">
                   {phoneNumber}
                 </a>
               </li>
