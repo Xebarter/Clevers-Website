@@ -2,6 +2,8 @@ import { NextRequest } from 'next/server';
 import { pesapalService } from '@/lib/pesapal';
 import { applicationsService } from '../../../lib/supabase/services';
 
+export const dynamic = 'force-dynamic';
+
 export async function POST(request: NextRequest) {
   try {
     const {

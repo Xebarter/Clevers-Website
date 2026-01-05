@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { pesapalService } from "@/lib/pesapal";
 
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
   try {
     // The IPN is now registered server-side when needed

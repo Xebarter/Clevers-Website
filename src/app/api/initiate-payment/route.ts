@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { pesapalService } from "../../../../src/lib/pesapal";
 import { applicationsService } from "../../../../lib/supabase/services";
 
+export const dynamic = 'force-dynamic';
+
 export async function POST(request: Request) {
   try {
     const { applicationId, amount, currency } = await request.json();

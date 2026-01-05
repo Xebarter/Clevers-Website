@@ -1,10 +1,23 @@
+// Enable dynamic rendering to prevent static generation issues
 "use client";
 
+export const dynamic = 'force-dynamic';
+
 import { useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { motion } from "framer-motion";
 
-export default function PesapalCallbackPage() {
+function LoadingFallback() {
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-gray-50 flex items-center justify-center px-4 py-12 sm:px-6 lg:px-8">
+      <div className="max-w-md w-full space-y-8 bg-white rounded-2xl shadow-lg p-6 sm:p-8 text-center">
+        <p className="text-gray-600">Loading...</p>
+      </div>
+    </div>
+  );
+}
+
+function PesapalCallbackContent() {
   const params = useSearchParams();
   const orderTrackingId = params.get("OrderTrackingId");
   const [status, setStatus] = useState<"PENDING" | "COMPLETED" | "FAILED" | "UNKNOWN">("PENDING");
@@ -157,5 +170,13 @@ export default function PesapalCallbackPage() {
         </div>
       </motion.div>
     </div>
+  );
+}
+
+export default function PesapalCallbackPage() {
+  return (
+    <Suspense fallback={<LoadingFallback />}>
+      <PesapalCallbackContent />
+    </Suspense>
   );
 }

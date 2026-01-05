@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { pesapalService } from "../../../../../src/lib/pesapal";
 import { applicationsService } from "../../../../../lib/supabase/services";
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(
   request: Request,
   { params }: { params: { orderTrackingId: string } }

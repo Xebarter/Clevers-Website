@@ -19,23 +19,13 @@ export const registerPesapalIPN = async (): Promise<void> => {
   }
 };
 
-// If this file is run directly, register the IPN
-if (typeof window === 'undefined') { // Only run on the server
-  registerPesapalIPN().catch(error => {
-    console.error('Error during IPN registration:', error);
-  });
-}
+// Remove automatic execution during import to prevent build-time issues
+// The IPN registration should only happen when explicitly called during runtime
 
 /**
  * Initialize Pesapal service by registering the IPN
  * This should be called server-side when needed
  */
 export const initializePesapal = async (): Promise<void> => {
-  try {
-    await registerPesapalIPN();
-    console.log('Pesapal service initialized successfully');
-  } catch (error) {
-    console.error('Failed to initialize Pesapal service:', error);
-    throw error; // Re-throw so calling code can handle the error appropriately
-  }
+  await registerPesapalIPN();
 };
