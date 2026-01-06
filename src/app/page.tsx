@@ -9,22 +9,42 @@ import AnnouncementBoard from "@/components/home/AnnouncementBoard";
 import UpcomingEvents from "@/components/home/UpcomingEvents";
 import CampusShowcase from "@/components/home/CampusShowcase";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { galleryService, GalleryImage } from "../../lib/supabase/services";
 
 export default function Home() {
-  const images = [
-    "/image1.jpg", "/image2.jpg", "/image3.jpg", "/image4.jpg",
-    "/image5.jpg", "/image6.jpg", "/image7.jpg", "/image8.jpg",
-    "/image9.jpg", "/image10.jpg", "/image11.jpg",
-  ];
-
+  const [images, setImages] = useState<string[]>([]);
   const [currentImage, setCurrentImage] = useState(0);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    const fetchHeroImages = async () => {
+      try {
+        const allImages = await galleryService.getAll();
+        // Filter images that belong to the "Other/General" category
+        const otherImages = allImages.filter(img => img.category === 'other');
+        // Extract URLs from the filtered images
+        const imageUrls = otherImages.map(img => img.file_url);
+        setImages(imageUrls.length > 0 ? imageUrls : []);
+      } catch (error) {
+        console.error('Error fetching hero images:', error);
+        // If there's an error, we'll still use an empty array
+        setImages([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchHeroImages();
+  }, []);
+
+  useEffect(() => {
+    if (images.length <= 1) return; // Don't auto-rotate if there are no images or only one
+    
     const interval = setInterval(() => {
       setCurrentImage((prev) => (prev + 1) % images.length);
     }, 4000);
     return () => clearInterval(interval);
-  }, []);
+  }, [images]);
 
   return (
     <div className="flex flex-col min-h-screen bg-gradient-to-tl from-yellow-50 via-pink-50 to-blue-50 text-gray-800">
@@ -58,17 +78,27 @@ export default function Home() {
 
           {/* Hero Slideshow */}
           <div className="w-full lg:w-1/2 relative h-[250px] sm:h-[350px] lg:h-[400px] mt-6 lg:mt-0 rounded-xl overflow-hidden shadow-2xl">
-            {images.map((src, index) => (
-              <Image
-                key={index}
-                src={src}
-                alt=""
-                fill
-                priority={index === 0}
-                sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 40vw"
-                className={`absolute object-cover transition-opacity duration-1000 ease-in-out ${index === currentImage ? "opacity-100" : "opacity-0"}`}
-              />
-            ))}
+            {loading ? (
+              <div className="absolute inset-0 flex items-center justify-center bg-gray-200">
+                <p className="text-gray-600">Loading images...</p>
+              </div>
+            ) : images.length > 0 ? (
+              images.map((src, index) => (
+                <Image
+                  key={index}
+                  src={src}
+                  alt=""
+                  fill
+                  priority={index === 0}
+                  sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 40vw"
+                  className={`absolute object-cover transition-opacity duration-1000 ease-in-out ${index === currentImage ? "opacity-100" : "opacity-0"}`}
+                />
+              ))
+            ) : (
+              <div className="absolute inset-0 flex items-center justify-center bg-gray-200">
+                <p className="text-gray-600">No images available</p>
+              </div>
+            )}
             <div className="absolute inset-0 bg-black/20 z-10 rounded-lg" />
           </div>
         </div>

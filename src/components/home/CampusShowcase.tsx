@@ -296,9 +296,6 @@ const CampusShowcase = () => {
                             <ChevronRight />
                           </Button>
                         </div>
-                        <span className="text-xs text-white bg-black/40 px-3 py-1 rounded-full">
-                          {idx + 1} / {images.length}
-                        </span>
                       </div>
                     )}
                   </div>

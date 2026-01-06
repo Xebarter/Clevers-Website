@@ -366,6 +366,18 @@ export const galleryService = {
     return data
   },
 
+  // Get gallery images by category
+  getByCategory: async (category: string): Promise<GalleryImage[]> => {
+    const { data, error } = await supabase
+      .from('gallery_images')
+      .select('*')
+      .eq('category', category)
+      .order('created_at', { ascending: false })
+
+    if (error) throw error
+    return data || []
+  },
+
   // Create new gallery image
   create: async (image: Omit<GalleryImage, 'id' | 'created_at'>): Promise<GalleryImage> => {
     const { data, error } = await getSupabaseAdmin()

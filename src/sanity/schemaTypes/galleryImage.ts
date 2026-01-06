@@ -39,6 +39,7 @@ export default defineType({
           { title: 'Students', value: 'students' },
           { title: 'Sports', value: 'sports' },
           { title: 'Activities', value: 'activities' },
+          { title: 'Other/General', value: 'other' },
         ],
         layout: 'dropdown',
       },

@@ -4,7 +4,7 @@ import React from "react";
 import type { Metadata } from "next";
 import CampusLayout, { CampusInfo } from "@/components/CampusLayout";
 import { Award, BookOpen, Music, Palette, Users } from "lucide-react";
-import ImageCarousel from "../ImageCarousel"; // Carousel stays for the animated images
+import { CampusImageCarousel } from "../ImageCarousel"; // Updated import to use the new component
 
 export const metadata: Metadata = {
   title: "Kitintale Campus | Clevers' Origin Schools",
@@ -18,11 +18,11 @@ const kitintaleCampusInfo: CampusInfo = {
   students: "200+",
   headshot: "👨‍🚀",
   principal: "Joshua Musoke",
-  principalTitle: "Campus Principal",
+  principalTitle: "Campus Headteacher",
   principalMessage: "At Kitintale Campus, we create an environment where children feel safe to explore, question, and learn. Our approach combines academic excellence with joy and creativity, ensuring each child develops a lifelong love for learning.",
   address: "Plot 45, Kitintale Road, Kampala, Uganda",
-  phone: "+256 772 470 972",
-  email: "cleversorigin@gmail.com",
+  phone: "+256 700 123456",
+  email: "kitintale@cleversoriginschools.com",
   hours: "Monday to Friday: 7:30am - 4:30pm",
   accentColor: "kinder-blue",
 
@@ -75,13 +75,7 @@ const kitintaleCampusInfo: CampusInfo = {
     "Parent-Child Workshops: Special sessions where parents join classroom activities"
   ],
 
-  galleryImages: [
-    { url: "/kitintale/kitintale1.jpg", alt: "Kitintale Campus Image 1" },
-    { url: "/kitintale/kitintale2.jpg", alt: "Kitintale Campus Image 2" },
-    { url: "/kitintale/kitintale3.jpg", alt: "Kitintale Campus Image 3" },
-    { url: "/kitintale/kitintale4.jpg", alt: "Kitintale Campus Image 4" },
-    { url: "/kitintale/kitintale5.jpg", alt: "Kitintale Campus Image 5" },
-  ]
+  galleryImages: [] // Required but unused
 
 };
 
@@ -91,15 +85,7 @@ export default function KitintaleCampusPage() {
       campusInfo={{
         ...kitintaleCampusInfo,
         imagePlaceholder: (
-          <ImageCarousel
-            images={[
-              { url: "/kitintale/kitintale1.jpg", alt: "Kitintale Campus Image 1" },
-              { url: "/kitintale/kitintale2.jpg", alt: "Kitintale Campus Image 2" },
-              { url: "/kitintale/kitintale3.jpg", alt: "Kitintale Campus Image 3" },
-              { url: "/kitintale/kitintale4.jpg", alt: "Kitintale Campus Image 4" },
-              { url: "/kitintale/kitintale5.jpg", alt: "Kitintale Campus Image 5" },
-            ]}
-          />
+          <CampusImageCarousel category="Kitintale" />
         ),
       }}
     />

@@ -181,9 +181,14 @@ const CampusLayout: React.FC<CampusLayoutProps> = ({ campusInfo }) => {
               </div>
               <div>
                 <h2 className={`text-2xl md:text-3xl font-bold mb-2 font-heading text-${campusInfo.accentColor}`}>
-                  Message from Our Principal
+                  Message from Our Headteacher
                 </h2>
-                <p className="text-gray-600 mb-4 font-body">{campusInfo.principal}, {campusInfo.principalTitle}</p>
+                <p className="text-gray-600 mb-4 font-body">
+                  {campusInfo.name === 'Maganjo' ? 'Mr. Nsubuga Ronald' : 
+                   campusInfo.name === 'Kasokoso' ? 'Sekitoleko Wilberforce' : 
+                   campusInfo.name === 'Kitintale' ? 'Kajiri Elijah' : 
+                   campusInfo.principal}, {campusInfo.principalTitle}
+                </p>
                 <p className="text-gray-700 font-body italic">
                   "{campusInfo.principalMessage}"
                 </p>
