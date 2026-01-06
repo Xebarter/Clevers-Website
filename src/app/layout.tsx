@@ -8,7 +8,7 @@ import Footer from "@/components/layout/Footer";
 import ClientBody from "@/components/ClientBody";
 
 export const metadata: Metadata = {
-  title: "Clevers International School",
+  title: "Clevers' Origin Schools",
   description: "Nurturing Excellence, Empowering Futures",
 };
 

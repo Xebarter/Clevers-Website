@@ -252,7 +252,7 @@ const CampusLayout: React.FC<CampusLayoutProps> = ({ campusInfo }) => {
           </h2>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {campusInfo.galleryImages.map((image, index) => (
+            {campusInfo.galleryImages.slice(0, 4).map((image, index) => (
               <div key={index} className="bg-white rounded-xl overflow-hidden shadow-md">
                 <div className="aspect-video relative w-full h-0" style={{ paddingBottom: '56.25%' }}>
                   <Image
@@ -273,7 +273,7 @@ const CampusLayout: React.FC<CampusLayoutProps> = ({ campusInfo }) => {
           <div className="text-center mt-8">
             <Link href="/gallery">
               <Button variant="outline" className="gap-2 border-2">
-                View More Photos
+                View Gallery
                 <ArrowRight className="h-4 w-4" />
               </Button>
             </Link>
