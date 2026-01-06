@@ -1,5 +1,5 @@
-import jsPDF from 'jspdf';
-import 'jspdf-autotable';
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 
 export interface ApplicationData {
   id: string;
@@ -21,112 +21,222 @@ export interface ApplicationData {
   created_at: string;
 }
 
-export function generateApplicationPDF(applicationData: ApplicationData) {
-  const doc = new jsPDF();
+export function generateApplicationPDF(data: ApplicationData) {
+  const doc = new jsPDF({ format: "a4", unit: "mm" });
 
-  // Add title
-  doc.setFontSize(20);
-  doc.text('Student Application Form', 105, 20, { align: 'center' });
+  const pageWidth = doc.internal.pageSize.width;
+  const pageHeight = doc.internal.pageSize.height;
+  const marginX = 20;
+  let cursorY = 60;
 
-  // Add school logo or information if available
-  doc.setFontSize(12);
-  doc.text('Clevers School', 20, 30);
+  /* =====================================================
+     COLOR SYSTEM (Bright but Trustworthy)
+  ===================================================== */
+  const COLORS = {
+    primary: [14, 165, 233], // sky-500
+    accent: [236, 72, 153],  // pink-500
+    success: [34, 197, 94],  // green-500
+    textDark: [15, 23, 42],  // slate-900
+    textMuted: [100, 116, 139], // slate-500
+    borderSoft: [226, 232, 240], // slate-200
+    rowAlt: [248, 250, 252], // slate-50
+  };
 
-  // Add application details
-  doc.setFontSize(14);
-  doc.text('Application Details', 20, 45);
+  /* =====================================================
+     HEADER
+  ===================================================== */
+  const drawHeader = () => {
+    // Top bright band
+    doc.setFillColor(...COLORS.primary);
+    doc.rect(0, 0, pageWidth, 38, "F");
 
-  // Add application information in a table format
-  const applicationDetails = [
-    ['Field', 'Value'],
-    ['Application ID', applicationData.id],
-    ['Submitted Date', new Date(applicationData.created_at).toLocaleDateString()],
-    ['Payment Status', applicationData.payment_status],
-    ['Application Status', applicationData.application_status],
-  ];
+    // Accent underline
+    doc.setFillColor(...COLORS.accent);
+    doc.rect(0, 38, pageWidth, 4, "F");
 
-  (doc as any).autoTable({
-    startY: 50,
-    head: [applicationDetails[0]],
-    body: applicationDetails.slice(1),
-    theme: 'grid',
-    styles: { cellPadding: 5, fontSize: 10 },
-    headStyles: { fillColor: [220, 220, 220], textColor: [0, 0, 0] },
+    // Logo
+    try {
+      doc.addImage("/budge.png", "PNG", marginX, 9, 22, 22);
+    } catch {
+      doc.setTextColor(255, 255, 255);
+      doc.setFontSize(14);
+      doc.text("CLEVER'S ORIGIN SCHOOLS", marginX, 22);
+    }
+
+    // School name
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(18);
+    doc.setTextColor(255, 255, 255);
+    doc.text("CLEVER'S ORIGIN SCHOOLS", pageWidth / 2, 20, { align: "center" });
+
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(11);
+    doc.text(
+      "Student Admission Application Summary",
+      pageWidth / 2,
+      28,
+      { align: "center" }
+    );
+  };
+
+  drawHeader();
+
+  /* =====================================================
+     SECTION TITLE
+  ===================================================== */
+  const sectionTitle = (title: string) => {
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(13);
+    doc.setTextColor(...COLORS.textDark);
+    doc.text(title, marginX, cursorY);
+
+    cursorY += 4;
+
+    doc.setDrawColor(...COLORS.primary);
+    doc.setLineWidth(0.8);
+    doc.line(marginX, cursorY, pageWidth - marginX, cursorY);
+
+    cursorY += 6;
+  };
+
+  /* =====================================================
+     TABLE BASE STYLE
+  ===================================================== */
+  const baseTable = {
+    theme: "grid" as const,
+    styles: {
+      fontSize: 10,
+      cellPadding: 5,
+      textColor: COLORS.textDark,
+      lineColor: COLORS.borderSoft,
+      lineWidth: 0.3,
+    },
+    headStyles: {
+      fillColor: COLORS.primary,
+      textColor: [255, 255, 255],
+      fontStyle: "bold",
+    },
+    alternateRowStyles: {
+      fillColor: COLORS.rowAlt,
+    },
+    columnStyles: {
+      0: {
+        fontStyle: "bold",
+        textColor: COLORS.textDark,
+        cellWidth: 60,
+      },
+    },
+    margin: { left: marginX, right: marginX },
+  };
+
+  /* =====================================================
+     APPLICATION DETAILS
+  ===================================================== */
+  sectionTitle("Application Details");
+
+  autoTable(doc, {
+    startY: cursorY,
+    ...baseTable,
+    body: [
+      ["Application ID", data.id],
+      ["Submission Date", new Date(data.created_at).toLocaleDateString()],
+      ["Payment Status", data.payment_status],
+      ["Application Status", data.application_status],
+    ],
   });
 
-  // Add student information
-  doc.setFontSize(14);
-  doc.text('Student Information', 20, (doc as any).lastAutoTable.finalY + 10);
+  cursorY = (doc as any).lastAutoTable.finalY + 10;
 
-  const studentDetails = [
-    ['Field', 'Value'],
-    ['Full Name', applicationData.student_name],
-    ['Date of Birth', applicationData.date_of_birth],
-    ['Gender', applicationData.gender],
-    ['Grade Level', applicationData.grade_level],
-  ];
+  /* =====================================================
+     STUDENT INFORMATION
+  ===================================================== */
+  sectionTitle("Student Information");
 
-  (doc as any).autoTable({
-    startY: (doc as any).lastAutoTable.finalY + 15,
-    head: [studentDetails[0]],
-    body: studentDetails.slice(1),
-    theme: 'grid',
-    styles: { cellPadding: 5, fontSize: 10 },
-    headStyles: { fillColor: [220, 220, 220], textColor: [0, 0, 0] },
+  autoTable(doc, {
+    startY: cursorY,
+    ...baseTable,
+    body: [
+      ["Full Name", data.student_name],
+      ["Date of Birth", data.date_of_birth],
+      ["Gender", data.gender],
+      ["Grade Applied For", data.grade_level],
+    ],
   });
 
-  // Add parent/guardian information
-  doc.setFontSize(14);
-  doc.text('Parent/Guardian Information', 20, (doc as any).lastAutoTable.finalY + 10);
+  cursorY = (doc as any).lastAutoTable.finalY + 10;
 
-  const parentDetails = [
-    ['Field', 'Value'],
-    ['Full Name', applicationData.parent_name],
-    ['Relationship', applicationData.relationship],
-    ['Phone Number', applicationData.phone],
-    ['Email Address', applicationData.email],
-  ];
+  /* =====================================================
+     PARENT / GUARDIAN INFORMATION
+  ===================================================== */
+  sectionTitle("Parent / Guardian Information");
 
-  (doc as any).autoTable({
-    startY: (doc as any).lastAutoTable.finalY + 15,
-    head: [parentDetails[0]],
-    body: parentDetails.slice(1),
-    theme: 'grid',
-    styles: { cellPadding: 5, fontSize: 10 },
-    headStyles: { fillColor: [220, 220, 220], textColor: [0, 0, 0] },
+  autoTable(doc, {
+    startY: cursorY,
+    ...baseTable,
+    body: [
+      ["Full Name", data.parent_name],
+      ["Relationship", data.relationship],
+      ["Phone Number", data.phone],
+      ["Email Address", data.email],
+    ],
   });
 
-  // Add campus and preference information
-  doc.setFontSize(14);
-  doc.text('Campus and Preference', 20, (doc as any).lastAutoTable.finalY + 10);
+  cursorY = (doc as any).lastAutoTable.finalY + 10;
 
-  const campusDetails = [
-    ['Field', 'Value'],
-    ['Preferred Campus', applicationData.campus],
-    ['Boarding Preference', applicationData.boarding],
-    ['Previous School', applicationData.previous_school || 'N/A'],
-    ['Special Needs', applicationData.special_needs || 'N/A'],
-    ['How Heard About Us', applicationData.how_heard],
-  ];
+  /* =====================================================
+     CAMPUS & PREFERENCES
+  ===================================================== */
+  sectionTitle("Campus & Preferences");
 
-  (doc as any).autoTable({
-    startY: (doc as any).lastAutoTable.finalY + 15,
-    head: [campusDetails[0]],
-    body: campusDetails.slice(1),
-    theme: 'grid',
-    styles: { cellPadding: 5, fontSize: 10 },
-    headStyles: { fillColor: [220, 220, 220], textColor: [0, 0, 0] },
+  autoTable(doc, {
+    startY: cursorY,
+    ...baseTable,
+    body: [
+      ["Preferred Campus", data.campus],
+      ["Boarding Option", data.boarding],
+      ["Previous School", data.previous_school || "Not Provided"],
+      ["Special Needs", data.special_needs || "None Declared"],
+      ["How You Heard About Us", data.how_heard],
+    ],
   });
 
-  // Add footer
+  /* =====================================================
+     FOOTER
+  ===================================================== */
   const pageCount = doc.getNumberOfPages();
+
   for (let i = 1; i <= pageCount; i++) {
     doc.setPage(i);
-    doc.text(`Page ${i} of ${pageCount}`, doc.internal.pageSize.width / 2, doc.internal.pageSize.height - 10, {
-      align: 'center',
-    });
+
+    doc.setDrawColor(...COLORS.borderSoft);
+    doc.line(marginX, pageHeight - 22, pageWidth - marginX, pageHeight - 22);
+
+    doc.setFontSize(9);
+    doc.setTextColor(...COLORS.textMuted);
+
+    doc.text(
+      "Clevers' Origin Schools | Excellence in Education",
+      marginX,
+      pageHeight - 14
+    );
+
+    doc.text(
+      `Generated on ${new Date().toLocaleDateString()}`,
+      pageWidth - marginX,
+      pageHeight - 14,
+      { align: "right" }
+    );
+
+    doc.text(
+      `Page ${i} of ${pageCount}`,
+      pageWidth / 2,
+      pageHeight - 10,
+      { align: "center" }
+    );
   }
 
-  // Save the PDF
-  doc.save(`Application-${applicationData.id}.pdf`);
+  /* =====================================================
+     SAVE
+  ===================================================== */
+  doc.save(`Application_${data.student_name.replace(/\s+/g, "_")}.pdf`);
 }

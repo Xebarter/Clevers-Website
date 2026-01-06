@@ -41,7 +41,7 @@ export default function MissionPage() {
               <CardContent className="p-8">
                 <h2 className="text-3xl font-bold mb-6 text-kinder-blue text-center font-heading">Our Mission</h2>
                 <p className="text-gray-700 mb-6 text-center text-lg font-body">
-                  To provide a joyful, nurturing environment where young children can develop a lifelong love of learning while building strong academic foundations and social skills.
+                  We provide quality education to all children, discover and develop their talents with much emphasis on morals, in order to make a productive and God-fearing generation.
                 </p>
                 <div className="border-t border-kinder-blue/20 pt-6 mt-6">
                   <ul className="space-y-4">
@@ -193,12 +193,6 @@ export default function MissionPage() {
             Experience firsthand how our mission and vision create a vibrant learning environment for young children.
           </p>
           <div className="flex flex-wrap gap-4 justify-center">
-            <Link href="/about/leadership">
-              <Button className="gap-2 bg-kinder-purple border-purple-600 hover:bg-kinder-purple/90 hover:border-purple-700 kinder-button">
-                Meet Our Leadership
-                <ArrowRight className="h-4 w-4" />
-              </Button>
-            </Link>
             <Link href="/apply">
               <Button variant="outline" className="gap-2 border-2">
                 Apply Now
