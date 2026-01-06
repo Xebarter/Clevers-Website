@@ -27,216 +27,225 @@ export function generateApplicationPDF(data: ApplicationData) {
   const pageWidth = doc.internal.pageSize.width;
   const pageHeight = doc.internal.pageSize.height;
   const marginX = 20;
-  let cursorY = 60;
+  let cursorY = 45;
 
   /* =====================================================
-     COLOR SYSTEM (Bright but Trustworthy)
+      COLOR SYSTEM (Vibrant & Trustworthy)
   ===================================================== */
   const COLORS = {
-    primary: [14, 165, 233], // sky-500
-    accent: [236, 72, 153],  // pink-500
-    success: [34, 197, 94],  // green-500
-    textDark: [15, 23, 42],  // slate-900
-    textMuted: [100, 116, 139], // slate-500
-    borderSoft: [226, 232, 240], // slate-200
-    rowAlt: [248, 250, 252], // slate-50
+    primary: [14, 165, 233],    // Sky Blue (Friendly)
+    secondary: [30, 41, 59],    // Slate 800 (Professional)
+    accent: [244, 63, 94],      // Rose (Fun)
+    success: [34, 197, 94],     // Green
+    warning: [245, 158, 11],    // Amber
+    textDark: [15, 23, 42],     // Slate 900
+    textMuted: [100, 116, 139],  // Slate 500
+    bgLight: [248, 250, 252],   // Slate 50
+    borderSoft: [226, 232, 240], // Slate 200
   };
 
   /* =====================================================
-     HEADER
+      HELPER: DRAW BADGE
+  ===================================================== */
+  const drawBadge = (text: string, x: number, y: number, type: 'success' | 'warning' | 'primary') => {
+    const color = type === 'success' ? COLORS.success : type === 'warning' ? COLORS.warning : COLORS.primary;
+    const padding = 2;
+    const txtWidth = doc.getTextWidth(text);
+
+    // Draw rounded rect (manually)
+    doc.setFillColor(...color);
+    doc.roundedRect(x, y - 4, txtWidth + (padding * 4), 6, 2, 2, "F");
+
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(8);
+    doc.setFont("helvetica", "bold");
+    doc.text(text.toUpperCase(), x + (padding * 2), y);
+  };
+
+  /* =====================================================
+      HEADER DESIGN
   ===================================================== */
   const drawHeader = () => {
-    // Top bright band
+    // Left decorative bar
     doc.setFillColor(...COLORS.primary);
-    doc.rect(0, 0, pageWidth, 38, "F");
+    doc.rect(0, 0, 5, 40, "F");
 
-    // Accent underline
-    doc.setFillColor(...COLORS.accent);
-    doc.rect(0, 38, pageWidth, 4, "F");
-
-    // Logo
+    // Logo Placeholder / Image
     try {
-      doc.addImage("/budge.png", "PNG", marginX, 9, 22, 22);
+      doc.addImage("/logo.png", "PNG", marginX, 10, 20, 20);
     } catch {
+      // Fallback Circle for Logo
+      doc.setFillColor(...COLORS.primary);
+      doc.circle(marginX + 10, 20, 10, "F");
       doc.setTextColor(255, 255, 255);
-      doc.setFontSize(14);
-      doc.text("CLEVER'S ORIGIN SCHOOLS", marginX, 22);
+      doc.setFontSize(12);
+      doc.text("C", marginX + 8.5, 21.5);
     }
 
-    // School name
+    // School Info
+    doc.setDrawColor(...COLORS.borderSoft);
+    doc.setTextColor(...COLORS.textDark);
     doc.setFont("helvetica", "bold");
     doc.setFontSize(18);
-    doc.setTextColor(255, 255, 255);
-    doc.text("CLEVER'S ORIGIN SCHOOLS", pageWidth / 2, 20, { align: "center" });
+    doc.text("CLEVER'S ORIGIN SCHOOLS", marginX + 25, 18);
 
     doc.setFont("helvetica", "normal");
-    doc.setFontSize(11);
-    doc.text(
-      "Student Admission Application Summary",
-      pageWidth / 2,
-      28,
-      { align: "center" }
-    );
+    doc.setFontSize(9);
+    doc.setTextColor(...COLORS.textMuted);
+    doc.text("123 Education Lane, Learning City | info@cleversorigin.com", marginX + 25, 24);
+
+    // Right Side Document Label
+    doc.setFillColor(...COLORS.bgLight);
+    doc.roundedRect(pageWidth - 75, 10, 55, 20, 2, 2, "F");
+    doc.setTextColor(...COLORS.primary);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(10);
+    doc.text("OFFICIAL ADMISSION", pageWidth - 70, 18);
+    doc.setTextColor(...COLORS.textMuted);
+    doc.setFontSize(8);
+    doc.text(`ID: ${data.id}`, pageWidth - 70, 24);
   };
 
   drawHeader();
 
   /* =====================================================
-     SECTION TITLE
+      SECTION HEADER HELPER
   ===================================================== */
-  const sectionTitle = (title: string) => {
+  const drawSectionHeader = (title: string, y: number) => {
+    // Soft background for section
+    doc.setFillColor(...COLORS.bgLight);
+    doc.roundedRect(marginX, y - 6, pageWidth - (marginX * 2), 8, 1, 1, "F");
+
+    // Vertical accent
+    doc.setFillColor(...COLORS.accent);
+    doc.rect(marginX, y - 6, 1.5, 8, "F");
+
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(13);
-    doc.setTextColor(...COLORS.textDark);
-    doc.text(title, marginX, cursorY);
+    doc.setFontSize(11);
+    doc.setTextColor(...COLORS.secondary);
+    doc.text(title, marginX + 5, y);
 
-    cursorY += 4;
-
-    doc.setDrawColor(...COLORS.primary);
-    doc.setLineWidth(0.8);
-    doc.line(marginX, cursorY, pageWidth - marginX, cursorY);
-
-    cursorY += 6;
+    return y + 6;
   };
 
   /* =====================================================
-     TABLE BASE STYLE
+      1. APPLICATION SUMMARY (Status Badges)
   ===================================================== */
-  const baseTable = {
-    theme: "grid" as const,
-    styles: {
-      fontSize: 10,
-      cellPadding: 5,
-      textColor: COLORS.textDark,
-      lineColor: COLORS.borderSoft,
-      lineWidth: 0.3,
-    },
-    headStyles: {
-      fillColor: COLORS.primary,
-      textColor: [255, 255, 255],
-      fontStyle: "bold",
-    },
-    alternateRowStyles: {
-      fillColor: COLORS.rowAlt,
-    },
-    columnStyles: {
-      0: {
-        fontStyle: "bold",
-        textColor: COLORS.textDark,
-        cellWidth: 60,
-      },
-    },
-    margin: { left: marginX, right: marginX },
-  };
-
-  /* =====================================================
-     APPLICATION DETAILS
-  ===================================================== */
-  sectionTitle("Application Details");
+  cursorY = drawSectionHeader("Application Overview", cursorY);
 
   autoTable(doc, {
     startY: cursorY,
-    ...baseTable,
+    theme: "plain",
+    styles: { fontSize: 10, cellPadding: 3 },
+    columnStyles: { 0: { cellWidth: 40, fontStyle: 'bold', textColor: COLORS.textMuted } },
     body: [
-      ["Application ID", data.id],
-      ["Submission Date", new Date(data.created_at).toLocaleDateString()],
+      ["Submission Date", new Date(data.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })],
       ["Payment Status", data.payment_status],
       ["Application Status", data.application_status],
     ],
+    didDrawCell: (dataCell) => {
+      // Custom draw badges for specific values
+      if (dataCell.column.index === 1 && dataCell.section === 'body') {
+        if (dataCell.cell.text[0] === 'Paid' || dataCell.cell.text[0] === 'Approved') {
+          drawBadge(dataCell.cell.text[0], dataCell.cell.x + 2, dataCell.cell.y + 5, 'success');
+          dataCell.cell.text = [""]; // Clear original text
+        }
+      }
+    }
   });
 
-  cursorY = (doc as any).lastAutoTable.finalY + 10;
+  cursorY = (doc as any).lastAutoTable.finalY + 12;
 
   /* =====================================================
-     STUDENT INFORMATION
+      2. STUDENT & PARENT INFO (Side-by-Side look)
   ===================================================== */
-  sectionTitle("Student Information");
+  cursorY = drawSectionHeader("Student Information", cursorY);
 
   autoTable(doc, {
     startY: cursorY,
-    ...baseTable,
+    theme: "striped",
+    head: [['Field', 'Details']],
+    headStyles: { fillColor: COLORS.primary, fontSize: 9 },
+    alternateRowStyles: { fillColor: COLORS.bgLight },
+    styles: { lineColor: COLORS.borderSoft, lineWidth: 0.1 },
     body: [
       ["Full Name", data.student_name],
       ["Date of Birth", data.date_of_birth],
       ["Gender", data.gender],
-      ["Grade Applied For", data.grade_level],
+      ["Grade Level", data.grade_level],
     ],
   });
 
-  cursorY = (doc as any).lastAutoTable.finalY + 10;
+  cursorY = (doc as any).lastAutoTable.finalY + 12;
 
-  /* =====================================================
-     PARENT / GUARDIAN INFORMATION
-  ===================================================== */
-  sectionTitle("Parent / Guardian Information");
+  cursorY = drawSectionHeader("Parent / Guardian Contact", cursorY);
 
   autoTable(doc, {
     startY: cursorY,
-    ...baseTable,
+    theme: "grid",
+    styles: { lineColor: COLORS.borderSoft, lineWidth: 0.1, fontSize: 10 },
+    columnStyles: { 0: { fillColor: [250, 250, 250], fontStyle: 'bold', cellWidth: 45 } },
     body: [
-      ["Full Name", data.parent_name],
+      ["Guardian Name", data.parent_name],
       ["Relationship", data.relationship],
-      ["Phone Number", data.phone],
+      ["Contact Number", data.phone],
       ["Email Address", data.email],
     ],
   });
 
-  cursorY = (doc as any).lastAutoTable.finalY + 10;
+  cursorY = (doc as any).lastAutoTable.finalY + 12;
 
   /* =====================================================
-     CAMPUS & PREFERENCES
+      3. PREFERENCES & ENROLLMENT
   ===================================================== */
-  sectionTitle("Campus & Preferences");
+  cursorY = drawSectionHeader("Enrollment Preferences", cursorY);
 
   autoTable(doc, {
     startY: cursorY,
-    ...baseTable,
+    theme: "plain",
+    styles: { fontSize: 10, cellPadding: 4 },
     body: [
-      ["Preferred Campus", data.campus],
-      ["Boarding Option", data.boarding],
-      ["Previous School", data.previous_school || "Not Provided"],
-      ["Special Needs", data.special_needs || "None Declared"],
-      ["How You Heard About Us", data.how_heard],
+      ["Preferred Campus", data.campus, "Boarding", data.boarding],
+      ["Previous School", data.previous_school || "N/A", "Special Needs", data.special_needs || "None"],
     ],
+    columnStyles: {
+      0: { fontStyle: 'bold', textColor: COLORS.textMuted, cellWidth: 35 },
+      2: { fontStyle: 'bold', textColor: COLORS.textMuted, cellWidth: 35 }
+    },
   });
 
   /* =====================================================
-     FOOTER
+      FOOTER
   ===================================================== */
   const pageCount = doc.getNumberOfPages();
-
   for (let i = 1; i <= pageCount; i++) {
     doc.setPage(i);
 
-    doc.setDrawColor(...COLORS.borderSoft);
-    doc.line(marginX, pageHeight - 22, pageWidth - marginX, pageHeight - 22);
+    // Bottom Bar
+    doc.setFillColor(...COLORS.secondary);
+    doc.rect(0, pageHeight - 15, pageWidth, 15, "F");
 
-    doc.setFontSize(9);
-    doc.setTextColor(...COLORS.textMuted);
-
+    doc.setFontSize(8);
+    doc.setTextColor(255, 255, 255);
     doc.text(
-      "Clevers' Origin Schools | Excellence in Education",
+      "This is an electronically generated document. No signature is required for the initial summary.",
       marginX,
-      pageHeight - 14
-    );
-
-    doc.text(
-      `Generated on ${new Date().toLocaleDateString()}`,
-      pageWidth - marginX,
-      pageHeight - 14,
-      { align: "right" }
+      pageHeight - 8
     );
 
     doc.text(
       `Page ${i} of ${pageCount}`,
-      pageWidth / 2,
-      pageHeight - 10,
-      { align: "center" }
+      pageWidth - marginX - 15,
+      pageHeight - 8
     );
+
+    // Tiny Brand Accent
+    doc.setFillColor(...COLORS.accent);
+    doc.rect(pageWidth - marginX, pageHeight - 15, 20, 15, "F");
   }
 
   /* =====================================================
-     SAVE
+      SAVE
   ===================================================== */
   doc.save(`Application_${data.student_name.replace(/\s+/g, "_")}.pdf`);
 }
