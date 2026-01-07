@@ -12,7 +12,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { galleryService, GalleryImage } from "../../lib/supabase/services";
 
 export default function Home() {
-  const [images, setImages] = useState<string[]>([]);
+  const [images, setImages] = useState<GalleryImage[]>([]); // Changed to GalleryImage[] to include metadata
   const [currentImage, setCurrentImage] = useState(0);
   const [loading, setLoading] = useState(true);
 
@@ -22,9 +22,7 @@ export default function Home() {
         const allImages = await galleryService.getAll();
         // Filter images that belong to the "Other/General" category
         const otherImages = allImages.filter(img => img.category === 'other');
-        // Extract URLs from the filtered images
-        const imageUrls = otherImages.map(img => img.file_url);
-        setImages(imageUrls.length > 0 ? imageUrls : []);
+        setImages(otherImages);
       } catch (error) {
         console.error('Error fetching hero images:', error);
         // If there's an error, we'll still use an empty array
@@ -44,6 +42,26 @@ export default function Home() {
       setCurrentImage((prev) => (prev + 1) % images.length);
     }, 4000);
     return () => clearInterval(interval);
+  }, [images]);
+
+  // Preload images by creating image objects - optimized for faster loading
+  useEffect(() => {
+    if (images.length > 0) {
+      // Preload the first image immediately since it's priority
+      if (images[0]) {
+        const preloadFirstImage = new window.Image();
+        preloadFirstImage.src = images[0].file_url;
+      }
+      
+      // Preload next few images that will be displayed
+      const preloadCount = Math.min(3, images.length); // Preload first 3 images
+      for (let i = 1; i < preloadCount; i++) {
+        if (images[i]) {
+          const preloadImage = new window.Image();
+          preloadImage.src = images[i].file_url;
+        }
+      }
+    }
   }, [images]);
 
   return (
@@ -79,23 +97,44 @@ export default function Home() {
           {/* Hero Slideshow */}
           <div className="w-full lg:w-1/2 relative h-[250px] sm:h-[350px] lg:h-[400px] mt-6 lg:mt-0 rounded-xl overflow-hidden shadow-2xl">
             {loading ? (
-              <div className="absolute inset-0 flex items-center justify-center bg-gray-200">
-                <p className="text-gray-600">Loading images...</p>
+              <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-pink-100 via-yellow-100 to-green-100">
+                <div className="animate-pulse flex flex-col items-center">
+                  <div className="bg-gray-200 border-2 border-dashed rounded-xl w-16 h-16 mb-4" />
+                  <p className="text-gray-600">Loading images...</p>
+                </div>
               </div>
             ) : images.length > 0 ? (
-              images.map((src, index) => (
-                <Image
-                  key={index}
-                  src={src}
-                  alt=""
-                  fill
-                  priority={index === 0}
-                  sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 40vw"
-                  className={`absolute object-cover transition-opacity duration-1000 ease-in-out ${index === currentImage ? "opacity-100" : "opacity-0"}`}
-                />
-              ))
+              images.map((img, index) => {
+                // Generate blur placeholder for the image
+                const blurData = img.blur_url || `data:image/svg+xml;base64,${btoa(`
+                  <svg xmlns="http://www.w3.org/2000/svg" width="50" height="30" viewBox="0 0 50 30">
+                    <rect width="50" height="30" fill="#e2e8f0"/>
+                    <circle cx="25" cy="15" r="10" fill="#94a3b8" opacity="0.5"/>
+                  </svg>
+                `)}`;
+                
+                // Determine if this image should have priority
+                // Priority for current image and the next one to be shown
+                const nextImageIndex = (currentImage + 1) % images.length;
+                const isPriority = index === currentImage || index === nextImageIndex;
+                
+                return (
+                  <Image
+                    key={img.id || index}
+                    src={img.file_url}
+                    alt={img.alt_text || img.title || ""}
+                    fill
+                    priority={isPriority}
+                    placeholder="blur"
+                    blurDataURL={blurData}
+                    sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 40vw"
+                    className={`absolute object-cover transition-opacity duration-1000 ease-in-out ${index === currentImage ? "opacity-100" : "opacity-0"}`}
+                    loading="eager"
+                  />
+                )
+              })
             ) : (
-              <div className="absolute inset-0 flex items-center justify-center bg-gray-200">
+              <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-pink-100 via-yellow-100 to-green-100">
                 <p className="text-gray-600">No images available</p>
               </div>
             )}

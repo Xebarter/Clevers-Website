@@ -86,6 +86,7 @@ export interface GalleryImage {
   alt_text?: string
   caption?: string
   category?: string
+  blur_url?: string  // Added for image optimization
 }
 
 // Get Supabase URL and anon key from environment variables

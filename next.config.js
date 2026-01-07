@@ -2,7 +2,7 @@
 const nextConfig = {
   reactStrictMode: false,
   images: {
-    unoptimized: true,
+    unoptimized: false,
     remotePatterns: [
       {
         protocol: "https",
@@ -12,6 +12,18 @@ const nextConfig = {
         protocol: "https",
         hostname: "same-assets.com",
       },
+      {
+        protocol: "https",
+        hostname: "ucarecdn.com",
+      },
+      {
+        protocol: "https",
+        hostname: "cdn.supabase.com",
+      },
+      {
+        protocol: "https",
+        hostname: "nniwxjnumvvrcvlctgaz.supabase.co", // Supabase storage hostname
+      }
     ],
   },
   // Removed distDir to let Next.js use the default ".next" folder

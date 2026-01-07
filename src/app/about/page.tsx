@@ -1,81 +1,155 @@
-"use client"
+"use client";
 
-import React, { useEffect, useState } from "react"
-import Link from "next/link"
-import Image from "next/image"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import {
-  Heart,
-  Book,
-  Star,
-  Users,
-  Calendar,
-  ArrowRight,
-} from "lucide-react"
-import {
-  galleryService,
-  type GalleryImage,
-} from "../../../lib/supabase/services"
+import React, { useState, useEffect } from "react";
+import Link from "next/link";
+import Image from "next/image";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Heart, Book, Star, Users, Calendar, ArrowRight } from "lucide-react";
+import { galleryService, GalleryImage } from "../../../lib/supabase/services";
 
-const fallbackImages = [
-  "/COJS1.jpg",
-  "/kitintale2.jpg",
-  "/COJS2.jpg",
-  "/maganjo3.jpg",
-]
+const defaultImageList = ["/COJS1.jpg", "/kitintale2.jpg", "/COJS2.jpg", "/maganjo3.jpg"];
 
 export default function AboutPage() {
-  const [images, setImages] = useState<string[]>([])
-  const [index, setIndex] = useState(0)
-  const [loading, setLoading] = useState(true)
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [galleryImages, setGalleryImages] = useState<GalleryImage[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  /* ---------------------------------------------
-     Load Gallery Images
-  ---------------------------------------------- */
   useEffect(() => {
-    const loadImages = async () => {
+    const fetchGalleryImages = async () => {
       try {
-        const data = await galleryService.getAll()
-        const urls = data.map((img) => img.file_url)
-        setImages(urls.length ? urls : fallbackImages)
-      } catch {
-        setImages(fallbackImages)
+        const data = await galleryService.getAll();
+        setGalleryImages(data);
+      } catch (error) {
+        console.error('Error fetching gallery images:', error);
+        // Fallback to default images if there's an error
+        setGalleryImages([]);
       } finally {
-        setLoading(false)
+        setLoading(false);
+      }
+    };
+
+    fetchGalleryImages();
+  }, []);
+
+  // Use gallery images if available, otherwise fallback to default images
+  const imagesToDisplay = galleryImages.length > 0 
+    ? galleryImages 
+    : defaultImageList.map(url => ({ 
+        file_url: url, 
+        title: "Default image", 
+        alt_text: "Default image",
+        id: url,
+        blur_url: `data:image/svg+xml;base64,${btoa(`
+          <svg xmlns="http://www.w3.org/2000/svg" width="50" height="30" viewBox="0 0 50 30">
+            <rect width="50" height="30" fill="#e2e8f0"/>
+            <circle cx="25" cy="15" r="10" fill="#94a3b8" opacity="0.5"/>
+          </svg>
+        `)}`
+      }));
+
+  // Preload images - optimized for faster loading
+  useEffect(() => {
+    if (imagesToDisplay.length > 0) {
+      const urls = Array.isArray(imagesToDisplay) 
+        ? imagesToDisplay.map(img => typeof img === 'string' ? img : img.file_url) 
+        : defaultImageList;
+        
+      // Preload the first image immediately since it's priority
+      if (urls[0]) {
+        const preloadFirstImage = new window.Image();
+        preloadFirstImage.src = urls[0];
+      }
+      
+      // Preload next few images that will be displayed
+      const preloadCount = Math.min(3, urls.length); // Preload first 3 images
+      for (let i = 1; i < preloadCount; i++) {
+        if (urls[i]) {
+          const preloadImage = new window.Image();
+          preloadImage.src = urls[i];
+        }
       }
     }
+  }, [imagesToDisplay]);
 
-    loadImages()
-  }, [])
-
-  /* ---------------------------------------------
-     Auto Rotate Images (calm, professional pace)
-  ---------------------------------------------- */
   useEffect(() => {
-    if (images.length <= 1) return
+    if (imagesToDisplay.length <= 1) return; // Don't auto-rotate if there's only one or no images
+    
+    const intervalId = setInterval(() => {
+      setCurrentImageIndex((prevIndex) => (prevIndex + 1) % imagesToDisplay.length);
+    }, 3000); // Change image every 3 seconds
 
-    const interval = setInterval(() => {
-      setIndex((prev) => (prev + 1) % images.length)
-    }, 4500)
+    return () => clearInterval(intervalId); // Cleanup on unmount
+  }, [imagesToDisplay]);
 
-    return () => clearInterval(interval)
-  }, [images])
+  // Get the current image URL based on whether we have gallery images or default images
+  const currentImageUrl = Array.isArray(imagesToDisplay) 
+    ? typeof imagesToDisplay[currentImageIndex] === 'object' 
+      ? imagesToDisplay[currentImageIndex].file_url 
+      : imagesToDisplay[currentImageIndex] 
+    : defaultImageList[currentImageIndex % defaultImageList.length];
 
   return (
-    <div className="min-h-screen bg-white">
-      {/* ================= HERO ================= */}
-      <section className="py-16 bg-gradient-to-b from-kinder-yellow/20 to-white">
-        <div className="container mx-auto px-4 text-center max-w-3xl">
-          <h1 className="text-4xl md:text-5xl font-heading font-bold heading-gradient mb-4">
-            Our Story
-          </h1>
-          <p className="text-lg text-gray-700 font-body">
-            A journey of nurturing young minds, strong values, and a lifelong
-            love for learning.
-          </p>
+    <div className="min-h-screen">
+      {/* Hero Section */}
+      <section className="py-12 md:py-16 bg-gradient-to-b from-kinder-yellow/20 to-white">
+        <div className="container mx-auto px-4">
+          <div className="max-w-3xl mx-auto text-center">
+            <h1 className="text-4xl md:text-5xl font-bold mb-6 font-heading heading-gradient">
+              Our Story
+            </h1>
+            <p className="text-lg text-gray-700 mb-8 font-body">
+              A journey of nurturing young minds and building a community of joyful learners
+            </p>
+          </div>
         </div>
       </section>
+
+      {/* Hero Image Section */}
+      <div className="relative h-64 md:h-96 w-full overflow-hidden">
+        {Array.isArray(imagesToDisplay) ? (
+          imagesToDisplay.map((img, index) => {
+            const blurData = typeof img === 'object' && 'blur_url' in img && img.blur_url 
+              ? img.blur_url 
+              : `data:image/svg+xml;base64,${btoa(`
+                <svg xmlns="http://www.w3.org/2000/svg" width="50" height="30" viewBox="0 0 50 30">
+                  <rect width="50" height="30" fill="#e2e8f0"/>
+                  <circle cx="25" cy="15" r="10" fill="#94a3b8" opacity="0.5"/>
+                </svg>
+              `)}`;
+            
+            // Determine if this image should have priority
+            // Priority for current image and the next one to be shown
+            const nextImageIndex = (currentImageIndex + 1) % imagesToDisplay.length;
+            const isPriority = index === currentImageIndex || index === nextImageIndex;
+            
+            return (
+              <div
+                key={typeof img === 'object' ? img.id || index : index}
+                className={`absolute top-0 left-0 w-full h-full transition-opacity duration-1000 ease-in-out ${
+                  index === currentImageIndex ? 'opacity-100' : 'opacity-0'
+                }`}
+              >
+                <Image
+                  src={typeof img === 'object' ? img.file_url : img}
+                  alt={typeof img === 'object' ? img.alt_text || img.title : "About image"}
+                  fill
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                  className="object-cover"
+                  priority={isPriority}
+                  placeholder="blur"
+                  blurDataURL={blurData}
+                  loading="eager"
+                />
+              </div>
+            );
+          })
+        ) : (
+          <div className="absolute inset-0 flex items-center justify-center bg-gray-200">
+            <p className="text-gray-600">Loading images...</p>
+          </div>
+        )}
+      </div>
 
       {/* ================= ORIGIN ================= */}
       <section className="py-16">
@@ -123,8 +197,7 @@ export default function AboutPage() {
               </div>
             ) : (
               <Image
-                key={images[index]}
-                src={images[index]}
+                src={currentImageUrl}
                 alt="Clevers' Origin Schools"
                 fill
                 className="object-cover transition-opacity duration-700"
