@@ -37,7 +37,7 @@ export default function RootLayout({
               {/* Call Button */}
               <a
                 href="tel:+256762494822"
-                className="p-3 rounded-full bg-blue-500 hover:bg-blue-600 text-white shadow-lg transition-all hover:scale-105 flex items-center justify-center"
+                className="p-3 rounded-full bg-pink-500 hover:bg-pink-600 text-white shadow-lg transition-all hover:scale-105 flex items-center justify-center"
                 aria-label="Call us"
               >
                 <svg
