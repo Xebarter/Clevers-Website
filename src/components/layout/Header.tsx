@@ -168,14 +168,14 @@ const Header = () => {
 
           <div className="hidden md:flex items-center space-x-4">
             <Link href="/apply">
-              <Button>Apply Now</Button>
+              <Button className="bg-pink-500 hover:bg-pink-600 text-white">Apply Now</Button>
             </Link>
           </div>
 
           {/* Mobile Navigation */}
           <div className="md:hidden flex items-center space-x-2">
             <Link href="/apply" className="mr-1">
-              <Button size="sm" className="px-3 py-1">
+              <Button size="sm" className="px-3 py-1 bg-pink-500 hover:bg-pink-600 text-white">
                 Apply
               </Button>
             </Link>
