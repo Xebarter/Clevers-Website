@@ -76,7 +76,7 @@ export default function Home() {
             <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold leading-tight">
               Welcome to{" "}
               <span className="relative inline-block">
-                <span className="bg-gradient-to-r from-pink-500 via-yellow-400 to-green-500 bg-clip-text text-transparent animate-pulse">
+                <span className="bg-gradient-to-r from-pink-500 via-yellow-400 to-green-500 bg-clip-text text-transparent">
                   Clevers' Origin Schools
                 </span>
                 <span className="absolute -bottom-1 left-0 w-full h-1 bg-gradient-to-r from-pink-400 via-yellow-300 to-green-400 rounded-full"></span>
@@ -87,7 +87,7 @@ export default function Home() {
             </p>
             <div className="flex flex-wrap gap-4 pt-4">
               <Link href="/apply">
-                <Button size="lg" className="bg-gradient-to-r from-pink-500 via-yellow-400 to-green-500 text-white hover:from-pink-600 hover:via-yellow-500 hover:to-green-600 px-6 py-3 gap-2">
+                <Button size="lg" className="bg-pink-500 hover:bg-pink-600 text-white px-6 py-3 gap-2">
                   Apply Now <ArrowRight className="h-5 w-5" />
                 </Button>
               </Link>
@@ -95,7 +95,7 @@ export default function Home() {
           </div>
 
           {/* Hero Slideshow */}
-          <div className="w-full lg:w-1/2 relative h-[250px] sm:h-[350px] lg:h-[400px] mt-6 lg:mt-0 rounded-xl overflow-hidden shadow-2xl">
+          <div className="w-full lg:w-1/2 relative h-[250px] sm:h-[350px] lg:h-[400px] mt-6 lg:mt-0 rounded-xl overflow-hidden">
             {loading ? (
               <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-pink-100 via-yellow-100 to-green-100">
                 <div className="animate-pulse flex flex-col items-center">
@@ -128,7 +128,7 @@ export default function Home() {
                     placeholder="blur"
                     blurDataURL={blurData}
                     sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 40vw"
-                    className={`absolute object-cover transition-opacity duration-1000 ease-in-out ${index === currentImage ? "opacity-100" : "opacity-0"}`}
+                    className={`absolute object-contain transition-opacity duration-1000 ease-in-out ${index === currentImage ? "opacity-100" : "opacity-0"}`}
                     loading="eager"
                   />
                 )
@@ -138,7 +138,6 @@ export default function Home() {
                 <p className="text-gray-600">No images available</p>
               </div>
             )}
-            <div className="absolute inset-0 bg-black/20 z-10 rounded-lg" />
           </div>
         </div>
       </section>

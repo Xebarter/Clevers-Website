@@ -402,29 +402,47 @@ export async function deleteGalleryImage(id: string) {
 
 // Resource services
 export async function getResources() {
-  const resources = await resourcesService.getAll();
+  // Use the admin API route so server-side (service role) client is used
+  const res = await fetch('/api/admin/resources');
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(text || 'Failed to fetch resources');
+  }
+
+  const resources = await res.json();
 
   // Map Supabase resource fields to the format expected by the admin panel
-  return resources.map(resource => ({
+  return resources.map((resource: any) => ({
     _id: resource.id || `resource-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
     title: resource.title,
     description: resource.description,
     category: resource.category || '',
     type: resource.file_name?.split('.').pop()?.toUpperCase() || 'N/A',
-    fileSize: 'N/A', // Would need to implement actual file size fetching
+    fileSize: resource.file_size ? `${Math.round(resource.file_size / 1024)} KB` : 'N/A',
     uploadDate: resource.created_at || new Date().toISOString(),
     fileUrl: resource.file_url || '',
     _createdAt: resource.created_at || new Date().toISOString(),
     file_url: resource.file_url,
-    file_name: resource.file_name
+    file_name: resource.file_name,
+    file_size: resource.file_size,
   }));
 }
 
 export async function createResource(data: Omit<Resource, 'id' | 'created_at'>) {
+  // Ensure the data includes file metadata which is expected by the backend
+  const resourceData = {
+    title: data.title,
+    description: data.description,
+    category: data.category,
+    file_url: data.file_url,
+    file_name: data.file_name,
+    file_size: data.file_size,
+  };
+
   const res = await fetch('/api/admin/resources', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(data),
+    body: JSON.stringify(resourceData),
   })
 
   if (!res.ok) {
@@ -436,10 +454,20 @@ export async function createResource(data: Omit<Resource, 'id' | 'created_at'>) 
 }
 
 export async function updateResource(id: string, data: Partial<Resource>) {
+  // Prepare the data object, including only defined fields and proper file metadata
+  const resourceData: Partial<Resource> = {};
+  
+  if (data.title !== undefined) resourceData.title = data.title;
+  if (data.description !== undefined) resourceData.description = data.description;
+  if (data.category !== undefined) resourceData.category = data.category;
+  if (data.file_url !== undefined) resourceData.file_url = data.file_url;
+  if (data.file_name !== undefined) resourceData.file_name = data.file_name;
+  if (data.file_size !== undefined) resourceData.file_size = data.file_size;
+
   const res = await fetch(`/api/admin/resources/${id}`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(data),
+    body: JSON.stringify(resourceData),
   })
 
   if (!res.ok) {

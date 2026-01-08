@@ -23,7 +23,7 @@ interface Resource {
   file_url?: string;
   file_name?: string;
   type?: string;
-  file_size?: number;
+  file_size?: number; // in bytes
   created_at?: string;
 }
 
@@ -41,7 +41,7 @@ export default function ResourceForm({ open, onOpenChange, resource, onSave }: R
   const [fileUrl, setFileUrl] = useState(resource?.file_url ?? "");
   const [fileName, setFileName] = useState(resource?.file_name ?? "");
   const [fileType, setFileType] = useState(resource?.type ?? "");
-  const [fileSize, setFileSize] = useState<number>(resource?.file_size ?? 0);
+  const [fileSize, setFileSize] = useState<number>(resource?.file_size ?? 0); // in bytes
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [loading, setLoading] = useState(false);
@@ -62,7 +62,7 @@ export default function ResourceForm({ open, onOpenChange, resource, onSave }: R
         file_url: fileUrl,
         file_name: fileName,
         type: fileType,
-        file_size: fileSize ? Number(fileSize) : undefined,
+        file_size: fileSize ? Number(fileSize) : undefined, // Keep in bytes
       };
 
       if (isEditing) {
@@ -120,7 +120,7 @@ export default function ResourceForm({ open, onOpenChange, resource, onSave }: R
       setFileUrl(result.url || '');
       setFileName(file.name);
       setFileType(file.type || '');
-      setFileSize(Math.round((file.size || 0) / 1024));
+      setFileSize(file.size || 0); // Store actual file size in bytes
     } catch (err: any) {
       setError(err instanceof Error ? err.message : String(err));
     } finally {
@@ -201,13 +201,13 @@ export default function ResourceForm({ open, onOpenChange, resource, onSave }: R
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="fileSize">File Size (KB)</Label>
+              <Label htmlFor="fileSize">File Size (bytes)</Label>
               <Input
                 id="fileSize"
                 type="number"
                 value={fileSize ?? ""}
                 onChange={(e) => setFileSize(e.target.value ? Number(e.target.value) : 0)}
-                placeholder="File size in kilobytes"
+                placeholder="File size in bytes"
               />
             </div>
           </div>
