@@ -50,11 +50,12 @@ export async function getApplications() {
   return applications.map((application: any) => {
     const metadata = parseApplicationMetadata(application.message);
 
-    const generatedId = application.id ?? `application-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
-    const applicationId = metadata.applicationId ?? generatedId;
+    // Always use the actual database ID for _id to ensure delete operations work correctly
+    const dbId = application.id;
+    const applicationId = metadata.applicationId ?? dbId ?? `application-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
 
     return {
-      _id: generatedId,
+      _id: dbId,
       applicationId,
       studentName: application.name ?? "",
       dateOfBirth: application.date_of_birth ?? "",
@@ -553,4 +554,88 @@ export async function deleteMessage(id: string) {
   }
 
   return await res.json()
+}
+
+// Job Application services
+export interface JobApplication {
+  id: string;
+  full_name: string;
+  email: string;
+  phone: string;
+  address?: string;
+  position_applied: string;
+  experience_years: number;
+  qualifications: string;
+  skills?: string;
+  cover_letter?: string;
+  references_info?: string;
+  cv_url?: string;
+  certificates_url?: string;
+  other_documents_url?: string;
+  application_status: string;
+  created_at: string;
+  reviewed_by?: string;
+  reviewed_at?: string;
+  notes?: string;
+}
+
+export async function getJobApplications(): Promise<JobApplication[]> {
+  const res = await fetch('/api/admin/job-applications');
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(text || 'Failed to fetch job applications');
+  }
+
+  return await res.json();
+}
+
+export async function getJobApplicationById(id: string): Promise<JobApplication | null> {
+  const res = await fetch(`/api/admin/job-applications/${id}`);
+  if (!res.ok) {
+    if (res.status === 404) return null;
+    const text = await res.text();
+    throw new Error(text || 'Failed to fetch job application');
+  }
+
+  return await res.json();
+}
+
+export async function updateJobApplication(id: string, data: Partial<JobApplication>) {
+  const res = await fetch(`/api/admin/job-applications/${id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(text || 'Failed to update job application');
+  }
+
+  return await res.json();
+}
+
+export async function deleteJobApplication(id: string) {
+  const res = await fetch(`/api/admin/job-applications/${id}`, { method: 'DELETE' });
+  
+  // Clone the response so we can read the body multiple times if needed
+  const responseText = await res.text();
+  
+  if (!res.ok) {
+    let errorMessage = 'Failed to delete job application';
+    try {
+      const errorData = JSON.parse(responseText);
+      errorMessage = errorData.error || errorMessage;
+    } catch {
+      errorMessage = responseText || errorMessage;
+    }
+    throw new Error(errorMessage);
+  }
+
+  // Parse the successful response
+  try {
+    return JSON.parse(responseText);
+  } catch {
+    return { success: true, deletedId: id };
+  }
 }

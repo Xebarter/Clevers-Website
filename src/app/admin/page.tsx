@@ -51,6 +51,7 @@ import ApplicationFormModal from "@/components/admin/ApplicationFormModal";
 import ResourceForm from "@/components/admin/ResourceForm";
 import GalleryForm from "@/components/admin/GalleryForm";
 import MultiImageGalleryForm from "@/components/admin/MultiImageGalleryForm";
+import JobApplicationsManager from "@/components/admin/JobApplicationsManager";
 
 // Types
 interface Application {
@@ -570,9 +571,10 @@ export default function AdminDashboard() {
 
       <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-7">
+          <TabsList className="grid w-full grid-cols-8">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="applications">Applications</TabsTrigger>
+            <TabsTrigger value="job-applications">Job Applications</TabsTrigger>
             <TabsTrigger value="resources">Resources</TabsTrigger>
             <TabsTrigger value="messages">Messages</TabsTrigger>
             <TabsTrigger value="announcements">Announcements</TabsTrigger>
@@ -796,6 +798,10 @@ export default function AdminDashboard() {
                 )}
               </CardContent>
             </Card>
+          </TabsContent>
+
+          <TabsContent value="job-applications" className="space-y-4">
+            <JobApplicationsManager />
           </TabsContent>
 
           <TabsContent value="resources" className="space-y-4">
