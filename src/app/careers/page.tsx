@@ -117,16 +117,16 @@ export default function CareersPage() {
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-4 text-gray-700">
             <a
-              href="mailto:careers@cleversorigin.com"
+              href="mailto:cleversorigin@gmail.com"
               className="inline-flex items-center justify-center px-6 py-3 bg-white hover:bg-pink-50 border border-pink-200 rounded-lg transition-colors"
             >
-              <span className="font-medium">careers@cleversorigin.com</span>
+              <span className="font-medium">cleversorigin@gmail.com</span>
             </a>
             <a
-              href="tel:+256700000000"
+              href="tel:+256772470972"
               className="inline-flex items-center justify-center px-6 py-3 bg-white hover:bg-yellow-50 border border-yellow-200 rounded-lg transition-colors"
             >
-              <span className="font-medium">+256 700 000 000</span>
+              <span className="font-medium">+256 772 470 972</span>
             </a>
           </div>
         </div>

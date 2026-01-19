@@ -8,8 +8,45 @@ import Footer from "@/components/layout/Footer";
 import ClientBody from "@/components/ClientBody";
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://www.cleversoriginschools.com"),
   title: "Clevers' Origin Schools",
   description: "Nurturing Excellence, Empowering Futures",
+  openGraph: {
+    title: "Clevers' Origin Schools",
+    description: "Nurturing Excellence, Empowering Futures",
+    url: "https://www.cleversoriginschools.com",
+    siteName: "Clevers' Origin Schools",
+    images: [
+      {
+        url: "https://www.cleversoriginschools.com/og.jpg",
+        secureUrl: "https://www.cleversoriginschools.com/og.jpg",
+        width: 1200,
+        height: 630,
+        type: "image/jpeg",
+        alt: "Clevers' Origin Schools - Nurturing Excellence, Empowering Futures",
+      },
+    ],
+    locale: "en_US",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Clevers' Origin Schools",
+    description: "Nurturing Excellence, Empowering Futures",
+    images: [
+      {
+        url: "https://www.cleversoriginschools.com/og.jpg",
+        width: 1200,
+        height: 630,
+        alt: "Clevers' Origin Schools - Nurturing Excellence, Empowering Futures",
+      },
+    ],
+    creator: "@cleversorigin",
+  },
+  other: {
+    "og:image:width": "1200",
+    "og:image:height": "630",
+  },
 };
 
 export default function RootLayout({
