@@ -8,6 +8,8 @@ import {
   DialogTitle 
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
+import { Download } from "lucide-react";
+import { generateApplicationPDF } from "@/lib/pdf";
 
 interface ApplicationDetailModalProps {
   application: any;
@@ -21,6 +23,31 @@ export default function ApplicationDetailModal({
   onClose 
 }: ApplicationDetailModalProps) {
   if (!application) return null;
+
+  const handleDownload = () => {
+    try {
+      generateApplicationPDF({
+        id: application.applicationId || application.id || "",
+        student_name: application.student_name || application.studentName || application.name || "",
+        date_of_birth: application.date_of_birth || application.dateOfBirth || "",
+        gender: application.gender || "",
+        grade_level: application.grade_level || application.gradeLevel || "",
+        parent_name: application.parent_name || application.parentName || "",
+        relationship: application.relationship || "",
+        phone: application.phone || "",
+        email: application.email || "",
+        campus: application.campus || "",
+        boarding: application.boarding || "",
+        how_heard: application.how_heard || application.howHeard || "",
+        payment_status: application.payment_status || application.paymentStatus || "PENDING",
+        application_status: application.application_status || "SUBMITTED",
+        created_at: application.created_at || application._createdAt || new Date().toISOString()
+      });
+    } catch (error) {
+      console.error("Error downloading application:", error);
+      alert("Failed to download application");
+    }
+  };
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
@@ -148,6 +175,14 @@ export default function ApplicationDetailModal({
           </div>
           
           <div className="flex justify-end space-x-2">
+            <Button 
+              variant="outline" 
+              onClick={handleDownload}
+              className="flex items-center gap-2"
+            >
+              <Download className="h-4 w-4" />
+              Download PDF
+            </Button>
             <Button variant="outline" onClick={onClose}>
               Close
             </Button>

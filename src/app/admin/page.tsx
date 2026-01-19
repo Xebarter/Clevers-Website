@@ -16,7 +16,8 @@ import {
   Trash2,
   Eye,
   ExternalLink,
-  LogOut
+  LogOut,
+  Download
 } from "lucide-react";
 import Link from "next/link";
 import { useAdminAuth } from '@/contexts/AdminAuthContext';
@@ -40,6 +41,7 @@ import {
   createEvent,
   updateEvent
 } from "@/lib/admin/services";
+import { generateApplicationPDF } from "@/lib/pdf";
 import ApplicationDetailModal from "@/components/admin/ApplicationDetailModal";
 import AnnouncementForm from "@/components/admin/AnnouncementForm";
 import EventForm from "@/components/admin/EventForm";
@@ -317,6 +319,31 @@ export default function AdminDashboard() {
   const handleViewApplication = (application: Application) => {
     setSelectedApplication(application);
     setShowApplicationModal(true);
+  };
+
+  const handleDownloadApplication = (application: Application) => {
+    try {
+      generateApplicationPDF({
+        id: application.applicationId,
+        student_name: application.studentName,
+        date_of_birth: application.dateOfBirth,
+        gender: application.gender,
+        grade_level: application.gradeLevel,
+        parent_name: application.parentName,
+        relationship: application.relationship,
+        phone: application.phone,
+        email: application.email,
+        campus: application.campus,
+        boarding: application.boarding,
+        how_heard: application.howHeard,
+        payment_status: application.paymentStatus,
+        application_status: "SUBMITTED",
+        created_at: application._createdAt
+      });
+    } catch (error) {
+      console.error("Error downloading application:", error);
+      alert("Failed to download application");
+    }
   };
 
   const handleCreateAnnouncement = async (data: any) => {
@@ -720,13 +747,23 @@ export default function AdminDashboard() {
                                   variant="outline"
                                   size="sm"
                                   onClick={() => handleViewApplication(application)}
+                                  title="View application details"
                                 >
                                   <Eye className="h-4 w-4" />
                                 </Button>
                                 <Button
                                   variant="outline"
                                   size="sm"
+                                  onClick={() => handleDownloadApplication(application)}
+                                  title="Download as PDF"
+                                >
+                                  <Download className="h-4 w-4" />
+                                </Button>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
                                   onClick={() => handleEditApplication(application)}
+                                  title="Edit application"
                                 >
                                   <Edit className="h-4 w-4" />
                                 </Button>
@@ -735,6 +772,7 @@ export default function AdminDashboard() {
                                   size="sm"
                                   onClick={() => handleDeleteApplication(application._id)}
                                   disabled={deletingId === application._id}
+                                  title="Delete application"
                                 >
                                   {deletingId === application._id ? (
                                     <div className="h-4 w-4 animate-spin rounded-full border border-gray-500 border-t-transparent" />
