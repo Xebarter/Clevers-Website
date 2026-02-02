@@ -1,39 +1,46 @@
-# General development files
-.DS_Store
-*.log
-*.swp
-*.env
+# Environment Variables
+.env
 .env.local
 .env.development
+.env.development.local
 .env.test
+.env.test.local
 .env.production
-.idea/
-.vscode/
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
+.env.production.local
 
-# Node.js dependencies
+# Dependencies
 node_modules/
+.pnp
+.pnp.js
+.yarn/install-state.gz
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
+lerna-debug.log*
 
-# Next.js specific
+# Next.js
 .next/
 out/
-.next/cache/
-.next/server/
-.next/static/
-
-# Build output
-dist/
 build/
-.serverless/
-.serverless_nextjs/
+dist/
+
+# TypeScript
+*.tsbuildinfo
+next-env.d.ts
+tsconfig.tsbuildinfo
+
+# Vercel
+.vercel
+
+# Testing
+coverage/
+.nyc_output/
+*.lcov
+jest-results.json
+cypress/videos/
+cypress/screenshots/
+cypress/downloads/
 
 # Sanity Studio
 .sanity/
@@ -42,80 +49,66 @@ build/
 .sanity-backup/
 .sanity-secrets.json
 
-# Cache directories
+# PWA files
+**/public/sw.js
+**/public/workbox-*.js
+**/public/worker-*.js
+**/public/sw.js.map
+**/public/workbox-*.js.map
+**/public/worker-*.js.map
+
+# Cache & Build
 .cache/
 .turbo/
+.serverless/
+.serverless_nextjs/
 
-# Testing
-coverage/
-.nyc_output/
-*.lcov
-
-# Debug logs
-debug.log
-
-# Local development
-*.local
-
-# System Files
-Thumbs.db
-ehthumbs.db
-[Dd]esktop.ini
-$RECYCLE.BIN/
-
-# IDE specific
+# IDE & Editor
+.vscode/
+!.vscode/extensions.json
+!.vscode/settings.json
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+*.swp
 *.code-workspace
 *.iml
 
-# TypeScript cache
-.tsbuildinfo
-
-# Production environment variables
-.env.production.local
-
-# Optional npm cache directory
-.npm
-
-# Optional eslint cache
-.eslintcache
-
-# Optional stylelint cache
-.stylelintcache
-
-# Optional prettier cache
-.prettiercache
-
-# Optional pnpm store directory
-.pnpm-store/
-
-# Optional vercel artifacts
-.vercel/
-
-# Optional Storybook
-storybook-static/
-
-# Optional Cypress
-cypress/videos/
-cypress/screenshots/
-cypress/downloads/
-
-# Optional Jest
-jest-results.json
-
-# Optional macOS files
+# System Files
+.DS_Store
 ._*
-
-# Optional Windows files
+Thumbs.db
 [Tt]humbs.db
-
-# Optional Linux files
+ehthumbs.db
+[Dd]esktop.ini
+$RECYCLE.BIN/
 *~
 
-# Optional local development files
+# Logs
+*.log
+debug.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Optional caches
+.npm
+.eslintcache
+.stylelintcache
+.prettiercache
+.pnpm-store/
+
+# Temporary files
+*.tmp
+*.temp
+tmp_rovodev_*
+
+# Local development
+*.local
 *.local.*
 
-# Optional serverless
-.serverless/
-
-# Optional debug
-debug/
+# Storybook
+storybook-static/
