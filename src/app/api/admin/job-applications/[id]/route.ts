@@ -1,15 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
-
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-
-function getSupabaseClient() {
-  if (!supabaseUrl || !supabaseServiceKey) {
-    throw new Error("Missing Supabase environment variables");
-  }
-  return createClient(supabaseUrl, supabaseServiceKey);
-}
+import { getSupabaseAdmin } from "../../../../../lib/supabase/client";
 
 export async function GET(
   request: NextRequest,
@@ -17,7 +7,7 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
-    const supabase = getSupabaseClient();
+    const supabase = getSupabaseAdmin();
 
     const { data, error } = await supabase
       .from("job_applications")
@@ -56,7 +46,7 @@ export async function PUT(
   try {
     const { id } = await params;
     const body = await request.json();
-    const supabase = getSupabaseClient();
+    const supabase = getSupabaseAdmin();
 
     // Remove any undefined or null values
     const updateData: Record<string, any> = {};
@@ -110,7 +100,7 @@ export async function DELETE(
       );
     }
 
-    const supabase = getSupabaseClient();
+    const supabase = getSupabaseAdmin();
 
     // Delete the application directly
     const { data: deletedRows, error: deleteError } = await supabase
