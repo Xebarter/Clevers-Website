@@ -4,6 +4,7 @@ import { createContext, useContext, useState, useEffect, ReactNode } from 'react
 
 interface AdminAuthContextType {
   isAuthenticated: boolean;
+  isLoading: boolean;
   login: (password: string) => Promise<boolean>;
   logout: () => void;
 }
@@ -12,6 +13,7 @@ const AdminAuthContext = createContext<AdminAuthContextType | undefined>(undefin
 
 export function AdminAuthProvider({ children }: { children: ReactNode }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     // Check if admin is already authenticated
@@ -20,6 +22,7 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
     if (authStatus === 'true') {
       setIsAuthenticated(true);
     }
+    setIsLoading(false);
   }, []);
 
   const login = async (password: string): Promise<boolean> => {
@@ -39,7 +42,7 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AdminAuthContext.Provider value={{ isAuthenticated, login, logout }}>
+    <AdminAuthContext.Provider value={{ isAuthenticated, isLoading, login, logout }}>
       {children}
     </AdminAuthContext.Provider>
   );

@@ -123,7 +123,7 @@ interface Resource {
 }
 
 export default function AdminDashboard() {
-  const { isAuthenticated, logout } = useAdminAuth();
+  const { isAuthenticated, isLoading: authLoading, logout } = useAdminAuth();
   const router = useRouter();
   const [activeTab, setActiveTab] = useState("overview");
   const [applications, setApplications] = useState<Application[]>([]);
@@ -148,13 +148,6 @@ export default function AdminDashboard() {
   const [editingEvent, setEditingEvent] = useState<EventItem | null>(null);
   const [showEventForm, setShowEventForm] = useState(false);
   const [editingAnnouncement, setEditingAnnouncement] = useState<Announcement | null>(null);
-  
-  // Redirect to login if not authenticated
-  useEffect(() => {
-    if (!isAuthenticated) {
-      router.push('/admin/login');
-    }
-  }, [isAuthenticated, router]);
 
   // Handle edit application
   const handleEditApplication = (application: Application) => {
@@ -230,12 +223,12 @@ export default function AdminDashboard() {
     }
   };
 
-  // Redirect to login if not authenticated
+  // Redirect to login if not authenticated (after loading check completes)
   useEffect(() => {
-    if (!isAuthenticated) {
+    if (!authLoading && !isAuthenticated) {
       router.push('/admin/login');
     }
-  }, [isAuthenticated, router]);
+  }, [authLoading, isAuthenticated, router]);
 
   // Load data when component mounts or tab changes
   useEffect(() => {
@@ -548,8 +541,20 @@ export default function AdminDashboard() {
     return new Date(dateString).toLocaleString();
   };
 
+  // Show loading spinner while checking authentication
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <div className="animate-spin h-12 w-12 border-4 border-blue-500 border-t-transparent rounded-full mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
   if (!isAuthenticated) {
-    return null; // or a loading spinner
+    return null; // Will redirect to login
   }
 
   return (
