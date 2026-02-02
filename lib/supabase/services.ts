@@ -366,12 +366,12 @@ export const galleryService = {
     return data
   },
 
-  // Get gallery images by category
+  // Get gallery images by category (case-insensitive)
   getByCategory: async (category: string): Promise<GalleryImage[]> => {
     const { data, error } = await supabase
       .from('gallery_images')
       .select('*')
-      .eq('category', category)
+      .ilike('category', category)
       .order('created_at', { ascending: false })
 
     if (error) throw error
