@@ -99,7 +99,9 @@ export const CampusImageCarousel = ({ category }: { category: string }) => {
   useEffect(() => {
     const fetchImages = async () => {
       try {
+        console.log(`Fetching images for category: ${category}`);
         const galleryImages: GalleryImage[] = await galleryService.getByCategory(category);
+        console.log(`Found ${galleryImages.length} images for category: ${category}`, galleryImages);
         
         // Convert gallery images to the format expected by the carousel
         const formattedImages = galleryImages.map(image => ({
@@ -155,9 +157,38 @@ export const CampusImageCarousel = ({ category }: { category: string }) => {
     return () => clearInterval(intervalId); // Cleanup on unmount
   }, [images.length]);
 
-  if (loading) return <div className="w-full h-64 flex items-center justify-center">Loading images...</div>;
-  if (error) return <div className="w-full h-64 flex items-center justify-center">Error: {error}</div>;
-  if (images.length === 0) return <div className="w-full h-64 flex items-center justify-center">No images available</div>;
+  if (loading) {
+    return (
+      <div className="w-full h-64 flex items-center justify-center bg-gray-100 rounded-lg">
+        <div className="text-center">
+          <div className="animate-spin h-8 w-8 border-4 border-blue-500 border-t-transparent rounded-full mx-auto mb-2"></div>
+          <p className="text-gray-600">Loading images...</p>
+        </div>
+      </div>
+    );
+  }
+  
+  if (error) {
+    return (
+      <div className="w-full h-64 flex items-center justify-center bg-red-50 rounded-lg">
+        <div className="text-center">
+          <p className="text-red-600">Error: {error}</p>
+          <p className="text-sm text-gray-600 mt-2">Category: {category}</p>
+        </div>
+      </div>
+    );
+  }
+  
+  if (images.length === 0) {
+    return (
+      <div className="w-full h-64 flex items-center justify-center bg-yellow-50 rounded-lg">
+        <div className="text-center">
+          <p className="text-gray-600">No images available for {category}</p>
+          <p className="text-sm text-gray-500 mt-2">Please add images in the admin dashboard</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="relative w-full h-64 rounded-lg overflow-hidden shadow-md">
