@@ -128,7 +128,7 @@ export default function Home() {
                     placeholder="blur"
                     blurDataURL={blurData}
                     sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 40vw"
-                    className={`absolute object-contain transition-opacity duration-1000 ease-in-out ${index === currentImage ? "opacity-100" : "opacity-0"}`}
+                    className={`absolute object-cover transition-opacity duration-1000 ease-in-out ${index === currentImage ? "opacity-100" : "opacity-0"}`}
                     loading="eager"
                   />
                 )
