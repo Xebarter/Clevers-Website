@@ -556,14 +556,18 @@ export default function AdminDashboard() {
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <header className="bg-white shadow">
-        <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8 flex justify-between items-center">
-          <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
-          <div className="flex items-center space-x-4">
-            <Button variant="outline" onClick={logout}>
-              <LogOut className="mr-2 h-4 w-4" /> Logout
+        <div className="mx-auto max-w-7xl px-4 py-4 sm:py-6 sm:px-6 lg:px-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Admin Dashboard</h1>
+          <div className="flex items-center gap-2 sm:gap-4 w-full sm:w-auto">
+            <Button variant="outline" onClick={logout} className="flex-1 sm:flex-initial">
+              <LogOut className="mr-2 h-4 w-4" /> 
+              <span className="sm:inline">Logout</span>
             </Button>
-            <Button asChild variant="outline">
-              <Link href="/">Back to Website</Link>
+            <Button asChild variant="outline" className="flex-1 sm:flex-initial">
+              <Link href="/" className="flex items-center justify-center">
+                <span className="hidden sm:inline">Back to Website</span>
+                <span className="sm:hidden">Website</span>
+              </Link>
             </Button>
           </div>
         </div>
@@ -571,15 +575,15 @@ export default function AdminDashboard() {
 
       <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-8">
-            <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="applications">Applications</TabsTrigger>
-            <TabsTrigger value="job-applications">Job Applications</TabsTrigger>
-            <TabsTrigger value="resources">Resources</TabsTrigger>
-            <TabsTrigger value="messages">Messages</TabsTrigger>
-            <TabsTrigger value="announcements">Announcements</TabsTrigger>
-            <TabsTrigger value="events">Events</TabsTrigger>
-            <TabsTrigger value="gallery">Gallery</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-1">
+            <TabsTrigger value="overview" className="text-xs sm:text-sm">Overview</TabsTrigger>
+            <TabsTrigger value="applications" className="text-xs sm:text-sm">Applications</TabsTrigger>
+            <TabsTrigger value="job-applications" className="text-xs sm:text-sm">Jobs</TabsTrigger>
+            <TabsTrigger value="resources" className="text-xs sm:text-sm">Resources</TabsTrigger>
+            <TabsTrigger value="messages" className="text-xs sm:text-sm">Messages</TabsTrigger>
+            <TabsTrigger value="announcements" className="text-xs sm:text-sm">Announcements</TabsTrigger>
+            <TabsTrigger value="events" className="text-xs sm:text-sm">Events</TabsTrigger>
+            <TabsTrigger value="gallery" className="text-xs sm:text-sm">Gallery</TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview" className="space-y-4">
@@ -697,9 +701,9 @@ export default function AdminDashboard() {
           <TabsContent value="applications" className="space-y-4">
             <Card>
               <CardHeader>
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                   <CardTitle>Applications</CardTitle>
-                  <Button onClick={handleCreateApplication}>
+                  <Button onClick={handleCreateApplication} className="w-full sm:w-auto">
                     <Plus className="mr-2 h-4 w-4" />
                     New Application
                   </Button>
@@ -708,28 +712,104 @@ export default function AdminDashboard() {
               <CardContent>
                 {loading ? (
                   <div className="text-center py-8">Loading applications...</div>
+                ) : applications.length === 0 ? (
+                  <div className="text-center py-8 text-gray-500">
+                    No applications found
+                  </div>
                 ) : (
-                  <div className="overflow-x-auto">
-                    <table className="w-full">
-                      <thead>
-                        <tr className="border-b">
-                          <th className="text-left py-3 px-4">Student Name</th>
-                          <th className="text-left py-3 px-4">Grade Level</th>
-                          <th className="text-left py-3 px-4">Parent Name</th>
-                          <th className="text-left py-3 px-4">Campus</th>
-                          <th className="text-left py-3 px-4">Payment Status</th>
-                          <th className="text-left py-3 px-4">Submitted</th>
-                          <th className="text-left py-3 px-4">Actions</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {applications.map((application) => (
-                          <tr key={application._id} className="border-b hover:bg-gray-50">
-                            <td className="py-3 px-4">{application.studentName}</td>
-                            <td className="py-3 px-4">{application.gradeLevel}</td>
-                            <td className="py-3 px-4">{application.parentName}</td>
-                            <td className="py-3 px-4">{application.campus}</td>
-                            <td className="py-3 px-4">
+                  <>
+                    {/* Desktop Table View */}
+                    <div className="hidden lg:block overflow-x-auto">
+                      <table className="w-full">
+                        <thead>
+                          <tr className="border-b">
+                            <th className="text-left py-3 px-4">Student Name</th>
+                            <th className="text-left py-3 px-4">Grade Level</th>
+                            <th className="text-left py-3 px-4">Parent Name</th>
+                            <th className="text-left py-3 px-4">Campus</th>
+                            <th className="text-left py-3 px-4">Payment Status</th>
+                            <th className="text-left py-3 px-4">Submitted</th>
+                            <th className="text-left py-3 px-4">Actions</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {applications.map((application) => (
+                            <tr key={application._id} className="border-b hover:bg-gray-50">
+                              <td className="py-3 px-4">{application.studentName}</td>
+                              <td className="py-3 px-4">{application.gradeLevel}</td>
+                              <td className="py-3 px-4">{application.parentName}</td>
+                              <td className="py-3 px-4">{application.campus}</td>
+                              <td className="py-3 px-4">
+                                <span className={`px-2 py-1 rounded-full text-xs ${
+                                  application.paymentStatus === "completed" 
+                                    ? "bg-green-100 text-green-800" 
+                                    : application.paymentStatus === "pending" 
+                                      ? "bg-yellow-100 text-yellow-800" 
+                                      : "bg-red-100 text-red-800"
+                                }`}>
+                                  {application.paymentStatus}
+                                </span>
+                              </td>
+                              <td className="py-3 px-4">
+                                {new Date(application._createdAt).toLocaleDateString()}
+                              </td>
+                              <td className="py-3 px-4">
+                                <div className="flex space-x-2">
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => handleViewApplication(application)}
+                                    title="View application details"
+                                  >
+                                    <Eye className="h-4 w-4" />
+                                  </Button>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => handleDownloadApplication(application)}
+                                    title="Download as PDF"
+                                  >
+                                    <Download className="h-4 w-4" />
+                                  </Button>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => handleEditApplication(application)}
+                                    title="Edit application"
+                                  >
+                                    <Edit className="h-4 w-4" />
+                                  </Button>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => handleDeleteApplication(application._id)}
+                                    disabled={deletingId === application._id}
+                                    title="Delete application"
+                                  >
+                                    {deletingId === application._id ? (
+                                      <div className="h-4 w-4 animate-spin rounded-full border border-gray-500 border-t-transparent" />
+                                    ) : (
+                                      <Trash2 className="h-4 w-4" />
+                                    )}
+                                  </Button>
+                                </div>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                    
+                    {/* Mobile Card View */}
+                    <div className="lg:hidden space-y-4">
+                      {applications.map((application) => (
+                        <Card key={application._id} className="p-4">
+                          <div className="space-y-3">
+                            <div className="flex justify-between items-start">
+                              <div>
+                                <h3 className="font-semibold text-base">{application.studentName}</h3>
+                                <p className="text-sm text-gray-600">{application.gradeLevel}</p>
+                              </div>
                               <span className={`px-2 py-1 rounded-full text-xs ${
                                 application.paymentStatus === "completed" 
                                   ? "bg-green-100 text-green-800" 
@@ -739,62 +819,67 @@ export default function AdminDashboard() {
                               }`}>
                                 {application.paymentStatus}
                               </span>
-                            </td>
-                            <td className="py-3 px-4">
-                              {new Date(application._createdAt).toLocaleDateString()}
-                            </td>
-                            <td className="py-3 px-4">
-                              <div className="flex space-x-2">
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() => handleViewApplication(application)}
-                                  title="View application details"
-                                >
-                                  <Eye className="h-4 w-4" />
-                                </Button>
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() => handleDownloadApplication(application)}
-                                  title="Download as PDF"
-                                >
-                                  <Download className="h-4 w-4" />
-                                </Button>
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() => handleEditApplication(application)}
-                                  title="Edit application"
-                                >
-                                  <Edit className="h-4 w-4" />
-                                </Button>
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() => handleDeleteApplication(application._id)}
-                                  disabled={deletingId === application._id}
-                                  title="Delete application"
-                                >
-                                  {deletingId === application._id ? (
-                                    <div className="h-4 w-4 animate-spin rounded-full border border-gray-500 border-t-transparent" />
-                                  ) : (
-                                    <Trash2 className="h-4 w-4" />
-                                  )}
-                                </Button>
+                            </div>
+                            <div className="grid grid-cols-2 gap-2 text-sm">
+                              <div>
+                                <span className="text-gray-500">Parent:</span>
+                                <p className="font-medium">{application.parentName}</p>
                               </div>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                    
-                    {applications.length === 0 && (
-                      <div className="text-center py-8 text-gray-500">
-                        No applications found
-                      </div>
-                    )}
-                  </div>
+                              <div>
+                                <span className="text-gray-500">Campus:</span>
+                                <p className="font-medium">{application.campus}</p>
+                              </div>
+                              <div className="col-span-2">
+                                <span className="text-gray-500">Submitted:</span>
+                                <p className="font-medium">{new Date(application._createdAt).toLocaleDateString()}</p>
+                              </div>
+                            </div>
+                            <div className="grid grid-cols-2 gap-2 pt-2 border-t">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleViewApplication(application)}
+                                className="w-full"
+                              >
+                                <Eye className="h-4 w-4 mr-1" /> View
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleDownloadApplication(application)}
+                                className="w-full"
+                              >
+                                <Download className="h-4 w-4 mr-1" /> PDF
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleEditApplication(application)}
+                                className="w-full"
+                              >
+                                <Edit className="h-4 w-4 mr-1" /> Edit
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleDeleteApplication(application._id)}
+                                disabled={deletingId === application._id}
+                                className="w-full"
+                              >
+                                {deletingId === application._id ? (
+                                  <div className="h-4 w-4 animate-spin rounded-full border border-gray-500 border-t-transparent" />
+                                ) : (
+                                  <>
+                                    <Trash2 className="h-4 w-4 mr-1" /> Delete
+                                  </>
+                                )}
+                              </Button>
+                            </div>
+                          </div>
+                        </Card>
+                      ))}
+                    </div>
+                  </>
                 )}
               </CardContent>
             </Card>
@@ -805,15 +890,15 @@ export default function AdminDashboard() {
           </TabsContent>
 
           <TabsContent value="resources" className="space-y-4">
-            <div className="flex justify-between items-center">
-              <h2 className="text-2xl font-bold">Resources</h2>
-              <Button onClick={handleCreateResource}>
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+              <h2 className="text-xl sm:text-2xl font-bold">Resources</h2>
+              <Button onClick={handleCreateResource} className="w-full sm:w-auto">
                 <Plus className="mr-2 h-4 w-4" /> Add Resource
               </Button>
             </div>
             
             <Card>
-              <CardContent>
+              <CardContent className="pt-6">
                 {loading ? (
                   <div className="text-center py-8">Loading resources...</div>
                 ) : resources.length > 0 ? (
@@ -893,12 +978,12 @@ export default function AdminDashboard() {
           </TabsContent>
 
           <TabsContent value="announcements" className="space-y-4">
-            <div className="flex justify-between items-center">
-              <h2 className="text-2xl font-bold">Announcements</h2>
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+              <h2 className="text-xl sm:text-2xl font-bold">Announcements</h2>
               <Button onClick={() => {
                 setEditingAnnouncement(null);
                 setShowAnnouncementForm(true);
-              }}>
+              }} className="w-full sm:w-auto">
                 <Plus className="mr-2 h-4 w-4" /> Add Announcement
               </Button>
             </div>
@@ -1001,9 +1086,9 @@ export default function AdminDashboard() {
           </TabsContent>
 
           <TabsContent value="events" className="space-y-4">
-            <div className="flex justify-between items-center">
-              <h2 className="text-2xl font-bold">Events</h2>
-              <Button onClick={handleCreateEvent}>
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+              <h2 className="text-xl sm:text-2xl font-bold">Events</h2>
+              <Button onClick={handleCreateEvent} className="w-full sm:w-auto">
                 <Plus className="mr-2 h-4 w-4" /> Add Event
               </Button>
             </div>
@@ -1098,9 +1183,9 @@ export default function AdminDashboard() {
           </TabsContent>
 
           <TabsContent value="gallery" className="space-y-4">
-            <div className="flex justify-between items-center">
-              <h2 className="text-2xl font-bold">Gallery Images</h2>
-              <div className="flex space-x-2">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+              <h2 className="text-xl sm:text-2xl font-bold">Gallery Images</h2>
+              <div className="flex gap-2 w-full sm:w-auto">
                 <Button 
                   onClick={() => {
                     setUseMultiImageForm(false);
@@ -1108,8 +1193,11 @@ export default function AdminDashboard() {
                     setShowGalleryForm(true);
                   }} 
                   variant="outline"
+                  className="flex-1 sm:flex-initial"
                 >
-                  <Plus className="mr-2 h-4 w-4" /> Single Image
+                  <Plus className="mr-2 h-4 w-4" /> 
+                  <span className="hidden sm:inline">Single Image</span>
+                  <span className="sm:hidden">Single</span>
                 </Button>
                 <Button 
                   onClick={() => {
@@ -1117,8 +1205,11 @@ export default function AdminDashboard() {
                     setEditingGalleryImage(null);
                     setShowGalleryForm(true);
                   }}
+                  className="flex-1 sm:flex-initial"
                 >
-                  <Plus className="mr-2 h-4 w-4" /> Multiple Images
+                  <Plus className="mr-2 h-4 w-4" /> 
+                  <span className="hidden sm:inline">Multiple Images</span>
+                  <span className="sm:hidden">Multiple</span>
                 </Button>
               </div>
             </div>
