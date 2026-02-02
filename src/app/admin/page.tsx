@@ -575,15 +575,15 @@ export default function AdminDashboard() {
 
       <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-1">
-            <TabsTrigger value="overview" className="text-xs sm:text-sm">Overview</TabsTrigger>
-            <TabsTrigger value="applications" className="text-xs sm:text-sm">Applications</TabsTrigger>
-            <TabsTrigger value="job-applications" className="text-xs sm:text-sm">Jobs</TabsTrigger>
-            <TabsTrigger value="resources" className="text-xs sm:text-sm">Resources</TabsTrigger>
-            <TabsTrigger value="messages" className="text-xs sm:text-sm">Messages</TabsTrigger>
-            <TabsTrigger value="announcements" className="text-xs sm:text-sm">Announcements</TabsTrigger>
-            <TabsTrigger value="events" className="text-xs sm:text-sm">Events</TabsTrigger>
-            <TabsTrigger value="gallery" className="text-xs sm:text-sm">Gallery</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-1 h-auto p-1">
+            <TabsTrigger value="overview" className="text-xs sm:text-sm py-2 px-2">Overview</TabsTrigger>
+            <TabsTrigger value="applications" className="text-xs sm:text-sm py-2 px-2">Applications</TabsTrigger>
+            <TabsTrigger value="job-applications" className="text-xs sm:text-sm py-2 px-2">Jobs</TabsTrigger>
+            <TabsTrigger value="resources" className="text-xs sm:text-sm py-2 px-2">Resources</TabsTrigger>
+            <TabsTrigger value="messages" className="text-xs sm:text-sm py-2 px-2">Messages</TabsTrigger>
+            <TabsTrigger value="announcements" className="text-xs sm:text-sm py-2 px-2">Announcements</TabsTrigger>
+            <TabsTrigger value="events" className="text-xs sm:text-sm py-2 px-2">Events</TabsTrigger>
+            <TabsTrigger value="gallery" className="text-xs sm:text-sm py-2 px-2">Gallery</TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview" className="space-y-4">
