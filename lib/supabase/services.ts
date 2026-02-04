@@ -1,8 +1,8 @@
-import { supabase, Application, Message, Resource, Announcement, Event, GalleryImage } from './client'
+import { supabase, Application, Message, Resource, Announcement, Event, GalleryImage, HallOfFame } from './client'
 import { getSupabaseAdmin } from './client'
 
 // Export the types
-export type { Application, Message, Resource, Announcement, Event, GalleryImage }
+export type { Application, Message, Resource, Announcement, Event, GalleryImage, HallOfFame }
 
 // Applications service
 export const applicationsService = {
@@ -411,5 +411,122 @@ export const galleryService = {
       .eq('id', id)
 
     if (error) throw error
+  }
+}
+
+// Hall of Fame service
+export const hallOfFameService = {
+  // Get all hall of fame entries (public - only published)
+  getAll: async (): Promise<HallOfFame[]> => {
+    const { data, error } = await supabase
+      .from('hall_of_fame')
+      .select('*')
+      .eq('is_published', true)
+      .order('display_order', { ascending: true })
+      .order('achievement_date', { ascending: false })
+
+    if (error) throw error
+    return data || []
+  },
+
+  // Get all hall of fame entries (admin - including unpublished)
+  getAllAdmin: async (): Promise<HallOfFame[]> => {
+    const { data, error } = await getSupabaseAdmin()
+      .from('hall_of_fame')
+      .select('*')
+      .order('display_order', { ascending: true })
+      .order('achievement_date', { ascending: false })
+
+    if (error) throw error
+    return data || []
+  },
+
+  // Get featured hall of fame entries
+  getFeatured: async (): Promise<HallOfFame[]> => {
+    const { data, error } = await supabase
+      .from('hall_of_fame')
+      .select('*')
+      .eq('is_published', true)
+      .eq('is_featured', true)
+      .order('display_order', { ascending: true })
+      .order('achievement_date', { ascending: false })
+
+    if (error) throw error
+    return data || []
+  },
+
+  // Get hall of fame entry by ID
+  getById: async (id: string): Promise<HallOfFame | null> => {
+    const { data, error } = await supabase
+      .from('hall_of_fame')
+      .select('*')
+      .eq('id', id)
+      .single()
+
+    if (error) throw error
+    return data
+  },
+
+  // Create new hall of fame entry
+  create: async (entry: Omit<HallOfFame, 'id' | 'created_at' | 'updated_at'>): Promise<HallOfFame> => {
+    const { data, error } = await getSupabaseAdmin()
+      .from('hall_of_fame')
+      .insert(entry)
+      .select()
+      .single()
+
+    if (error) throw error
+    return data!
+  },
+
+  // Update hall of fame entry
+  update: async (id: string, updates: Partial<HallOfFame>): Promise<HallOfFame> => {
+    const { data, error } = await getSupabaseAdmin()
+      .from('hall_of_fame')
+      .update(updates)
+      .eq('id', id)
+      .select()
+      .single()
+
+    if (error) throw error
+    return data!
+  },
+
+  // Delete hall of fame entry
+  delete: async (id: string): Promise<void> => {
+    const { error } = await getSupabaseAdmin()
+      .from('hall_of_fame')
+      .delete()
+      .eq('id', id)
+
+    if (error) throw error
+  },
+
+  // Filter by category
+  getByCategory: async (category: string): Promise<HallOfFame[]> => {
+    const { data, error } = await supabase
+      .from('hall_of_fame')
+      .select('*')
+      .eq('is_published', true)
+      .eq('category', category)
+      .order('display_order', { ascending: true })
+      .order('achievement_date', { ascending: false })
+
+    if (error) throw error
+    return data || []
+  },
+
+  // Filter by campus
+  getByCampus: async (campus: string): Promise<HallOfFame[]> => {
+    const { data, error } = await supabase
+      .from('hall_of_fame')
+      .select('*')
+      .eq('is_published', true)
+      .eq('campus', campus)
+      .order('display_order', { ascending: true })
+      .order('achievement_date', { ascending: false })
+
+    if (error) throw error
+    return data || []
   }
 }

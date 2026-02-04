@@ -39,7 +39,9 @@ import {
   updateGalleryImage,
   updateAnnouncement,
   createEvent,
-  updateEvent
+  updateEvent,
+  getHallOfFameEntries,
+  deleteHallOfFame
 } from "@/lib/admin/services";
 import { generateApplicationPDF } from "@/lib/pdf";
 import ApplicationDetailModal from "@/components/admin/ApplicationDetailModal";
@@ -52,6 +54,7 @@ import ResourceForm from "@/components/admin/ResourceForm";
 import GalleryForm from "@/components/admin/GalleryForm";
 import MultiImageGalleryForm from "@/components/admin/MultiImageGalleryForm";
 import JobApplicationsManager from "@/components/admin/JobApplicationsManager";
+import HallOfFameForm from "@/components/admin/HallOfFameForm";
 
 // Types
 interface Application {
@@ -122,6 +125,20 @@ interface Resource {
   _createdAt: string;
 }
 
+interface HallOfFameEntry {
+  id: string;
+  title: string;
+  learner_names: string;
+  achievement: string;
+  achievement_date: string;
+  image_url: string;
+  category?: string;
+  campus?: string;
+  is_featured?: boolean;
+  is_published?: boolean;
+  created_at: string;
+}
+
 export default function AdminDashboard() {
   const { isAuthenticated, isLoading: authLoading, logout } = useAdminAuth();
   const router = useRouter();
@@ -148,6 +165,9 @@ export default function AdminDashboard() {
   const [editingEvent, setEditingEvent] = useState<EventItem | null>(null);
   const [showEventForm, setShowEventForm] = useState(false);
   const [editingAnnouncement, setEditingAnnouncement] = useState<Announcement | null>(null);
+  const [hallOfFameEntries, setHallOfFameEntries] = useState<HallOfFameEntry[]>([]);
+  const [showHallOfFameForm, setShowHallOfFameForm] = useState(false);
+  const [editingHallOfFame, setEditingHallOfFame] = useState<HallOfFameEntry | null>(null);
 
   // Handle edit application
   const handleEditApplication = (application: Application) => {
@@ -176,13 +196,14 @@ export default function AdminDashboard() {
       switch (activeTab) {
         case "overview":
           // Load all data for overview
-          const [apps, anns, evts, imgs, res, msgs] = await Promise.all([
+          const [apps, anns, evts, imgs, res, msgs, hofEntries] = await Promise.all([
             getApplications(),
             getAnnouncements(),
             getEvents(),
             getGalleryImages(),
             getResources(),
-            getMessages()
+            getMessages(),
+            getHallOfFameEntries()
           ]);
           setApplications(apps);
           setAnnouncements(anns);
@@ -190,6 +211,7 @@ export default function AdminDashboard() {
           setGalleryImages(imgs);
           setResources(res);
           setMessages(msgs);
+          setHallOfFameEntries(hofEntries);
           break;
         case "applications":
           const appsData = await getApplications();
@@ -214,6 +236,10 @@ export default function AdminDashboard() {
         case "messages":
           const messagesData = await getMessages();
           setMessages(messagesData);
+          break;
+        case "hall-of-fame":
+          const hofData = await getHallOfFameEntries();
+          setHallOfFameEntries(hofData);
           break;
       }
     } catch (error) {
@@ -308,6 +334,37 @@ export default function AdminDashboard() {
     } finally {
       setDeletingId(null);
     }
+  };
+
+  const handleDeleteHallOfFame = async (id: string) => {
+    if (!confirm("Are you sure you want to delete this Hall of Fame entry?")) return;
+    
+    try {
+      setDeletingId(id);
+      await deleteHallOfFame(id);
+      setHallOfFameEntries(hallOfFameEntries.filter(entry => entry.id !== id));
+    } catch (error) {
+      console.error("Error deleting Hall of Fame entry:", error);
+      alert("Failed to delete Hall of Fame entry");
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
+  const handleEditHallOfFame = (entry: HallOfFameEntry) => {
+    setEditingHallOfFame(entry);
+    setShowHallOfFameForm(true);
+  };
+
+  const handleCreateHallOfFame = () => {
+    setEditingHallOfFame(null);
+    setShowHallOfFameForm(true);
+  };
+
+  const handleHallOfFameSave = () => {
+    setShowHallOfFameForm(false);
+    setEditingHallOfFame(null);
+    loadData();
   };
 
   const handleViewApplication = (application: Application) => {
@@ -580,10 +637,11 @@ export default function AdminDashboard() {
 
       <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-1 h-auto p-1">
+          <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 lg:grid-cols-9 gap-1 h-auto p-1">
             <TabsTrigger value="overview" className="text-xs sm:text-sm py-2 px-2">Overview</TabsTrigger>
             <TabsTrigger value="applications" className="text-xs sm:text-sm py-2 px-2">Applications</TabsTrigger>
             <TabsTrigger value="job-applications" className="text-xs sm:text-sm py-2 px-2">Jobs</TabsTrigger>
+            <TabsTrigger value="hall-of-fame" className="text-xs sm:text-sm py-2 px-2">Hall of Fame</TabsTrigger>
             <TabsTrigger value="resources" className="text-xs sm:text-sm py-2 px-2">Resources</TabsTrigger>
             <TabsTrigger value="messages" className="text-xs sm:text-sm py-2 px-2">Messages</TabsTrigger>
             <TabsTrigger value="announcements" className="text-xs sm:text-sm py-2 px-2">Announcements</TabsTrigger>
@@ -1307,6 +1365,105 @@ export default function AdminDashboard() {
               </Card>
             )}
           </TabsContent>
+
+          <TabsContent value="hall-of-fame" className="space-y-4">
+            <div className="flex justify-between items-center">
+              <h2 className="text-2xl font-bold">Hall of Fame</h2>
+              <Button onClick={handleCreateHallOfFame}>
+                <Plus className="mr-2 h-4 w-4" /> Add Entry
+              </Button>
+            </div>
+            
+            {loading ? (
+              <Card>
+                <CardContent className="text-center py-8">Loading Hall of Fame entries...</CardContent>
+              </Card>
+            ) : (
+              <Card>
+                <CardContent className="p-6">
+                  {hallOfFameEntries.length > 0 ? (
+                    <div className="space-y-4">
+                      {hallOfFameEntries.map((entry) => (
+                        <div 
+                          key={entry.id} 
+                          className="flex flex-col sm:flex-row gap-4 p-4 border rounded-lg hover:shadow-md transition-shadow"
+                        >
+                          <div className="flex-shrink-0">
+                            <img 
+                              src={entry.image_url} 
+                              alt={entry.title}
+                              className="w-full sm:w-32 h-32 object-cover rounded-lg"
+                            />
+                          </div>
+                          <div className="flex-grow">
+                            <div className="flex flex-col sm:flex-row justify-between items-start gap-2 mb-2">
+                              <div>
+                                <h3 className="font-semibold text-lg">{entry.title}</h3>
+                                <p className="text-sm text-gray-600">{entry.learner_names}</p>
+                              </div>
+                              <div className="flex gap-2">
+                                {entry.is_featured && (
+                                  <span className="px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs">
+                                    Featured
+                                  </span>
+                                )}
+                                {!entry.is_published && (
+                                  <span className="px-2 py-1 bg-gray-100 text-gray-800 rounded-full text-xs">
+                                    Unpublished
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                            <p className="text-sm text-gray-700 mb-2">{entry.achievement}</p>
+                            <div className="flex flex-wrap gap-2 text-xs text-gray-500 mb-3">
+                              {entry.category && (
+                                <span className="px-2 py-1 bg-blue-50 text-blue-700 rounded">
+                                  {entry.category}
+                                </span>
+                              )}
+                              {entry.campus && (
+                                <span className="px-2 py-1 bg-green-50 text-green-700 rounded">
+                                  {entry.campus}
+                                </span>
+                              )}
+                              <span>{new Date(entry.achievement_date).toLocaleDateString()}</span>
+                            </div>
+                            <div className="flex space-x-2">
+                              <Button 
+                                variant="outline" 
+                                size="sm"
+                                onClick={() => handleEditHallOfFame(entry)}
+                              >
+                                <Edit className="h-4 w-4 mr-1" /> Edit
+                              </Button>
+                              <Button 
+                                variant="outline" 
+                                size="sm"
+                                onClick={() => handleDeleteHallOfFame(entry.id)}
+                                disabled={deletingId === entry.id}
+                              >
+                                {deletingId === entry.id ? (
+                                  <div className="h-4 w-4 animate-spin rounded-full border-b-2 border-gray-900" />
+                                ) : (
+                                  <>
+                                    <Trash2 className="h-4 w-4 mr-1" /> Delete
+                                  </>
+                                )}
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-8 text-muted-foreground">
+                      No Hall of Fame entries yet. Click "Add Entry" to create one.
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            )}
+          </TabsContent>
         </Tabs>
       </main>
       
@@ -1329,6 +1486,17 @@ export default function AdminDashboard() {
         resource={editingResource}
         onSave={handleResourceSave}
       />
+
+      {showHallOfFameForm && (
+        <HallOfFameForm
+          entry={editingHallOfFame}
+          onClose={() => {
+            setShowHallOfFameForm(false);
+            setEditingHallOfFame(null);
+          }}
+          onSave={handleHallOfFameSave}
+        />
+      )}
     </div>
   );
 }

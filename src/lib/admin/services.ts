@@ -6,12 +6,14 @@ import {
   galleryService,
   resourcesService,
   messagesService,
+  hallOfFameService,
   type Application,
   type Announcement,
   type Event,
   type GalleryImage,
   type Resource,
-  type Message
+  type Message,
+  type HallOfFame
 } from "../../../lib/supabase/services";
 
 interface ParsedApplicationMetadata {
@@ -638,4 +640,56 @@ export async function deleteJobApplication(id: string) {
   } catch {
     return { success: true, deletedId: id };
   }
+}
+
+// Hall of Fame services
+export async function getHallOfFameEntries() {
+  const res = await fetch('/api/admin/hall-of-fame');
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(text || 'Failed to fetch hall of fame entries');
+  }
+
+  return await res.json();
+}
+
+export async function createHallOfFame(data: Omit<HallOfFame, 'id' | 'created_at' | 'updated_at'>) {
+  const res = await fetch('/api/admin/hall-of-fame', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(text || 'Failed to create hall of fame entry');
+  }
+
+  return await res.json();
+}
+
+export async function updateHallOfFame(id: string, data: Partial<HallOfFame>) {
+  const res = await fetch(`/api/admin/hall-of-fame/${id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(text || 'Failed to update hall of fame entry');
+  }
+
+  return await res.json();
+}
+
+export async function deleteHallOfFame(id: string) {
+  const res = await fetch(`/api/admin/hall-of-fame/${id}`, { method: 'DELETE' });
+  
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(text || 'Failed to delete hall of fame entry');
+  }
+
+  return { success: true };
 }

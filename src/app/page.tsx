@@ -8,6 +8,7 @@ import { ArrowRight, Calendar, Music, Medal, Book, ChevronRight } from "lucide-r
 import AnnouncementBoard from "@/components/home/AnnouncementBoard";
 import UpcomingEvents from "@/components/home/UpcomingEvents";
 import CampusShowcase from "@/components/home/CampusShowcase";
+import HallOfFameSection from "@/components/home/HallOfFame";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { galleryService, GalleryImage } from "../../lib/supabase/services";
 
@@ -141,6 +142,9 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* Hall of Fame - Right below hero */}
+      <HallOfFameSection />
 
       {/* Announcements */}
       <section className="py-12 bg-yellow-50">

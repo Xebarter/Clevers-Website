@@ -89,6 +89,28 @@ export interface GalleryImage {
   blur_url?: string  // Added for image optimization
 }
 
+export interface HallOfFame {
+  id?: string
+  created_at?: string
+  updated_at?: string
+  title: string
+  learner_names: string
+  achievement: string
+  achievement_date: string
+  image_url: string
+  image_alt_text?: string
+  category?: string
+  grade_level?: string
+  campus?: string
+  description?: string
+  recognition_details?: string
+  is_featured?: boolean
+  display_order?: number
+  is_published?: boolean
+  created_by?: string
+  tags?: string[]
+}
+
 // Get Supabase URL and anon key from environment variables
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
