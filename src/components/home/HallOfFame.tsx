@@ -195,6 +195,14 @@ function LargeCard({ entry }: { entry: HallOfFame }) {
             sizes="(max-width: 1024px) 100vw, 50vw"
             quality={95}
             priority={isFeatured}
+            onError={(e) => {
+              console.error('Hall of Fame image failed to load:', {
+                url: entry.image_url,
+                entry: entry.learner_names,
+                error: e
+              });
+            }}
+            unoptimized={process.env.NODE_ENV === 'production'}
           />
           {/* Overlay gradient on hover */}
           <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
