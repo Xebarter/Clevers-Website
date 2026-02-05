@@ -86,7 +86,7 @@ export default function HallOfFameSection() {
             <Trophy className="h-8 w-8 text-yellow-500 ml-3" />
           </div>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            Celebrating the outstanding achievements of our exceptional learners
+            Celebrating the outstanding achievements of the Clevers Origin Family
           </p>
         </div>
 
