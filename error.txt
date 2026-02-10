@@ -1,5 +1,2 @@
-{
-    "statusCode": "403",
-    "error": "Unauthorized",
-    "message": "new row violates row-level security policy"
-}
+Import and use the <Analytics/> React component into my app's layout.
+import { Analytics } from "@vercel/analytics/next"

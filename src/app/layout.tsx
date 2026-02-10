@@ -6,6 +6,7 @@ import { AdminAuthProvider } from "@/contexts/AdminAuthContext";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import ClientBody from "@/components/ClientBody";
+import { Analytics } from "@vercel/analytics/next";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://www.cleversoriginschools.com"),
@@ -128,6 +129,7 @@ export default function RootLayout({
             </div>
           </ClientBody>
         </AdminAuthProvider>
+        <Analytics />
       </body>
     </html>
   );

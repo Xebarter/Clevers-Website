@@ -28,6 +28,7 @@
     "@sanity/types": "^3.82.0",
     "@sanity/vision": "^3.59.0",
     "@supabase/supabase-js": "^2.80.0",
+    "@vercel/analytics": "^1.6.1",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.0.0",
     "framer-motion": "^12.6.5",
