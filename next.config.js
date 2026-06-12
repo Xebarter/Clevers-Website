@@ -2,7 +2,9 @@
 const nextConfig = {
   reactStrictMode: false,
   images: {
-    unoptimized: false,
+    // Serve Supabase (and other remote) images directly — avoids Vercel /_next/image
+    // which returns 402 when image optimization quota/billing limits are hit.
+    unoptimized: true,
     remotePatterns: [
       {
         protocol: "https",
