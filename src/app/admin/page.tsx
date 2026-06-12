@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
@@ -15,7 +15,9 @@ import {
   Trash2,
   Eye,
   Download,
-  Trophy
+  Trophy,
+  Bell,
+  Megaphone,
 } from "lucide-react";
 import { useAdminAuth } from '@/contexts/AdminAuthContext';
 import { useRouter } from 'next/navigation';
@@ -45,7 +47,6 @@ import ApplicationDetailModal from "@/components/admin/ApplicationDetailModal";
 import AnnouncementForm from "@/components/admin/AnnouncementForm";
 import EventForm from "@/components/admin/EventForm";
 import Messages from "@/components/admin/Messages";
-import JotformMessages from "@/components/admin/JotformMessages";
 import ApplicationFormModal from "@/components/admin/ApplicationFormModal";
 import ResourceForm from "@/components/admin/ResourceForm";
 import GalleryForm from "@/components/admin/GalleryForm";
@@ -56,12 +57,22 @@ import AdminShell from "@/components/admin/AdminShell";
 import AdminConfirmDialog, { type AdminConfirmState } from "@/components/admin/AdminConfirmDialog";
 import {
   AdminEmptyState,
+  AdminFilterSelect,
   AdminIconButton,
   AdminLoadingState,
+  AdminMobileCard,
+  AdminNoResults,
+  AdminOverviewRow,
+  AdminOverviewSection,
   AdminPageHeader,
+  AdminPanel,
+  AdminQuickAction,
+  AdminRefreshButton,
+  AdminSearchInput,
   AdminStatCard,
   AdminStatusBadge,
   AdminTableWrapper,
+  AdminToolbar,
   adminTdClassName,
   adminThClassName,
   adminTrClassName,
@@ -188,6 +199,14 @@ export default function AdminDashboard() {
   const [editingHallOfFame, setEditingHallOfFame] = useState<HallOfFameEntry | null>(null);
   const [confirmDialog, setConfirmDialog] = useState<AdminConfirmState | null>(null);
   const [confirmLoading, setConfirmLoading] = useState(false);
+  const [applicationSearch, setApplicationSearch] = useState("");
+  const [applicationCampus, setApplicationCampus] = useState("all");
+  const [applicationPayment, setApplicationPayment] = useState("all");
+  const [announcementSearch, setAnnouncementSearch] = useState("");
+  const [announcementCategory, setAnnouncementCategory] = useState("all");
+  const [eventSearch, setEventSearch] = useState("");
+  const [resourceSearch, setResourceSearch] = useState("");
+  const [resourceCategory, setResourceCategory] = useState("all");
 
   const requestConfirm = (config: Omit<AdminConfirmState, "open">) => {
     setConfirmDialog({ ...config, open: true });
@@ -656,15 +675,106 @@ export default function AdminDashboard() {
     }
   };
 
-  // Format date for display
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString();
+    return new Date(dateString).toLocaleDateString("en-UG", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+    });
   };
 
-  // Format date time for display
-  const formatDateTime = (dateString: string) => {
-    return new Date(dateString).toLocaleString();
-  };
+  const unreadMessageCount = useMemo(
+    () => messages.filter((m) => !m.read).length,
+    [messages]
+  );
+
+  const campusOptions = useMemo(() => {
+    const campuses = [...new Set(applications.map((a) => a.campus).filter(Boolean))];
+    return [
+      { value: "all", label: "All campuses" },
+      ...campuses.map((c) => ({ value: c, label: c })),
+    ];
+  }, [applications]);
+
+  const resourceCategoryOptions = useMemo(() => {
+    const cats = [...new Set(resources.map((r) => r.category).filter(Boolean))];
+    return [
+      { value: "all", label: "All categories" },
+      ...cats.map((c) => ({ value: c, label: c })),
+    ];
+  }, [resources]);
+
+  const announcementCategoryOptions = useMemo(() => {
+    const cats = [...new Set(announcements.map((a) => a.category).filter(Boolean))];
+    return [
+      { value: "all", label: "All categories" },
+      ...cats.map((c) => ({ value: c, label: c })),
+    ];
+  }, [announcements]);
+
+  const filteredApplications = useMemo(() => {
+    const q = applicationSearch.trim().toLowerCase();
+    return applications.filter((app) => {
+      const matchesSearch =
+        !q ||
+        app.studentName.toLowerCase().includes(q) ||
+        app.parentName.toLowerCase().includes(q) ||
+        app.email?.toLowerCase().includes(q) ||
+        app.applicationId?.toLowerCase().includes(q);
+      const matchesCampus = applicationCampus === "all" || app.campus === applicationCampus;
+      const matchesPayment =
+        applicationPayment === "all" || app.paymentStatus === applicationPayment;
+      return matchesSearch && matchesCampus && matchesPayment;
+    });
+  }, [applications, applicationSearch, applicationCampus, applicationPayment]);
+
+  const filteredAnnouncements = useMemo(() => {
+    const q = announcementSearch.trim().toLowerCase();
+    return announcements.filter((ann) => {
+      const matchesSearch =
+        !q ||
+        ann.title.toLowerCase().includes(q) ||
+        ann.content.toLowerCase().includes(q);
+      const matchesCategory =
+        announcementCategory === "all" || ann.category === announcementCategory;
+      return matchesSearch && matchesCategory;
+    });
+  }, [announcements, announcementSearch, announcementCategory]);
+
+  const filteredEvents = useMemo(() => {
+    const q = eventSearch.trim().toLowerCase();
+    return events.filter(
+      (event) =>
+        !q ||
+        event.title.toLowerCase().includes(q) ||
+        event.description?.toLowerCase().includes(q) ||
+        event.location?.toLowerCase().includes(q)
+    );
+  }, [events, eventSearch]);
+
+  const filteredResources = useMemo(() => {
+    const q = resourceSearch.trim().toLowerCase();
+    return resources.filter((res) => {
+      const matchesSearch =
+        !q ||
+        res.title.toLowerCase().includes(q) ||
+        res.description?.toLowerCase().includes(q);
+      const matchesCategory = resourceCategory === "all" || res.category === resourceCategory;
+      return matchesSearch && matchesCategory;
+    });
+  }, [resources, resourceSearch, resourceCategory]);
+
+  const upcomingEvents = useMemo(() => {
+    const now = new Date();
+    return [...events]
+      .filter((e) => new Date(e.start_date || e.date) >= now)
+      .sort(
+        (a, b) =>
+          new Date(a.start_date || a.date).getTime() -
+          new Date(b.start_date || b.date).getTime()
+      )
+      .slice(0, 4);
+  }, [events]);
 
   // Show loading spinner while checking authentication
   if (authLoading) {
@@ -684,71 +794,110 @@ export default function AdminDashboard() {
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
 
           <TabsContent value="overview" className="space-y-6 mt-0">
-            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-              <AdminStatCard title="Applications" value={applications.length} subtitle="Student submissions" icon={Users} loading={loading} />
-              <AdminStatCard title="Resources" value={resources.length} subtitle="Published files" icon={FileText} loading={loading} />
-              <AdminStatCard title="Messages" value={messages.length} subtitle="Contact inquiries" icon={MessageSquare} loading={loading} />
-              <AdminStatCard title="Events" value={events.length} subtitle="Scheduled events" icon={Calendar} loading={loading} />
+            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-6">
+              <AdminStatCard title="Applications" value={applications.length} subtitle="Student submissions" icon={Users} loading={loading} accent="emerald" onClick={() => setActiveTab("applications")} />
+              <AdminStatCard title="Announcements" value={announcements.length} subtitle="Published updates" icon={Bell} loading={loading} accent="violet" onClick={() => setActiveTab("announcements")} />
+              <AdminStatCard title="Events" value={events.length} subtitle="Calendar entries" icon={Calendar} loading={loading} accent="blue" onClick={() => setActiveTab("events")} />
+              <AdminStatCard title="Resources" value={resources.length} subtitle="Downloadable files" icon={FileText} loading={loading} accent="amber" onClick={() => setActiveTab("resources")} />
+              <AdminStatCard title="Messages" value={messages.length} subtitle={unreadMessageCount > 0 ? `${unreadMessageCount} unread` : "Contact inquiries"} icon={MessageSquare} loading={loading} accent="rose" onClick={() => setActiveTab("messages")} />
+              <AdminStatCard title="Gallery" value={galleryImages.length} subtitle="Photos uploaded" icon={ImageIcon} loading={loading} accent="slate" onClick={() => setActiveTab("gallery")} />
+            </div>
+
+            <div className="flex flex-wrap gap-2">
+              <AdminQuickAction label="New announcement" icon={Megaphone} onClick={() => { setEditingAnnouncement(null); setShowAnnouncementForm(true); setActiveTab("announcements"); }} />
+              <AdminQuickAction label="Add event" icon={Calendar} onClick={() => { setEditingEvent(null); setShowEventForm(true); setActiveTab("events"); }} />
+              <AdminQuickAction label="Add resource" icon={FileText} onClick={() => { setEditingResource(null); setShowResourceForm(true); setActiveTab("resources"); }} />
+              <AdminRefreshButton onClick={loadData} loading={loading} />
             </div>
             
-            <div className="grid gap-4 lg:grid-cols-2">
-              <Card className="border-slate-200 shadow-sm">
-                <CardHeader>
-                  <CardTitle className="text-base">Recent Applications</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {loading ? (
-                    <AdminLoadingState message="Loading applications..." />
-                  ) : applications.length > 0 ? (
-                    <div className="space-y-4">
-                      {applications.slice(0, 5).map((app) => (
-                        <div key={app._id} className="flex items-center justify-between border-b pb-3 last:border-0 last:pb-0">
-                          <div>
-                            <p className="font-medium">{app.studentName}</p>
-                            <p className="text-sm text-muted-foreground">{app.gradeLevel} - {app.campus}</p>
-                          </div>
-                          <div className="text-right">
-                            <p className="text-sm">{formatDate(app._createdAt)}</p>
-                            <p className="text-xs text-muted-foreground">{app.paymentStatus}</p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <AdminEmptyState title="No applications yet" description="New student applications will appear here." />
-                  )}
-                </CardContent>
-              </Card>
-              
-              <Card className="border-slate-200 shadow-sm">
-                <CardHeader>
-                  <CardTitle className="text-base">Recent Messages</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {loading ? (
-                    <AdminLoadingState message="Loading messages..." />
-                  ) : messages.length > 0 ? (
-                    <div className="space-y-4">
-                      {messages.slice(0, 5).map((msg) => (
-                        <div key={msg.id} className="flex items-start justify-between border-b pb-3 last:border-0 last:pb-0">
-                          <div>
-                            <p className="font-medium">{msg.name}</p>
-                            <p className="text-sm text-muted-foreground truncate max-w-xs">{msg.subject}</p>
-                          </div>
-                          <div className="text-right">
-                            <p className="text-sm">{formatDate(msg.created_at)}</p>
-                            <p className="text-xs text-muted-foreground">
-                              {msg.read ? "Read" : "Unread"}
-                            </p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <AdminEmptyState title="No messages yet" description="Contact form submissions will appear here." />
-                  )}
-                </CardContent>
-              </Card>
+            <div className="grid gap-4 lg:grid-cols-2 xl:grid-cols-3">
+              <AdminOverviewSection
+                title="Recent Applications"
+                action={
+                  <Button variant="ghost" size="sm" onClick={() => setActiveTab("applications")} className="text-amber-700 hover:text-amber-800">
+                    View all
+                  </Button>
+                }
+              >
+                {loading ? (
+                  <AdminLoadingState message="Loading..." />
+                ) : applications.length > 0 ? (
+                  <div>
+                    {applications.slice(0, 5).map((app) => (
+                      <AdminOverviewRow
+                        key={app._id}
+                        primary={app.studentName}
+                        secondary={`${app.gradeLevel} · ${app.campus}`}
+                        meta={formatDate(app._createdAt)}
+                        badge={<AdminStatusBadge label={app.paymentStatus} tone={paymentTone(app.paymentStatus)} />}
+                        onClick={() => { setActiveTab("applications"); handleViewApplication(app); }}
+                      />
+                    ))}
+                  </div>
+                ) : (
+                  <AdminEmptyState title="No applications yet" description="New student applications will appear here." icon={Users} />
+                )}
+              </AdminOverviewSection>
+
+              <AdminOverviewSection
+                title="Recent Messages"
+                action={
+                  <Button variant="ghost" size="sm" onClick={() => setActiveTab("messages")} className="text-amber-700 hover:text-amber-800">
+                    View all
+                  </Button>
+                }
+              >
+                {loading ? (
+                  <AdminLoadingState message="Loading..." />
+                ) : messages.length > 0 ? (
+                  <div>
+                    {messages.slice(0, 5).map((msg) => (
+                      <AdminOverviewRow
+                        key={msg.id}
+                        primary={msg.name}
+                        secondary={msg.subject}
+                        meta={formatDate(msg.created_at)}
+                        badge={
+                          <AdminStatusBadge
+                            label={msg.read ? "Read" : "Unread"}
+                            tone={msg.read ? "success" : "warning"}
+                          />
+                        }
+                        onClick={() => setActiveTab("messages")}
+                      />
+                    ))}
+                  </div>
+                ) : (
+                  <AdminEmptyState title="No messages yet" description="Contact form submissions will appear here." icon={MessageSquare} />
+                )}
+              </AdminOverviewSection>
+
+              <AdminOverviewSection
+                title="Upcoming Events"
+                action={
+                  <Button variant="ghost" size="sm" onClick={() => setActiveTab("events")} className="text-amber-700 hover:text-amber-800">
+                    View all
+                  </Button>
+                }
+              >
+                {loading ? (
+                  <AdminLoadingState message="Loading..." />
+                ) : upcomingEvents.length > 0 ? (
+                  <div>
+                    {upcomingEvents.map((event) => (
+                      <AdminOverviewRow
+                        key={event._id}
+                        primary={event.title}
+                        secondary={event.location}
+                        meta={formatDate(event.start_date || event.date)}
+                        onClick={() => setActiveTab("events")}
+                      />
+                    ))}
+                  </div>
+                ) : (
+                  <AdminEmptyState title="No upcoming events" description="Scheduled events will appear here." icon={Calendar} />
+                )}
+              </AdminOverviewSection>
             </div>
           </TabsContent>
 
@@ -763,8 +912,33 @@ export default function AdminDashboard() {
                 </Button>
               }
             />
-            <Card className="border-slate-200 shadow-sm">
-              <CardContent className="pt-6">
+            <AdminToolbar resultCount={filteredApplications.length} totalCount={applications.length}>
+              <AdminSearchInput
+                value={applicationSearch}
+                onChange={setApplicationSearch}
+                placeholder="Search by student, parent, or email..."
+              />
+              <AdminFilterSelect
+                value={applicationCampus}
+                onChange={setApplicationCampus}
+                placeholder="Campus"
+                options={campusOptions}
+              />
+              <AdminFilterSelect
+                value={applicationPayment}
+                onChange={setApplicationPayment}
+                placeholder="Payment"
+                options={[
+                  { value: "all", label: "All payments" },
+                  { value: "completed", label: "Completed" },
+                  { value: "pending", label: "Pending" },
+                  { value: "failed", label: "Failed" },
+                ]}
+              />
+              <AdminRefreshButton onClick={loadData} loading={loading} />
+            </AdminToolbar>
+            <AdminPanel>
+              <div className="p-4 sm:p-6">
                 {loading ? (
                   <AdminLoadingState message="Loading applications..." />
                 ) : applications.length === 0 ? (
@@ -779,9 +953,16 @@ export default function AdminDashboard() {
                       </Button>
                     }
                   />
+                ) : filteredApplications.length === 0 ? (
+                  <AdminNoResults
+                    onClear={() => {
+                      setApplicationSearch("");
+                      setApplicationCampus("all");
+                      setApplicationPayment("all");
+                    }}
+                  />
                 ) : (
                   <>
-                    {/* Desktop Table View */}
                     <div className="hidden lg:block">
                       <AdminTableWrapper>
                       <table className="w-full text-sm">
@@ -797,7 +978,7 @@ export default function AdminDashboard() {
                           </tr>
                         </thead>
                         <tbody>
-                          {applications.map((application) => (
+                          {filteredApplications.map((application) => (
                             <tr key={application._id} className={adminTrClassName()}>
                               <td className={adminTdClassName()}>{application.studentName}</td>
                               <td className={adminTdClassName()}>{application.gradeLevel}</td>
@@ -841,89 +1022,51 @@ export default function AdminDashboard() {
                       </AdminTableWrapper>
                     </div>
                     
-                    {/* Mobile Card View */}
-                    <div className="lg:hidden space-y-4">
-                      {applications.map((application) => (
-                        <Card key={application._id} className="p-4">
-                          <div className="space-y-3">
-                            <div className="flex justify-between items-start">
-                              <div>
-                                <h3 className="font-semibold text-base">{application.studentName}</h3>
-                                <p className="text-sm text-gray-600">{application.gradeLevel}</p>
-                              </div>
-                              <span className={`px-2 py-1 rounded-full text-xs ${
-                                application.paymentStatus === "completed" 
-                                  ? "bg-green-100 text-green-800" 
-                                  : application.paymentStatus === "pending" 
-                                    ? "bg-yellow-100 text-yellow-800" 
-                                    : "bg-red-100 text-red-800"
-                              }`}>
-                                {application.paymentStatus}
-                              </span>
-                            </div>
-                            <div className="grid grid-cols-2 gap-2 text-sm">
-                              <div>
-                                <span className="text-gray-500">Parent:</span>
-                                <p className="font-medium">{application.parentName}</p>
-                              </div>
-                              <div>
-                                <span className="text-gray-500">Campus:</span>
-                                <p className="font-medium">{application.campus}</p>
-                              </div>
-                              <div className="col-span-2">
-                                <span className="text-gray-500">Submitted:</span>
-                                <p className="font-medium">{new Date(application._createdAt).toLocaleDateString()}</p>
-                              </div>
-                            </div>
-                            <div className="grid grid-cols-2 gap-2 pt-2 border-t">
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => handleViewApplication(application)}
-                                className="w-full"
-                              >
-                                <Eye className="h-4 w-4 mr-1" /> View
-                              </Button>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => handleDownloadApplication(application)}
-                                className="w-full"
-                              >
-                                <Download className="h-4 w-4 mr-1" /> PDF
-                              </Button>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => handleEditApplication(application)}
-                                className="w-full"
-                              >
-                                <Edit className="h-4 w-4 mr-1" /> Edit
-                              </Button>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => handleDeleteApplication(application._id)}
-                                disabled={deletingId === application._id}
-                                className="w-full"
-                              >
-                                {deletingId === application._id ? (
-                                  <div className="h-4 w-4 animate-spin rounded-full border border-gray-500 border-t-transparent" />
-                                ) : (
-                                  <>
-                                    <Trash2 className="h-4 w-4 mr-1" /> Delete
-                                  </>
-                                )}
-                              </Button>
-                            </div>
+                    <div className="lg:hidden space-y-3">
+                      {filteredApplications.map((application) => (
+                        <AdminMobileCard
+                          key={application._id}
+                          title={application.studentName}
+                          subtitle={`${application.gradeLevel} · ${application.campus}`}
+                          meta={`Submitted ${formatDate(application._createdAt)} · Parent: ${application.parentName}`}
+                          badge={
+                            <AdminStatusBadge
+                              label={application.paymentStatus}
+                              tone={paymentTone(application.paymentStatus)}
+                            />
+                          }
+                        >
+                          <div className="grid grid-cols-2 gap-2">
+                            <Button variant="outline" size="sm" onClick={() => handleViewApplication(application)}>
+                              <Eye className="h-4 w-4 mr-1" /> View
+                            </Button>
+                            <Button variant="outline" size="sm" onClick={() => handleDownloadApplication(application)}>
+                              <Download className="h-4 w-4 mr-1" /> PDF
+                            </Button>
+                            <Button variant="outline" size="sm" onClick={() => handleEditApplication(application)}>
+                              <Edit className="h-4 w-4 mr-1" /> Edit
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleDeleteApplication(application._id)}
+                              disabled={deletingId === application._id}
+                              className="hover:border-red-200 hover:text-red-600"
+                            >
+                              {deletingId === application._id ? (
+                                <div className="h-4 w-4 animate-spin rounded-full border border-slate-400 border-t-transparent" />
+                              ) : (
+                                <><Trash2 className="h-4 w-4 mr-1" /> Delete</>
+                              )}
+                            </Button>
                           </div>
-                        </Card>
+                        </AdminMobileCard>
                       ))}
                     </div>
                   </>
                 )}
-              </CardContent>
-            </Card>
+              </div>
+            </AdminPanel>
           </TabsContent>
 
           <TabsContent value="job-applications" className="space-y-4 mt-0">
@@ -940,12 +1083,29 @@ export default function AdminDashboard() {
                 </Button>
               }
             />
-            
-            <Card className="border-slate-200 shadow-sm">
-              <CardContent className="pt-6">
+            <AdminToolbar resultCount={filteredResources.length} totalCount={resources.length}>
+              <AdminSearchInput
+                value={resourceSearch}
+                onChange={setResourceSearch}
+                placeholder="Search resources..."
+              />
+              <AdminFilterSelect
+                value={resourceCategory}
+                onChange={setResourceCategory}
+                placeholder="Category"
+                options={resourceCategoryOptions}
+              />
+              <AdminRefreshButton onClick={loadData} loading={loading} />
+            </AdminToolbar>
+            <AdminPanel>
+              <div className="p-4 sm:p-6">
                 {loading ? (
                   <AdminLoadingState message="Loading resources..." />
-                ) : resources.length > 0 ? (
+                ) : resources.length === 0 ? (
+                  <AdminEmptyState title="No resources found" description="Upload documents and files for visitors to download." icon={FileText} />
+                ) : filteredResources.length === 0 ? (
+                  <AdminNoResults onClear={() => { setResourceSearch(""); setResourceCategory("all"); }} />
+                ) : (
                   <AdminTableWrapper>
                     <table className="w-full text-sm">
                       <thead>
@@ -959,7 +1119,7 @@ export default function AdminDashboard() {
                         </tr>
                       </thead>
                       <tbody>
-                        {resources.map((resource) => (
+                        {filteredResources.map((resource) => (
                           <tr key={resource._id} className={adminTrClassName()}>
                             <td className={adminTdClassName()}>
                               <div className="font-medium">{resource.title}</div>
@@ -998,11 +1158,9 @@ export default function AdminDashboard() {
                       </tbody>
                     </table>
                   </AdminTableWrapper>
-                ) : (
-                  <AdminEmptyState title="No resources found" description="Upload documents and files for visitors to download." icon={FileText} />
                 )}
-              </CardContent>
-            </Card>
+              </div>
+            </AdminPanel>
           </TabsContent>
 
           <TabsContent value="messages" className="space-y-4 mt-0">
@@ -1023,6 +1181,23 @@ export default function AdminDashboard() {
               }
             />
             
+            {!showAnnouncementForm && (
+              <AdminToolbar resultCount={filteredAnnouncements.length} totalCount={announcements.length}>
+                <AdminSearchInput
+                  value={announcementSearch}
+                  onChange={setAnnouncementSearch}
+                  placeholder="Search announcements..."
+                />
+                <AdminFilterSelect
+                  value={announcementCategory}
+                  onChange={setAnnouncementCategory}
+                  placeholder="Category"
+                  options={announcementCategoryOptions}
+                />
+                <AdminRefreshButton onClick={loadData} loading={loading} />
+              </AdminToolbar>
+            )}
+
             {showAnnouncementForm ? (
               <AnnouncementForm
                 initialData={editingAnnouncement ? {
@@ -1043,11 +1218,15 @@ export default function AdminDashboard() {
                 isLoading={creatingAnnouncement}
               />
             ) : (
-              <Card className="border-slate-200 shadow-sm">
-              <CardContent className="pt-6">
+              <AdminPanel>
+              <div className="p-4 sm:p-6">
                 {loading ? (
                   <AdminLoadingState message="Loading announcements..." />
-                ) : announcements.length > 0 ? (
+                ) : announcements.length === 0 ? (
+                  <AdminEmptyState title="No announcements found" description="Create your first announcement to share news with visitors." />
+                ) : filteredAnnouncements.length === 0 ? (
+                  <AdminNoResults onClear={() => { setAnnouncementSearch(""); setAnnouncementCategory("all"); }} />
+                ) : (
                   <AdminTableWrapper>
                     <table className="w-full text-sm">
                       <thead>
@@ -1061,7 +1240,7 @@ export default function AdminDashboard() {
                         </tr>
                       </thead>
                       <tbody>
-                        {announcements.map((announcement) => (
+                        {filteredAnnouncements.map((announcement) => (
                           <tr key={announcement._id} className={adminTrClassName()}>
                             <td className={`${adminTdClassName()} font-medium`}>{announcement.title}</td>
                             <td className={`${adminTdClassName()} line-clamp-2 max-w-xs`}>{announcement.content}</td>
@@ -1099,11 +1278,9 @@ export default function AdminDashboard() {
                       </tbody>
                     </table>
                   </AdminTableWrapper>
-                ) : (
-                  <AdminEmptyState title="No announcements found" description="Create your first announcement to share news with visitors." />
                 )}
-              </CardContent>
-              </Card>
+              </div>
+              </AdminPanel>
             )}
           </TabsContent>
 
@@ -1118,6 +1295,17 @@ export default function AdminDashboard() {
               }
             />
             
+            {!showEventForm && (
+              <AdminToolbar resultCount={filteredEvents.length} totalCount={events.length}>
+                <AdminSearchInput
+                  value={eventSearch}
+                  onChange={setEventSearch}
+                  placeholder="Search events..."
+                />
+                <AdminRefreshButton onClick={loadData} loading={loading} />
+              </AdminToolbar>
+            )}
+
             {showEventForm ? (
               <EventForm
                 initialData={editingEvent ? {
@@ -1137,11 +1325,15 @@ export default function AdminDashboard() {
                 isLoading={loading}
               />
             ) : (
-              <Card className="border-slate-200 shadow-sm">
-                <CardContent className="pt-6">
+              <AdminPanel>
+                <div className="p-4 sm:p-6">
                   {loading ? (
                     <AdminLoadingState message="Loading events..." />
-                  ) : events.length > 0 ? (
+                  ) : events.length === 0 ? (
+                    <AdminEmptyState title="No events found" description="Add events to keep the school calendar up to date." icon={Calendar} />
+                  ) : filteredEvents.length === 0 ? (
+                    <AdminNoResults onClear={() => setEventSearch("")} />
+                  ) : (
                     <AdminTableWrapper>
                       <table className="w-full text-sm">
                         <thead>
@@ -1155,7 +1347,7 @@ export default function AdminDashboard() {
                           </tr>
                         </thead>
                         <tbody>
-                          {events.map((event) => (
+                          {filteredEvents.map((event) => (
                             <tr key={event._id} className={adminTrClassName()}>
                               <td className={`${adminTdClassName()} font-medium`}>{event.title}</td>
                               <td className={`${adminTdClassName()} line-clamp-2 max-w-xs`}>{event.description}</td>
@@ -1191,11 +1383,9 @@ export default function AdminDashboard() {
                         </tbody>
                       </table>
                     </AdminTableWrapper>
-                  ) : (
-                    <AdminEmptyState title="No events found" description="Add events to keep the school calendar up to date." icon={Calendar} />
                   )}
-                </CardContent>
-              </Card>
+                </div>
+              </AdminPanel>
             )}
           </TabsContent>
 
