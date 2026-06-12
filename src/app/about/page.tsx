@@ -1,336 +1,319 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Heart, Book, Star, Users, Calendar, ArrowRight } from "lucide-react";
+import { Heart, Book, Star, Users, Calendar, ArrowRight, Sparkles, MapPin } from "lucide-react";
 import { galleryService, GalleryImage } from "../../../lib/supabase/services";
+import { cn } from "@/lib/utils";
 
 const defaultImageList = ["/COJS1.jpg", "/kitintale2.jpg", "/COJS2.jpg", "/maganjo3.jpg"];
+
+const DEFAULT_BLUR =
+  "data:image/svg+xml;base64," +
+  btoa(`<svg xmlns="http://www.w3.org/2000/svg" width="40" height="30"><rect width="40" height="30" fill="#fdf2f8"/><circle cx="20" cy="15" r="8" fill="#f9a8d4" opacity="0.5"/></svg>`);
+
+const milestones = [
+  {
+    year: "2005",
+    title: "Kitintale Founded",
+    text: "Clevers' Origin Schools began with one classroom and 15 learners in Kitintale, Kampala.",
+    border: "border-red-100",
+    icon: "text-red-600",
+    yearColor: "text-red-600",
+    href: "/campus/kitintale",
+  },
+  {
+    year: "2019",
+    title: "Kasokoso Campus",
+    text: "Our second campus opened in Kireka, extending our mission to a wider community.",
+    border: "border-blue-100",
+    icon: "text-blue-600",
+    yearColor: "text-blue-600",
+    href: "/campus/kasokoso",
+  },
+  {
+    year: "2021",
+    title: "Maganjo Campus",
+    text: "A modern innovation hub launched on Bombo Road with expanded programs.",
+    border: "border-emerald-100",
+    icon: "text-emerald-600",
+    yearColor: "text-emerald-600",
+    href: "/campus/maganjo",
+  },
+];
+
+const values = [
+  {
+    icon: Heart,
+    title: "Compassion",
+    color: "text-pink-600 bg-pink-50 border-pink-100",
+    text: "We nurture kindness, empathy, and respect in every child.",
+  },
+  {
+    icon: Book,
+    title: "Learning",
+    color: "text-blue-600 bg-blue-50 border-blue-100",
+    text: "We inspire curiosity and a lifelong love for knowledge.",
+  },
+  {
+    icon: Star,
+    title: "Excellence",
+    color: "text-green-600 bg-green-50 border-green-100",
+    text: "We pursue high standards while honouring each child's pace.",
+  },
+  {
+    icon: Users,
+    title: "Community",
+    color: "text-yellow-700 bg-yellow-50 border-yellow-100",
+    text: "We build strong partnerships with families and educators.",
+  },
+];
 
 export default function AboutPage() {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [galleryImages, setGalleryImages] = useState<GalleryImage[]>([]);
   const [loading, setLoading] = useState(true);
+  const [heroImageLoaded, setHeroImageLoaded] = useState(false);
 
   useEffect(() => {
-    const fetchGalleryImages = async () => {
-      try {
-        const data = await galleryService.getAll();
-        setGalleryImages(data);
-      } catch (error) {
-        console.error('Error fetching gallery images:', error);
-        // Fallback to default images if there's an error
-        setGalleryImages([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchGalleryImages();
+    galleryService
+      .getAll()
+      .then(setGalleryImages)
+      .catch(() => setGalleryImages([]))
+      .finally(() => setLoading(false));
   }, []);
 
-  // Use gallery images if available, otherwise fallback to default images
-  const imagesToDisplay = galleryImages.length > 0 
-    ? galleryImages 
-    : defaultImageList.map(url => ({ 
-        file_url: url, 
-        title: "Default image", 
-        alt_text: "Default image",
-        id: url,
-        blur_url: `data:image/svg+xml;base64,${btoa(`
-          <svg xmlns="http://www.w3.org/2000/svg" width="50" height="30" viewBox="0 0 50 30">
-            <rect width="50" height="30" fill="#e2e8f0"/>
-            <circle cx="25" cy="15" r="10" fill="#94a3b8" opacity="0.5"/>
-          </svg>
-        `)}`
-      }));
-
-  // Preload images - optimized for faster loading
-  useEffect(() => {
-    if (imagesToDisplay.length > 0) {
-      const urls = Array.isArray(imagesToDisplay) 
-        ? imagesToDisplay.map(img => typeof img === 'string' ? img : img.file_url) 
-        : defaultImageList;
-        
-      // Preload the first image immediately since it's priority
-      if (urls[0]) {
-        const preloadFirstImage = new window.Image();
-        preloadFirstImage.src = urls[0];
-      }
-      
-      // Preload next few images that will be displayed
-      const preloadCount = Math.min(3, urls.length); // Preload first 3 images
-      for (let i = 1; i < preloadCount; i++) {
-        if (urls[i]) {
-          const preloadImage = new window.Image();
-          preloadImage.src = urls[i];
-        }
-      }
-    }
-  }, [imagesToDisplay]);
+  const imagesToDisplay: { file_url: string; alt_text?: string; title?: string; id?: string; blur_url?: string }[] =
+    galleryImages.length > 0
+      ? galleryImages
+      : defaultImageList.map((url) => ({
+          file_url: url,
+          title: "School life",
+          alt_text: "Clevers' Origin Schools",
+          id: url,
+        }));
 
   useEffect(() => {
-    if (imagesToDisplay.length <= 1) return; // Don't auto-rotate if there's only one or no images
-    
-    const intervalId = setInterval(() => {
-      setCurrentImageIndex((prevIndex) => (prevIndex + 1) % imagesToDisplay.length);
-    }, 3000); // Change image every 3 seconds
+    if (imagesToDisplay.length <= 1) return;
+    const interval = setInterval(
+      () => setCurrentImageIndex((i) => (i + 1) % imagesToDisplay.length),
+      5000
+    );
+    return () => clearInterval(interval);
+  }, [imagesToDisplay.length]);
 
-    return () => clearInterval(intervalId); // Cleanup on unmount
+  useEffect(() => {
+    setHeroImageLoaded(false);
   }, [imagesToDisplay]);
 
-  // Get the current image URL based on whether we have gallery images or default images
-  const currentImageUrl = Array.isArray(imagesToDisplay) 
-    ? typeof imagesToDisplay[currentImageIndex] === 'object' 
-      ? imagesToDisplay[currentImageIndex].file_url 
-      : imagesToDisplay[currentImageIndex] 
-    : defaultImageList[currentImageIndex % defaultImageList.length];
+  const showHeroSpinner = loading || (imagesToDisplay.length > 0 && !heroImageLoaded);
+
+  const markHeroLoaded = useCallback(() => setHeroImageLoaded(true), []);
 
   return (
     <div className="min-h-screen">
-      {/* Hero Section */}
-      <section className="py-12 md:py-16 bg-gradient-to-b from-kinder-yellow/20 to-white">
-        <div className="container mx-auto px-4">
-          <div className="max-w-3xl mx-auto text-center">
-            <h1 className="text-4xl md:text-5xl font-bold mb-6 font-heading heading-gradient">
-              Our Story
-            </h1>
-            <p className="text-lg text-gray-700 mb-8 font-body">
-              A journey of nurturing young minds and building a community of joyful learners
-            </p>
+      {/* Hero */}
+      <section className="relative overflow-hidden py-16 sm:py-20 bg-gradient-to-br from-pink-50 via-yellow-50/80 to-green-50">
+        <div className="absolute top-0 right-0 w-80 h-80 bg-pink-200/20 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute bottom-0 left-0 w-64 h-64 bg-green-200/20 rounded-full blur-3xl pointer-events-none" />
+        <div className="container mx-auto px-4 sm:px-6 relative text-center max-w-3xl">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/70 border border-pink-100 shadow-sm mb-6">
+            <Sparkles className="h-4 w-4 text-yellow-500" />
+            <span className="text-sm font-medium text-gray-700">Est. 2005 · Kampala, Uganda</span>
           </div>
+          <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight text-gray-900 mb-5">
+            Our{" "}
+            <span className="bg-gradient-to-r from-pink-500 via-yellow-400 to-green-500 bg-clip-text text-transparent">
+              Story
+            </span>
+          </h1>
+          <p className="text-lg text-gray-600 leading-relaxed">
+            A journey of nurturing young minds and building a community of joyful learners across three vibrant campuses.
+          </p>
         </div>
       </section>
 
-      {/* Hero Image Section */}
-      <div className="relative h-64 md:h-96 w-full overflow-hidden">
-        {Array.isArray(imagesToDisplay) ? (
-          imagesToDisplay.map((img, index) => {
-            const blurData = typeof img === 'object' && 'blur_url' in img && img.blur_url 
-              ? img.blur_url 
-              : `data:image/svg+xml;base64,${btoa(`
-                <svg xmlns="http://www.w3.org/2000/svg" width="50" height="30" viewBox="0 0 50 30">
-                  <rect width="50" height="30" fill="#e2e8f0"/>
-                  <circle cx="25" cy="15" r="10" fill="#94a3b8" opacity="0.5"/>
-                </svg>
-              `)}`;
-            
-            // Determine if this image should have priority
-            // Priority for current image and the next one to be shown
-            const nextImageIndex = (currentImageIndex + 1) % imagesToDisplay.length;
-            const isPriority = index === currentImageIndex || index === nextImageIndex;
-            
-            return (
-              <div
-                key={typeof img === 'object' ? img.id || index : index}
-                className={`absolute top-0 left-0 w-full h-full transition-opacity duration-1000 ease-in-out ${
-                  index === currentImageIndex ? 'opacity-100' : 'opacity-0'
-                }`}
-              >
-                <Image
-                  src={typeof img === 'object' ? img.file_url : img}
-                  alt={typeof img === 'object' ? img.alt_text || img.title : "About image"}
-                  fill
-                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                  className="object-cover"
-                  priority={isPriority}
-                  placeholder="blur"
-                  blurDataURL={blurData}
-                  loading="eager"
-                />
-              </div>
-            );
-          })
-        ) : (
-          <div className="absolute inset-0 flex items-center justify-center bg-gray-200">
-            <p className="text-gray-600">Loading images...</p>
+      {/* Hero image strip */}
+      <div className="relative h-56 sm:h-72 md:h-96 w-full overflow-hidden bg-gradient-to-br from-green-50 to-white">
+        {showHeroSpinner && (
+          <div className="absolute inset-0 z-30 flex flex-col items-center justify-center gap-3 bg-gradient-to-br from-white/95 via-green-50/95 to-white/95">
+            <div className="hero-spinner" role="status" aria-label="Loading images" />
+          </div>
+        )}
+        {!loading &&
+          imagesToDisplay.map((img, index) => (
+            <div
+              key={img.id || index}
+              className={cn(
+                "absolute inset-0 transition-opacity duration-1000",
+                index === currentImageIndex ? "opacity-100 z-10" : "opacity-0 z-0"
+              )}
+            >
+              <Image
+                src={img.file_url}
+                alt={img.alt_text || img.title || "About Clevers' Origin Schools"}
+                fill
+                sizes="100vw"
+                className={cn("object-cover", index === currentImageIndex && "hero-ken-burns")}
+                priority={index <= 1}
+                placeholder="blur"
+                blurDataURL={img.blur_url || DEFAULT_BLUR}
+                onLoad={() => {
+                  if (index === 0) markHeroLoaded();
+                }}
+                onError={() => {
+                  if (index === 0) markHeroLoaded();
+                }}
+              />
+            </div>
+          ))}
+        <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-white to-transparent z-20 pointer-events-none" />
+        {imagesToDisplay.length > 1 && (
+          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 flex gap-1.5">
+            {imagesToDisplay.map((_, index) => (
+              <button
+                key={index}
+                type="button"
+                onClick={() => setCurrentImageIndex(index)}
+                aria-label={`Slide ${index + 1}`}
+                className={cn(
+                  "h-1.5 rounded-full transition-all",
+                  index === currentImageIndex ? "w-6 bg-white shadow" : "w-1.5 bg-white/50"
+                )}
+              />
+            ))}
           </div>
         )}
       </div>
 
-      {/* ================= ORIGIN ================= */}
-      <section className="py-16">
-        <div className="container mx-auto px-4 grid md:grid-cols-2 gap-12 items-center">
-          {/* Text */}
-          <div>
-            <h2 className="text-3xl font-heading font-bold text-kinder-blue mb-6">
-              Our Humble Beginnings
-            </h2>
-
-            <p className="text-gray-700 font-body mb-4 leading-relaxed">
-              Clevers’ Origin Schools was founded in{" "}
-              <span className="font-semibold text-kinder-blue">2005</span> in
-              Kitintale, Kampala, by Mr. Mugwanya Christopher—a visionary
-              educator who believed that education should be joyful,
-              disciplined, and child-centered.
-            </p>
-
-            <p className="text-gray-700 font-body mb-6 leading-relaxed">
-              What began with one classroom and 15 learners has grown into a
-              trusted institution grounded in care, academic rigor, and strong
-              community values.
-            </p>
-
-            {/* Timeline */}
-            <div className="flex items-center gap-3 flex-wrap">
-              {["2005", "2019", "2021", "2026"].map((year, i) => (
-                <React.Fragment key={year}>
-                  <div className="h-9 w-9 rounded-full bg-kinder-blue text-white flex items-center justify-center font-heading font-bold shadow-sm">
-                    {year.slice(2)}
-                  </div>
-                  {i < 3 && (
-                    <div className="h-1 w-10 bg-gradient-to-r from-kinder-blue to-kinder-green" />
-                  )}
-                </React.Fragment>
-              ))}
-            </div>
-          </div>
-
-          {/* Image */}
-          <div className="relative rounded-3xl border border-kinder-pink/30 shadow-lg overflow-hidden aspect-video bg-gray-100">
-            {loading ? (
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="h-10 w-10 rounded-full border-2 border-kinder-blue border-t-transparent animate-spin" />
+      {/* Origin */}
+      <section className="py-16 sm:py-20">
+        <div className="container mx-auto px-4 sm:px-6">
+          <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center max-w-6xl mx-auto">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-pink-600 mb-3">Our beginnings</p>
+              <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 tracking-tight mb-6">
+                Humble roots, lasting impact
+              </h2>
+              <p className="text-gray-600 leading-relaxed mb-4">
+                Clevers&apos; Origin Schools was founded in{" "}
+                <strong className="text-gray-900">2005</strong> in Kitintale, Kampala, by Mr. Mugwanya Christopher — a
+                visionary educator who believed education should be joyful, disciplined, and child-centred.
+              </p>
+              <p className="text-gray-600 leading-relaxed mb-8">
+                What began with one classroom and 15 learners has grown into a trusted institution grounded in care,
+                academic rigor, and strong community values.
+              </p>
+              <div className="flex items-center gap-2 flex-wrap">
+                {["05", "19", "21", "26"].map((label, i) => (
+                  <React.Fragment key={label}>
+                    <div className="flex flex-col items-center">
+                      <div className="h-11 w-11 rounded-xl bg-gradient-to-br from-pink-500 to-green-500 text-white flex items-center justify-center font-bold text-sm shadow-md">
+                        {label}
+                      </div>
+                      <span className="text-[10px] text-gray-400 mt-1 font-medium">
+                        {["2005", "2019", "2021", "Today"][i]}
+                      </span>
+                    </div>
+                    {i < 3 && <div className="h-px w-6 sm:w-10 bg-gradient-to-r from-pink-300 to-green-300 mb-4" />}
+                  </React.Fragment>
+                ))}
               </div>
-            ) : (
+            </div>
+            <div className="relative aspect-[4/3] rounded-2xl sm:rounded-3xl overflow-hidden shadow-xl ring-1 ring-gray-100 bg-gray-100">
               <Image
-                src={currentImageUrl}
+                src={imagesToDisplay[currentImageIndex]?.file_url || defaultImageList[0]}
                 alt="Clevers' Origin Schools"
                 fill
-                className="object-cover transition-opacity duration-700"
-                priority
+                className="object-cover"
+                sizes="(max-width: 1024px) 100vw, 50vw"
               />
-            )}
+            </div>
           </div>
         </div>
       </section>
 
-      {/* ================= GROWTH ================= */}
-      <section className="py-16 bg-gradient-to-r from-kinder-green/10 to-kinder-blue/10">
-        <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-heading font-bold text-center text-kinder-blue mb-12">
-            Our Growth Journey
-          </h2>
-
-          <div className="grid md:grid-cols-3 gap-8">
-            {[
-              {
-                year: "2005",
-                color: "text-kinder-blue",
-                text:
-                  "Kitintale Campus was established, laying the foundation for our educational philosophy.",
-              },
-              {
-                year: "2019",
-                color: "text-kinder-red",
-                text:
-                  "Kasokoso Campus opened, extending our mission to a wider community.",
-              },
-              {
-                year: "2021",
-                color: "text-kinder-purple",
-                text:
-                  "Maganjo Campus launched with a focus on innovation and modern learning spaces.",
-              },
-            ].map((item) => (
-              <Card
+      {/* Growth journey */}
+      <section className="py-16 sm:py-20 bg-gradient-to-b from-green-50/50 via-white to-yellow-50/30">
+        <div className="container mx-auto px-4 sm:px-6">
+          <div className="text-center max-w-2xl mx-auto mb-12">
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-green-600 mb-3">Our expansion</p>
+            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 tracking-tight">Growth Journey</h2>
+            <p className="text-gray-600 mt-3 leading-relaxed">
+              Three campuses united by one commitment to nurturing every learner.
+            </p>
+          </div>
+          <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+            {milestones.map((item) => (
+              <Link
                 key={item.year}
-                className="border-none shadow-md bg-white"
+                href={item.href}
+                className={cn(
+                  "group rounded-2xl border p-6 bg-white shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1",
+                  item.border
+                )}
               >
-                <CardContent className="pt-6 text-center">
-                  <Calendar className={`h-10 w-10 mx-auto ${item.color}`} />
-                  <h3 className={`text-xl font-heading font-bold mt-4 ${item.color}`}>
-                    {item.year}
-                  </h3>
-                  <p className="text-gray-700 font-body mt-3">
-                    {item.text}
-                  </p>
-                </CardContent>
-              </Card>
+                <Calendar className={cn("h-8 w-8 mb-4", item.icon)} />
+                <p className={cn("text-2xl font-bold mb-1", item.yearColor)}>{item.year}</p>
+                <h3 className="font-bold text-gray-900 mb-2">{item.title}</h3>
+                <p className="text-sm text-gray-600 leading-relaxed mb-4">{item.text}</p>
+                <span className="inline-flex items-center text-sm font-semibold text-gray-700 group-hover:gap-2 transition-all">
+                  Visit campus <ArrowRight className="ml-1 h-4 w-4" />
+                </span>
+              </Link>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ================= VALUES ================= */}
-      <section className="py-16">
-        <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-heading font-bold text-center text-kinder-blue mb-12">
-            Our Core Values
-          </h2>
-
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {[
-              {
-                icon: Heart,
-                title: "Compassion",
-                color: "text-kinder-red",
-                text:
-                  "We nurture kindness, empathy, and respect in every child.",
-              },
-              {
-                icon: Book,
-                title: "Learning",
-                color: "text-kinder-blue",
-                text:
-                  "We inspire curiosity and a lifelong love for knowledge.",
-              },
-              {
-                icon: Star,
-                title: "Excellence",
-                color: "text-kinder-green",
-                text:
-                  "We pursue high standards while honoring each child’s pace.",
-              },
-              {
-                icon: Users,
-                title: "Community",
-                color: "text-kinder-purple",
-                text:
-                  "We build strong partnerships with families and educators.",
-              },
-            ].map((v) => (
-              <div
+      {/* Values */}
+      <section className="py-16 sm:py-20">
+        <div className="container mx-auto px-4 sm:px-6">
+          <div className="text-center max-w-2xl mx-auto mb-12">
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-blue-600 mb-3">What we stand for</p>
+            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 tracking-tight">Core Values</h2>
+          </div>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
+            {values.map((v) => (
+              <article
                 key={v.title}
-                className="bg-white p-6 rounded-3xl shadow-md border text-center"
+                className={cn("rounded-2xl border p-6 text-center transition-shadow hover:shadow-md", v.color)}
               >
-                <div className="w-14 h-14 mx-auto rounded-full bg-gray-50 flex items-center justify-center mb-4">
-                  <v.icon className={`h-7 w-7 ${v.color}`} />
+                <div className="w-12 h-12 mx-auto rounded-xl bg-white/80 flex items-center justify-center mb-4 shadow-sm">
+                  <v.icon className={cn("h-6 w-6", v.color.split(" ")[0])} />
                 </div>
-                <h3 className={`text-xl font-heading font-bold mb-2 ${v.color}`}>
-                  {v.title}
-                </h3>
-                <p className="text-gray-700 font-body">
-                  {v.text}
-                </p>
-              </div>
+                <h3 className="text-lg font-bold text-gray-900 mb-2">{v.title}</h3>
+                <p className="text-sm text-gray-600 leading-relaxed">{v.text}</p>
+              </article>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ================= CTA ================= */}
-      <section className="py-16 bg-gradient-to-r from-kinder-yellow/20 via-kinder-pink/20 to-kinder-blue/20">
-        <div className="container mx-auto px-4 text-center max-w-2xl">
-          <h2 className="text-3xl font-heading font-bold text-kinder-blue mb-4">
-            Learn More About Us
-          </h2>
-          <p className="text-gray-700 font-body mb-8">
-            Discover our mission, vision, and leadership team shaping the future
-            of Clevers’ Origin Schools.
+      {/* CTA */}
+      <section className="py-16 sm:py-20 bg-gradient-to-r from-pink-100/60 via-yellow-50 to-green-100/60">
+        <div className="container mx-auto px-4 sm:px-6 text-center max-w-2xl">
+          <MapPin className="h-8 w-8 text-green-600 mx-auto mb-4" />
+          <h2 className="text-3xl font-bold text-gray-900 mb-4">Learn More About Us</h2>
+          <p className="text-gray-600 mb-8 leading-relaxed">
+            Discover our mission, vision, and the leadership shaping the future of Clevers&apos; Origin Schools.
           </p>
-
-          <Link href="/about/mission">
-            <Button className="kinder-button bg-kinder-green hover:bg-kinder-green/90">
-              Our Mission & Vision
-              <ArrowRight className="ml-2 h-4 w-4" />
-            </Button>
-          </Link>
+          <div className="flex flex-wrap gap-4 justify-center">
+            <Link href="/about/mission">
+              <Button size="lg" className="rounded-lg bg-green-600 hover:bg-green-700 text-white shadow-lg">
+                Mission & Vision <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
+            </Link>
+            <Link href="/campus">
+              <Button size="lg" variant="outline" className="rounded-lg border-gray-200">
+                Our Campuses
+              </Button>
+            </Link>
+          </div>
         </div>
       </section>
     </div>
-  )
+  );
 }

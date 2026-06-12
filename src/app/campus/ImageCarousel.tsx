@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import { galleryService, GalleryImage } from "../../../lib/supabase/services";
+import { cn } from "@/lib/utils";
 
 interface ImageProps {
   url: string;
@@ -10,222 +11,145 @@ interface ImageProps {
   blurDataURL?: string;
 }
 
-// Legacy component for backward compatibility - accepts images as props
-const ImageCarousel = ({ images }: { images: ImageProps[] }) => {
-  // Process images to ensure correct URL format
-  const processedImages = images.map(image => ({
-    ...image,
-    url: image.url.startsWith("/") ? image.url : `/${image.url}`,
-    blurDataURL: image.blurDataURL || `data:image/svg+xml;base64,${btoa(`
-      <svg xmlns="http://www.w3.org/2000/svg" width="50" height="30" viewBox="0 0 50 30">
-        <rect width="50" height="30" fill="#e2e8f0"/>
-        <circle cx="25" cy="15" r="10" fill="#94a3b8" opacity="0.5"/>
-      </svg>
-    `)}`
-  }));
+const DEFAULT_BLUR =
+  "data:image/svg+xml;base64," +
+  btoa(`<svg xmlns="http://www.w3.org/2000/svg" width="40" height="30"><rect width="40" height="30" fill="#ecfdf5"/><circle cx="20" cy="15" r="8" fill="#86efac" opacity="0.6"/></svg>`);
 
+function CarouselSlides({
+  images,
+  className,
+}: {
+  images: ImageProps[];
+  className?: string;
+}) {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [firstLoaded, setFirstLoaded] = useState(false);
 
   useEffect(() => {
-    if (processedImages.length <= 1) return; // Don't auto-rotate if there's only one or no images
-    
-    const intervalId = setInterval(() => {
-      setCurrentIndex((prevIndex) => (prevIndex + 1) % processedImages.length);
-    }, 3000); // Change image every 3 seconds
+    if (images.length <= 1) return;
+    const id = setInterval(() => setCurrentIndex((i) => (i + 1) % images.length), 5000);
+    return () => clearInterval(id);
+  }, [images.length]);
 
-    return () => clearInterval(intervalId); // Cleanup on unmount
-  }, [processedImages.length]);
+  if (images.length === 0) {
+    return (
+      <div className={cn("flex items-center justify-center bg-gradient-to-br from-green-50 to-white", className)}>
+        <p className="text-sm text-gray-500">No photos available</p>
+      </div>
+    );
+  }
 
-  // Preload images - optimized for faster loading
-  useEffect(() => {
-    if (processedImages.length > 0) {
-      // Preload the first image immediately since it's priority
-      if (processedImages[0]) {
-        const preloadFirstImage = new window.Image();
-        preloadFirstImage.src = processedImages[0].url;
-      }
-      
-      // Preload next few images that will be displayed
-      const preloadCount = Math.min(3, processedImages.length); // Preload first 3 images
-      for (let i = 1; i < preloadCount; i++) {
-        if (processedImages[i]) {
-          const preloadImage = new window.Image();
-          preloadImage.src = processedImages[i].url;
-        }
-      }
-    }
-  }, [processedImages.length]);
+  const showSpinner = !firstLoaded;
 
   return (
-    <div className="relative w-full h-64 rounded-lg overflow-hidden shadow-md">
-      {processedImages.map((image, index) => {
-        // Determine if this image should have priority
-        // Priority for current image and the next one to be shown
-        const nextIndex = (currentIndex + 1) % processedImages.length;
-        const isPriority = index === currentIndex || index === nextIndex;
-        
+    <div className={cn("relative overflow-hidden bg-gray-100", className)}>
+      {showSpinner && (
+        <div className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-2 bg-gradient-to-br from-white/95 via-green-50/95 to-white/95">
+          <div className="hero-spinner scale-90" role="status" aria-label="Loading photos" />
+        </div>
+      )}
+      {images.map((image, index) => {
+        const isCurrent = index === currentIndex;
+        const nextIndex = (currentIndex + 1) % images.length;
+        const isPriority = isCurrent || index === nextIndex;
+
         return (
           <div
             key={index}
-            className={`absolute top-0 left-0 w-full h-full transition-opacity duration-700 ${
-              index === currentIndex ? 'opacity-100 z-10' : 'opacity-0 z-0'
-            }`}
+            className={cn(
+              "absolute inset-0 transition-opacity duration-700",
+              isCurrent ? "opacity-100 z-10" : "opacity-0 z-0"
+            )}
           >
             <Image
-              src={image.url}
+              src={image.url.startsWith("http") ? image.url : image.url.startsWith("/") ? image.url : `/${image.url}`}
               alt={image.alt}
               fill
-              sizes="100vw"
-              className="object-cover w-full h-full"
+              sizes="(max-width: 1024px) 100vw, 50vw"
+              className={cn("object-cover", isCurrent && "hero-ken-burns")}
               priority={isPriority}
               placeholder="blur"
-              blurDataURL={image.blurDataURL}
-              loading="eager"
+              blurDataURL={image.blurDataURL || DEFAULT_BLUR}
+              onLoad={() => {
+                if (index === 0) setFirstLoaded(true);
+              }}
+              onError={() => {
+                if (index === 0) setFirstLoaded(true);
+              }}
             />
           </div>
-        )
+        );
       })}
+      <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-black/30 to-transparent z-10 pointer-events-none" />
+      {images.length > 1 && (
+        <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-20 flex gap-1.5">
+          {images.map((_, index) => (
+            <button
+              key={index}
+              type="button"
+              onClick={() => setCurrentIndex(index)}
+              aria-label={`Go to slide ${index + 1}`}
+              className={cn(
+                "h-1.5 rounded-full transition-all",
+                index === currentIndex ? "w-6 bg-white" : "w-1.5 bg-white/50 hover:bg-white/80"
+              )}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
-};
+}
 
-// Campus-specific image carousel component
-export const CampusImageCarousel = ({ category }: { category: string }) => {
+export const CampusImageCarousel = ({
+  category,
+  className,
+}: {
+  category: string;
+  className?: string;
+}) => {
   const [images, setImages] = useState<ImageProps[]>([]);
-  const [currentIndex, setCurrentIndex] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchImages = async () => {
       try {
-        console.log(`Fetching images for category: ${category}`);
         const galleryImages: GalleryImage[] = await galleryService.getByCategory(category);
-        console.log(`Found ${galleryImages.length} images for category: ${category}`, galleryImages);
-        
-        // Convert gallery images to the format expected by the carousel
-        const formattedImages = galleryImages.map(image => ({
-          url: image.file_url,
-          alt: image.alt_text || image.title || 'Gallery image',
-          blurDataURL: image.blur_url || `data:image/svg+xml;base64,${btoa(`
-            <svg xmlns="http://www.w3.org/2000/svg" width="50" height="30" viewBox="0 0 50 30">
-              <rect width="50" height="30" fill="#e2e8f0"/>
-              <circle cx="25" cy="15" r="10" fill="#94a3b8" opacity="0.5"/>
-            </svg>
-          `)}`
-        }));
-        
-        setImages(formattedImages);
-        setLoading(false);
-      } catch (err) {
-        console.error(`Error fetching images for category ${category}:`, err);
-        setError('Failed to load images');
+        setImages(
+          galleryImages.map((image) => ({
+            url: image.file_url,
+            alt: image.alt_text || image.title || "Campus photo",
+            blurDataURL: image.blur_url,
+          }))
+        );
+      } catch {
+        setImages([]);
+      } finally {
         setLoading(false);
       }
     };
-
     fetchImages();
   }, [category]);
 
-  // Preload images - optimized for faster loading
-  useEffect(() => {
-    if (images.length > 0) {
-      // Preload the first image immediately since it's priority
-      if (images[0]) {
-        const preloadFirstImage = new window.Image();
-        preloadFirstImage.src = images[0].url;
-      }
-      
-      // Preload next few images that will be displayed
-      const preloadCount = Math.min(3, images.length); // Preload first 3 images
-      for (let i = 1; i < preloadCount; i++) {
-        if (images[i]) {
-          const preloadImage = new window.Image();
-          preloadImage.src = images[i].url;
-        }
-      }
-    }
-  }, [images]);
-
-  useEffect(() => {
-    if (images.length <= 1) return; // Don't auto-rotate if there's only one or no images
-
-    const intervalId = setInterval(() => {
-      setCurrentIndex((prevIndex) => (prevIndex + 1) % images.length);
-    }, 3000); // Change image every 3 seconds
-
-    return () => clearInterval(intervalId); // Cleanup on unmount
-  }, [images.length]);
-
   if (loading) {
     return (
-      <div className="w-full h-64 flex items-center justify-center bg-gray-100 rounded-lg">
-        <div className="text-center">
-          <div className="animate-spin h-8 w-8 border-4 border-blue-500 border-t-transparent rounded-full mx-auto mb-2"></div>
-          <p className="text-gray-600">Loading images...</p>
-        </div>
-      </div>
-    );
-  }
-  
-  if (error) {
-    return (
-      <div className="w-full h-64 flex items-center justify-center bg-red-50 rounded-lg">
-        <div className="text-center">
-          <p className="text-red-600">Error: {error}</p>
-          <p className="text-sm text-gray-600 mt-2">Category: {category}</p>
-        </div>
-      </div>
-    );
-  }
-  
-  if (images.length === 0) {
-    return (
-      <div className="w-full h-64 flex items-center justify-center bg-yellow-50 rounded-lg">
-        <div className="text-center">
-          <p className="text-gray-600">No images available for {category}</p>
-          <p className="text-sm text-gray-500 mt-2">Please add images in the admin dashboard</p>
-        </div>
+      <div className={cn("flex flex-col items-center justify-center gap-2 bg-gradient-to-br from-green-50 to-white", className)}>
+        <div className="hero-spinner scale-90" role="status" />
+        <p className="text-xs text-green-700/70 font-medium">Loading photos...</p>
       </div>
     );
   }
 
-  return (
-    <div className="relative w-full h-64 rounded-lg overflow-hidden shadow-md">
-      {images.map((image, index) => {
-        // Determine if this image should have priority
-        // Priority for current image and the next one to be shown
-        const nextIndex = (currentIndex + 1) % images.length;
-        const isPriority = index === currentIndex || index === nextIndex;
-        
-        return (
-          <div
-            key={index}
-            className={`absolute top-0 left-0 w-full h-full transition-opacity duration-700 ${
-              index === currentIndex ? 'opacity-100 z-10' : 'opacity-0 z-0'
-            }`}
-          >
-            <Image
-              src={image.url.startsWith('http') ? image.url : image.url.startsWith('/') ? image.url : `/${image.url}`} // Ensure starting with /
-              alt={image.alt}
-              fill // replaces layout="fill"
-              sizes="100vw"
-              className="object-cover w-full h-full"
-              priority={isPriority} // Load current and next image with priority
-              placeholder="blur"
-              blurDataURL={image.blurDataURL}
-              loading="eager"
-            />
-          </div>
-        )
-      })}
-    </div>
-  );
+  return <CarouselSlides images={images} className={className} />;
 };
 
-// New component that fetches images from the "Other/General" category
-export const GeneralImageCarousel = () => {
-  return <CampusImageCarousel category="Other/General" />;
-};
+export const GeneralImageCarousel = () => <CampusImageCarousel category="Other/General" className="h-64 w-full rounded-lg" />;
 
-export default ImageCarousel;
+export default function ImageCarousel({ images }: { images: ImageProps[] }) {
+  const processed = images.map((image) => ({
+    ...image,
+    url: image.url.startsWith("/") ? image.url : `/${image.url}`,
+    blurDataURL: image.blurDataURL || DEFAULT_BLUR,
+  }));
+  return <CarouselSlides images={processed} className="h-64 w-full rounded-lg" />;
+}

@@ -1,27 +1,23 @@
-// src/app/kitintale/page.tsx
-
-import React from "react";
 import type { Metadata } from "next";
 import CampusLayout, { CampusInfo } from "@/components/CampusLayout";
 import { Award, BookOpen, Music, Palette, Users } from "lucide-react";
-import { CampusImageCarousel } from "../ImageCarousel"; // Updated import to use the new component
+import { CampusImageCarousel } from "../ImageCarousel";
 import { galleryService } from "../../../../lib/supabase/services";
 
 export const metadata: Metadata = {
   title: "Kitintale Campus | Clevers' Origin Schools",
-  description: "Explore our flagship Kitintale Campus, offering quality kindergarten education in a nurturing environment since 2005.",
+  description:
+    "Explore our flagship Kitintale Campus — state-of-the-art facilities, performing arts, and nurturing education since 2005.",
 };
 
-// Fetch gallery images for the campus
 async function getKitintaleGalleryImages() {
   try {
     const images = await galleryService.getByCategory("Kitintale");
-    return images.map(image => ({
+    return images.map((image) => ({
       url: image.file_url,
-      alt: image.alt_text || image.title || "Kitintale Campus Image",
+      alt: image.alt_text || image.title || "Kitintale Campus",
     }));
-  } catch (error) {
-    console.error("Error fetching Kitintale gallery images:", error);
+  } catch {
     return [];
   }
 }
@@ -29,82 +25,71 @@ async function getKitintaleGalleryImages() {
 export default async function KitintaleCampusPage() {
   const galleryImages = await getKitintaleGalleryImages();
 
-  const kitintaleCampusInfo: CampusInfo = {
+  const campusInfo: CampusInfo = {
+    slug: "kitintale",
     name: "Kitintale",
-    description: "Our flagship campus established in 2005, featuring spacious classrooms, dedicated play areas, and innovative learning environments designed to inspire young minds.",
+    description:
+      "Our flagship campus featuring state-of-the-art facilities, a vibrant kindergarten play zone, and a dedicated performing arts center.",
     established: "2005",
-    students: "200+",
-    headshot: "👨‍🚀",
-    principal: "Joshua Musoke",
+    students: "1,500+",
+    headshot: "👨‍🏫",
+    principal: "Kajiri Elijah",
     principalTitle: "Campus Headteacher",
-    principalMessage: "At Kitintale Campus, we create an environment where children feel safe to explore, question, and learn. Our approach combines academic excellence with joy and creativity, ensuring each child develops a lifelong love for learning.",
-    address: "Plot 45, Kitintale Road, Kampala, Uganda",
-    phone: "+256 700 123456",
-    email: "kitintale@cleversoriginschools.com",
-    hours: "Monday to Friday: 7:30am - 4:30pm",
-    accentColor: "kinder-blue",
-
+    principalMessage:
+      "At Kitintale Campus, we create an environment where children feel safe to explore, question, and learn. Our approach combines academic excellence with joy and creativity.",
+    address: "Kitintale, Along Kitintale–Kunya Road",
+    phone: "+256 772 470 972",
+    email: "cleversorigin@gmail.com",
+    hours: "Monday – Friday: 7:30 AM – 4:30 PM",
     features: [
       {
         title: "Creative Arts Program",
-        description: "Our award-winning arts program encourages creative expression through painting, drama, music, and dance.",
-        icon: <Palette className="h-6 w-6 text-kinder-blue" />
+        description: "Award-winning arts through painting, drama, music, and dance.",
+        icon: <Palette className="h-6 w-6 text-red-600" />,
       },
       {
         title: "Community Garden",
-        description: "Students learn about nature, sustainability, and responsibility by tending to our campus garden.",
-        icon: <BookOpen className="h-6 w-6 text-kinder-blue" />
+        description: "Hands-on learning about nature, sustainability, and responsibility.",
+        icon: <BookOpen className="h-6 w-6 text-red-600" />,
       },
       {
         title: "Leadership Development",
-        description: "We foster leadership skills through collaborative projects and child-led initiatives.",
-        icon: <Award className="h-6 w-6 text-kinder-blue" />
+        description: "Collaborative projects and child-led initiatives build confidence.",
+        icon: <Award className="h-6 w-6 text-red-600" />,
       },
       {
-        title: "Multilingual Program",
-        description: "Children are introduced to both English and local languages through songs, stories, and everyday communication.",
-        icon: <Music className="h-6 w-6 text-kinder-blue" />
+        title: "Music & Drama",
+        description: "English and local languages through songs, stories, and performance.",
+        icon: <Music className="h-6 w-6 text-red-600" />,
       },
       {
-        title: "Small Class Sizes",
-        description: "With a maximum of 20 students per class, we ensure personalized attention for every child.",
-        icon: <Users className="h-6 w-6 text-kinder-blue" />
-      }
+        title: "Personalised Learning",
+        description: "Small class sizes ensure every learner receives individual attention.",
+        icon: <Users className="h-6 w-6 text-red-600" />,
+      },
     ],
-
     facilities: [
-      "6 spacious, bright classrooms equipped with modern learning resources",
-      "Large outdoor playground with climbing frames, swings, and sandpit",
+      "Spacious classrooms with modern learning resources",
+      "Outdoor playground with climbing frames and play zones",
       "Indoor activity hall for music, dance, and performances",
-      "Library corner with age-appropriate books in multiple languages",
-      "Dedicated art studio with child-friendly supplies and materials",
-      "Computer corner with educational games and programs",
-      "Dining area serving nutritious meals and snacks",
-      "Garden area where children learn to grow vegetables and flowers"
+      "Library with age-appropriate books in multiple languages",
+      "Dedicated art studio with child-friendly supplies",
+      "Computer corner with educational programs",
+      "Dining area serving nutritious meals",
+      "Garden area for growing vegetables and flowers",
     ],
-
     extracurriculars: [
-      "Music and Movement: Introduction to various instruments and dance styles",
-      "Mini-Sports: Development of gross motor skills through games and activities",
-      "Storytelling Club: Enhancing language and imagination through stories",
-      "Little Gardeners: Hands-on experience with planting and nurturing plants",
-      "Drama Club: Building confidence through performance and role play",
-      "Cultural Days: Celebrating diverse cultures through food, dress, and customs",
-      "Parent-Child Workshops: Special sessions where parents join classroom activities"
+      "Music and Movement — introduction to instruments and dance",
+      "Mini-Sports — gross motor skills through games",
+      "Storytelling Club — language and imagination",
+      "Little Gardeners — planting and nurturing plants",
+      "Drama Club — confidence through performance",
+      "Cultural Days — celebrating diverse traditions",
+      "Parent-Child Workshops — families join classroom activities",
     ],
-
-    galleryImages
-
+    galleryImages,
+    imagePlaceholder: <CampusImageCarousel category="Kitintale" className="absolute inset-0" />,
   };
 
-  return (
-    <CampusLayout
-      campusInfo={{
-        ...kitintaleCampusInfo,
-        imagePlaceholder: (
-          <CampusImageCarousel category="Kitintale" />
-        ),
-      }}
-    />
-  );
+  return <CampusLayout campusInfo={campusInfo} />;
 }
