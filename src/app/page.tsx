@@ -4,7 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Calendar, Sparkles, GraduationCap, MapPin } from "lucide-react";
+import { ArrowRight, Calendar, Sparkles, GraduationCap, MapPin, Medal } from "lucide-react";
 import AnnouncementBoard from "@/components/home/AnnouncementBoard";
 import UpcomingEvents from "@/components/home/UpcomingEvents";
 import CampusShowcase from "@/components/home/CampusShowcase";
