@@ -136,7 +136,7 @@ const Header = () => {
                 <span className="sm:hidden">Clevers&apos; Origin</span>
               </span>
               <span className="hidden text-[10px] font-medium uppercase tracking-widest text-green-600 lg:block">
-                Nurturing Excellence
+                Mean What You&apos;re
               </span>
             </div>
           </Link>
