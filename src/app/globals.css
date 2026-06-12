@@ -157,4 +157,64 @@
     animation: gradient 3s ease infinite;
     background-size: 200% auto;
   }
+
+  @keyframes hero-ken-burns {
+    0% { transform: scale(1); }
+    100% { transform: scale(1.06); }
+  }
+
+  @keyframes hero-float {
+    0%, 100% { transform: translateY(0) scale(1); }
+    50% { transform: translateY(-14px) scale(1.02); }
+  }
+
+  @keyframes hero-fade-up {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .hero-ken-burns {
+    animation: hero-ken-burns 6s ease-out forwards;
+  }
+
+  .hero-float {
+    animation: hero-float 7s ease-in-out infinite;
+  }
+
+  .hero-fade-up {
+    animation: hero-fade-up 0.8s ease-out forwards;
+  }
+
+  .hero-fade-up-delay-1 { animation-delay: 0.1s; opacity: 0; }
+  .hero-fade-up-delay-2 { animation-delay: 0.2s; opacity: 0; }
+  .hero-fade-up-delay-3 { animation-delay: 0.35s; opacity: 0; }
+  .hero-fade-up-delay-4 { animation-delay: 0.5s; opacity: 0; }
+
+  @keyframes hero-spin {
+    to { transform: rotate(360deg); }
+  }
+
+  .hero-spinner {
+    @apply relative w-14 h-14;
+  }
+
+  .hero-spinner::before,
+  .hero-spinner::after {
+    content: "";
+    @apply absolute inset-0 rounded-full;
+    border: 3px solid transparent;
+  }
+
+  .hero-spinner::before {
+    border-top-color: #22c55e;
+    border-right-color: #4ade80;
+    animation: hero-spin 0.85s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+  }
+
+  .hero-spinner::after {
+    inset: 7px;
+    border-bottom-color: #16a34a;
+    border-left-color: #86efac;
+    animation: hero-spin 1.15s cubic-bezier(0.5, 0, 0.5, 1) infinite reverse;
+  }
 }

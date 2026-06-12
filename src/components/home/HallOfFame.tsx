@@ -92,14 +92,14 @@ export default function HallOfFameSection() {
 
         {/* Show carousel for more than 3 entries */}
         {shouldShowCarousel ? (
-          <div 
+          <div
             className="relative max-w-6xl mx-auto"
             onMouseEnter={() => setIsPaused(true)}
             onMouseLeave={() => setIsPaused(false)}
           >
             {/* Carousel Container */}
             <div className="overflow-hidden" ref={carouselRef}>
-              <div 
+              <div
                 className="flex transition-transform duration-700 ease-in-out"
                 style={{ transform: `translateX(-${currentIndex * 100}%)` }}
               >
@@ -133,11 +133,10 @@ export default function HallOfFameSection() {
                 <button
                   key={index}
                   onClick={() => handleDotClick(index)}
-                  className={`transition-all ${
-                    index === currentIndex
+                  className={`transition-all ${index === currentIndex
                       ? "w-8 h-3 bg-yellow-500"
                       : "w-3 h-3 bg-gray-300 hover:bg-gray-400"
-                  } rounded-full`}
+                    } rounded-full`}
                   aria-label={`Go to slide ${index + 1}`}
                 />
               ))}
@@ -155,7 +154,7 @@ export default function HallOfFameSection() {
               /* 2-3 entries - responsive grid */
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
                 {entries.map((entry) => (
-                  <LargeCard key={entry.id} entry={entry} />
+                  <LargeCard key={entry.id} entry={entry} dense />
                 ))}
               </div>
             )}
@@ -166,33 +165,34 @@ export default function HallOfFameSection() {
   );
 }
 
-// Large Card Component - Wide layout that fills screen appropriately
-function LargeCard({ entry }: { entry: HallOfFame }) {
+// Large Card Component - Image and text side by side on desktop
+function LargeCard({ entry, dense = false }: { entry: HallOfFame; dense?: boolean }) {
   const isFeatured = entry.is_featured;
-  
+
   return (
-    <div className={`group bg-white rounded-3xl shadow-2xl overflow-hidden transition-all duration-500 transform hover:-translate-y-1 hover:shadow-3xl w-full ${
-      isFeatured ? 'border-4 border-yellow-400' : 'border-2 border-gray-200'
-    }`}>
+    <div className={`group bg-white rounded-3xl shadow-2xl overflow-hidden transition-all duration-500 transform hover:-translate-y-1 hover:shadow-3xl w-full min-w-0 ${isFeatured ? 'border-4 border-yellow-400' : 'border-2 border-gray-200'
+      }`}>
       {/* Badge - Only show if featured */}
       {isFeatured && (
-        <div className="bg-gradient-to-r from-yellow-400 via-yellow-500 to-orange-400 text-white px-6 py-2 flex items-center justify-center">
-          <Star className="h-5 w-5 mr-2 fill-current animate-pulse" />
-          <span className="font-bold text-sm sm:text-base tracking-wide">HALL OF FAME</span>
-          <Star className="h-5 w-5 ml-2 fill-current animate-pulse" />
+        <div className="bg-gradient-to-r from-yellow-400 via-yellow-500 to-orange-400 text-white px-4 sm:px-6 py-2 flex items-center justify-center">
+          <Star className="h-4 w-4 sm:h-5 sm:w-5 mr-2 fill-current animate-pulse flex-shrink-0" />
+          <span className="font-bold text-xs sm:text-sm tracking-wide">HALL OF FAME</span>
+          <Star className="h-4 w-4 sm:h-5 sm:w-5 ml-2 fill-current animate-pulse flex-shrink-0" />
         </div>
       )}
 
-      {/* Card Content - Horizontal Layout on larger screens */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-0">
-        {/* Image - Left side on desktop, top on mobile */}
-        <div className="relative h-[300px] sm:h-[350px] lg:h-[400px] bg-gradient-to-br from-gray-100 to-gray-200 overflow-hidden">
+      {/* Card Content - Image left, text right on lg+ */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-0 min-w-0">
+        {/* Image */}
+        <div className={`relative bg-gradient-to-br from-gray-100 to-gray-200 overflow-hidden min-w-0 ${
+          dense ? "h-[260px] lg:h-[320px]" : "h-[300px] sm:h-[350px] lg:h-[400px]"
+        }`}>
           <Image
             src={entry.image_url}
             alt={entry.image_alt_text || entry.learner_names}
             fill
             className="object-contain lg:object-cover transition-transform duration-700 group-hover:scale-105"
-            sizes="(max-width: 1024px) 100vw, 50vw"
+            sizes={dense ? "(max-width: 1024px) 100vw, 25vw" : "(max-width: 1024px) 100vw, 50vw"}
             quality={95}
             priority={isFeatured}
             onError={(e) => {
@@ -204,31 +204,41 @@ function LargeCard({ entry }: { entry: HallOfFame }) {
             }}
             unoptimized={process.env.NODE_ENV === 'production'}
           />
-          {/* Overlay gradient on hover */}
           <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
         </div>
 
-        {/* Content - Right side on desktop, bottom on mobile */}
-        <div className="p-6 sm:p-8 lg:p-10 bg-gradient-to-br from-white to-yellow-50 flex flex-col justify-center">
-          {/* Name with trophy icon */}
-          <div className="flex items-start gap-3 mb-4">
-            <Trophy className="h-8 w-8 sm:h-10 sm:w-10 text-yellow-500 flex-shrink-0 mt-1" />
-            <h3 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-gray-900 leading-tight">{entry.learner_names}</h3>
-          </div>
-          
-          {/* Achievement */}
-          <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 sm:p-5 rounded-r-xl mb-4 sm:mb-6">
-            <p className="text-base sm:text-lg lg:text-xl text-gray-800 font-medium leading-relaxed">{entry.achievement}</p>
+        {/* Text content */}
+        <div className={`bg-gradient-to-br from-white to-yellow-50 flex flex-col justify-center min-w-0 overflow-hidden ${
+          dense ? "p-4 lg:p-5" : "p-6 sm:p-8 lg:p-10"
+        }`}>
+          <div className="flex items-start gap-2 min-w-0 mb-3">
+            <Trophy className={`text-yellow-500 flex-shrink-0 mt-0.5 ${
+              dense ? "h-5 w-5 lg:h-6 lg:w-6" : "h-7 w-7 sm:h-8 sm:w-8 lg:h-10 lg:w-10"
+            }`} />
+            <h3 className={`font-extrabold text-gray-900 leading-snug break-words hyphens-auto min-w-0 flex-1 ${
+              dense ? "text-base sm:text-lg lg:text-xl" : "text-xl sm:text-2xl lg:text-3xl"
+            }`}>{entry.learner_names}</h3>
           </div>
 
-          {/* Date with medal icon */}
-          <div className="flex items-center gap-2 text-gray-600">
-            <Medal className="h-5 w-5 sm:h-6 sm:w-6 text-yellow-600" />
-            <span className="text-sm sm:text-base lg:text-lg font-semibold">
-              {new Date(entry.achievement_date).toLocaleDateString('en-US', { 
-                year: 'numeric', 
-                month: 'long', 
-                day: 'numeric' 
+          <div className={`bg-yellow-50 border-l-4 border-yellow-400 rounded-r-xl min-w-0 overflow-hidden ${
+            dense ? "p-3 mb-3" : "p-4 sm:p-5 mb-4 sm:mb-6"
+          }`}>
+            <p className={`text-gray-800 font-medium leading-snug break-words hyphens-auto ${
+              dense ? "text-xs sm:text-sm lg:text-base" : "text-base sm:text-lg"
+            }`}>{entry.achievement}</p>
+          </div>
+
+          <div className="flex items-start gap-2 text-gray-600 min-w-0">
+            <Medal className={`text-yellow-600 flex-shrink-0 mt-0.5 ${
+              dense ? "h-4 w-4" : "h-5 w-5 sm:h-6 sm:w-6"
+            }`} />
+            <span className={`font-semibold break-words hyphens-auto min-w-0 ${
+              dense ? "text-xs sm:text-sm" : "text-sm sm:text-base"
+            }`}>
+              {new Date(entry.achievement_date).toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
               })}
             </span>
           </div>

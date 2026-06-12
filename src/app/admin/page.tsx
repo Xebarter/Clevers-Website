@@ -3,23 +3,20 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { 
   Users, 
   Calendar, 
-  Image, 
+  Image as ImageIcon, 
   FileText, 
-  Bell, 
   MessageSquare,
   Plus,
   Edit,
   Trash2,
   Eye,
-  ExternalLink,
-  LogOut,
-  Download
+  Download,
+  Trophy
 } from "lucide-react";
-import Link from "next/link";
 import { useAdminAuth } from '@/contexts/AdminAuthContext';
 import { useRouter } from 'next/navigation';
 import {
@@ -55,6 +52,27 @@ import GalleryForm from "@/components/admin/GalleryForm";
 import MultiImageGalleryForm from "@/components/admin/MultiImageGalleryForm";
 import JobApplicationsManager from "@/components/admin/JobApplicationsManager";
 import HallOfFameForm from "@/components/admin/HallOfFameForm";
+import AdminShell from "@/components/admin/AdminShell";
+import AdminConfirmDialog, { type AdminConfirmState } from "@/components/admin/AdminConfirmDialog";
+import {
+  AdminEmptyState,
+  AdminIconButton,
+  AdminLoadingState,
+  AdminPageHeader,
+  AdminStatCard,
+  AdminStatusBadge,
+  AdminTableWrapper,
+  adminTdClassName,
+  adminThClassName,
+  adminTrClassName,
+} from "@/components/admin/admin-ui";
+import { adminToast } from "@/lib/admin/notify";
+
+function paymentTone(status: string): "success" | "warning" | "danger" | "neutral" {
+  if (status === "completed") return "success";
+  if (status === "pending") return "warning";
+  return "danger";
+}
 
 // Types
 interface Application {
@@ -168,6 +186,12 @@ export default function AdminDashboard() {
   const [hallOfFameEntries, setHallOfFameEntries] = useState<HallOfFameEntry[]>([]);
   const [showHallOfFameForm, setShowHallOfFameForm] = useState(false);
   const [editingHallOfFame, setEditingHallOfFame] = useState<HallOfFameEntry | null>(null);
+  const [confirmDialog, setConfirmDialog] = useState<AdminConfirmState | null>(null);
+  const [confirmLoading, setConfirmLoading] = useState(false);
+
+  const requestConfirm = (config: Omit<AdminConfirmState, "open">) => {
+    setConfirmDialog({ ...config, open: true });
+  };
 
   // Handle edit application
   const handleEditApplication = (application: Application) => {
@@ -261,94 +285,136 @@ export default function AdminDashboard() {
     loadData();
   }, [activeTab, isAuthenticated]);
 
-  const handleDeleteApplication = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this application?")) return;
-    
-    try {
-      setDeletingId(id);
-      await deleteApplication(id);
-      setApplications(applications.filter(app => app._id !== id));
-    } catch (error) {
-      console.error("Error deleting application:", error);
-      alert("Failed to delete application");
-    } finally {
-      setDeletingId(null);
-    }
+  const handleDeleteApplication = (id: string) => {
+    requestConfirm({
+      title: "Delete application",
+      description: "This application will be permanently removed. This action cannot be undone.",
+      onConfirm: async () => {
+        try {
+          setConfirmLoading(true);
+          setDeletingId(id);
+          await deleteApplication(id);
+          setApplications(applications.filter((app) => app._id !== id));
+          adminToast.success("Application deleted");
+        } catch (error) {
+          console.error("Error deleting application:", error);
+          adminToast.error("Failed to delete application");
+        } finally {
+          setDeletingId(null);
+          setConfirmLoading(false);
+        }
+      },
+    });
   };
 
-  const handleDeleteAnnouncement = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this announcement?")) return;
-    
-    try {
-      setDeletingId(id);
-      await deleteAnnouncement(id);
-      setAnnouncements(announcements.filter(ann => ann._id !== id));
-    } catch (error) {
-      console.error("Error deleting announcement:", error);
-      alert("Failed to delete announcement");
-    } finally {
-      setDeletingId(null);
-    }
+  const handleDeleteAnnouncement = (id: string) => {
+    requestConfirm({
+      title: "Delete announcement",
+      description: "This announcement will be permanently removed from the website.",
+      onConfirm: async () => {
+        try {
+          setConfirmLoading(true);
+          setDeletingId(id);
+          await deleteAnnouncement(id);
+          setAnnouncements(announcements.filter((ann) => ann._id !== id));
+          adminToast.success("Announcement deleted");
+        } catch (error) {
+          console.error("Error deleting announcement:", error);
+          adminToast.error("Failed to delete announcement");
+        } finally {
+          setDeletingId(null);
+          setConfirmLoading(false);
+        }
+      },
+    });
   };
 
-  const handleDeleteEvent = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this event?")) return;
-    
-    try {
-      setDeletingId(id);
-      await deleteEvent(id);
-      setEvents(events.filter(event => event._id !== id));
-    } catch (error) {
-      console.error("Error deleting event:", error);
-      alert("Failed to delete event");
-    } finally {
-      setDeletingId(null);
-    }
+  const handleDeleteEvent = (id: string) => {
+    requestConfirm({
+      title: "Delete event",
+      description: "This event will be permanently removed from the calendar.",
+      onConfirm: async () => {
+        try {
+          setConfirmLoading(true);
+          setDeletingId(id);
+          await deleteEvent(id);
+          setEvents(events.filter((event) => event._id !== id));
+          adminToast.success("Event deleted");
+        } catch (error) {
+          console.error("Error deleting event:", error);
+          adminToast.error("Failed to delete event");
+        } finally {
+          setDeletingId(null);
+          setConfirmLoading(false);
+        }
+      },
+    });
   };
 
-  const handleDeleteGalleryImage = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this gallery image?")) return;
-    
-    try {
-      setDeletingId(id);
-      await deleteGalleryImage(id);
-      setGalleryImages(galleryImages.filter(img => img._id !== id));
-    } catch (error) {
-      console.error("Error deleting gallery image:", error);
-      alert("Failed to delete gallery image");
-    } finally {
-      setDeletingId(null);
-    }
+  const handleDeleteGalleryImage = (id: string) => {
+    requestConfirm({
+      title: "Delete gallery image",
+      description: "This image will be permanently removed from the gallery.",
+      onConfirm: async () => {
+        try {
+          setConfirmLoading(true);
+          setDeletingId(id);
+          await deleteGalleryImage(id);
+          setGalleryImages(galleryImages.filter((img) => img._id !== id));
+          adminToast.success("Gallery image deleted");
+        } catch (error) {
+          console.error("Error deleting gallery image:", error);
+          adminToast.error("Failed to delete gallery image");
+        } finally {
+          setDeletingId(null);
+          setConfirmLoading(false);
+        }
+      },
+    });
   };
 
-  const handleDeleteResource = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this resource?")) return;
-    
-    try {
-      setDeletingId(id);
-      await deleteResource(id);
-      setResources(resources.filter(res => res._id !== id));
-    } catch (error) {
-      console.error("Error deleting resource:", error);
-      alert("Failed to delete resource");
-    } finally {
-      setDeletingId(null);
-    }
+  const handleDeleteResource = (id: string) => {
+    requestConfirm({
+      title: "Delete resource",
+      description: "This resource will be permanently removed from the website.",
+      onConfirm: async () => {
+        try {
+          setConfirmLoading(true);
+          setDeletingId(id);
+          await deleteResource(id);
+          setResources(resources.filter((res) => res._id !== id));
+          adminToast.success("Resource deleted");
+        } catch (error) {
+          console.error("Error deleting resource:", error);
+          adminToast.error("Failed to delete resource");
+        } finally {
+          setDeletingId(null);
+          setConfirmLoading(false);
+        }
+      },
+    });
   };
 
-  const handleDeleteHallOfFame = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this Hall of Fame entry?")) return;
-    
-    try {
-      setDeletingId(id);
-      await deleteHallOfFame(id);
-      setHallOfFameEntries(hallOfFameEntries.filter(entry => entry.id !== id));
-    } catch (error) {
-      console.error("Error deleting Hall of Fame entry:", error);
-      alert("Failed to delete Hall of Fame entry");
-    } finally {
-      setDeletingId(null);
-    }
+  const handleDeleteHallOfFame = (id: string) => {
+    requestConfirm({
+      title: "Delete Hall of Fame entry",
+      description: "This achievement entry will be permanently removed from the Hall of Fame.",
+      onConfirm: async () => {
+        try {
+          setConfirmLoading(true);
+          setDeletingId(id);
+          await deleteHallOfFame(id);
+          setHallOfFameEntries(hallOfFameEntries.filter((entry) => entry.id !== id));
+          adminToast.success("Hall of Fame entry deleted");
+        } catch (error) {
+          console.error("Error deleting Hall of Fame entry:", error);
+          adminToast.error("Failed to delete Hall of Fame entry");
+        } finally {
+          setDeletingId(null);
+          setConfirmLoading(false);
+        }
+      },
+    });
   };
 
   const handleEditHallOfFame = (entry: HallOfFameEntry) => {
@@ -393,7 +459,7 @@ export default function AdminDashboard() {
       });
     } catch (error) {
       console.error("Error downloading application:", error);
-      alert("Failed to download application");
+      adminToast.error("Failed to download application");
     }
   };
 
@@ -411,10 +477,10 @@ export default function AdminDashboard() {
       const annData = await getAnnouncements();
       setAnnouncements(annData);
       setShowAnnouncementForm(false);
-      alert("Announcement created successfully!");
+      adminToast.success("Announcement created");
     } catch (error) {
       console.error("Error creating announcement:", error);
-      alert("Failed to create announcement");
+      adminToast.error("Failed to create announcement");
     } finally {
       setCreatingAnnouncement(false);
     }
@@ -439,7 +505,7 @@ export default function AdminDashboard() {
           cta_text: data.ctaText,
           cta_link: data.ctaLink
         });
-        alert("Announcement updated successfully!");
+        adminToast.success("Announcement updated");
       } else {
         // Create new announcement
         await createAnnouncement({
@@ -450,7 +516,7 @@ export default function AdminDashboard() {
           cta_text: data.ctaText,
           cta_link: data.ctaLink
         });
-        alert("Announcement created successfully!");
+        adminToast.success("Announcement created");
       }
       
       // Close the form and refresh data
@@ -459,7 +525,7 @@ export default function AdminDashboard() {
       loadData();
     } catch (error) {
       console.error("Error saving announcement:", error);
-      alert("Failed to save announcement");
+      adminToast.error("Failed to save announcement");
     }
   };
 
@@ -527,7 +593,9 @@ export default function AdminDashboard() {
         }
       }
       
-      alert(`Gallery ${dataArray.length > 1 ? 'images' : 'image'} ${editingGalleryImage ? 'updated' : 'created'} successfully!`);
+      adminToast.success(
+        `Gallery ${dataArray.length > 1 ? "images" : "image"} ${editingGalleryImage ? "updated" : "created"}`
+      );
       
       // Close the form and refresh data
       setShowGalleryForm(false);
@@ -535,7 +603,7 @@ export default function AdminDashboard() {
       loadData();
     } catch (error) {
       console.error("Error saving gallery image:", error);
-      alert("Failed to save gallery image");
+      adminToast.error("Failed to save gallery image");
     }
   };
 
@@ -564,7 +632,7 @@ export default function AdminDashboard() {
           location: data.location,
           is_all_day: data.is_all_day
         });
-        alert("Event updated successfully!");
+        adminToast.success("Event updated");
       } else {
         // Create new event
         await createEvent({
@@ -575,7 +643,7 @@ export default function AdminDashboard() {
           location: data.location,
           is_all_day: data.is_all_day
         });
-        alert("Event created successfully!");
+        adminToast.success("Event created");
       }
       
       // Close the form and refresh data
@@ -584,7 +652,7 @@ export default function AdminDashboard() {
       loadData();
     } catch (error) {
       console.error("Error saving event:", error);
-      alert("Failed to save event");
+      adminToast.error("Failed to save event");
     }
   };
 
@@ -601,11 +669,8 @@ export default function AdminDashboard() {
   // Show loading spinner while checking authentication
   if (authLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <div className="animate-spin h-12 w-12 border-4 border-blue-500 border-t-transparent rounded-full mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading...</p>
-        </div>
+      <div className="flex min-h-screen items-center justify-center bg-slate-100">
+        <AdminLoadingState message="Checking authentication..." />
       </div>
     );
   }
@@ -615,95 +680,25 @@ export default function AdminDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white shadow">
-        <div className="mx-auto max-w-7xl px-4 py-4 sm:py-6 sm:px-6 lg:px-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Admin Dashboard</h1>
-          <div className="flex items-center gap-2 sm:gap-4 w-full sm:w-auto">
-            <Button variant="outline" onClick={logout} className="flex-1 sm:flex-initial">
-              <LogOut className="mr-2 h-4 w-4" /> 
-              <span className="sm:inline">Logout</span>
-            </Button>
-            <Button asChild variant="outline" className="flex-1 sm:flex-initial">
-              <Link href="/" className="flex items-center justify-center">
-                <span className="hidden sm:inline">Back to Website</span>
-                <span className="sm:hidden">Website</span>
-              </Link>
-            </Button>
-          </div>
-        </div>
-      </header>
-
-      <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+    <AdminShell activeTab={activeTab} onTabChange={setActiveTab} onLogout={logout}>
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 lg:grid-cols-9 gap-1 h-auto p-1">
-            <TabsTrigger value="overview" className="text-xs sm:text-sm py-2 px-2">Overview</TabsTrigger>
-            <TabsTrigger value="applications" className="text-xs sm:text-sm py-2 px-2">Applications</TabsTrigger>
-            <TabsTrigger value="job-applications" className="text-xs sm:text-sm py-2 px-2">Jobs</TabsTrigger>
-            <TabsTrigger value="hall-of-fame" className="text-xs sm:text-sm py-2 px-2">Hall of Fame</TabsTrigger>
-            <TabsTrigger value="resources" className="text-xs sm:text-sm py-2 px-2">Resources</TabsTrigger>
-            <TabsTrigger value="messages" className="text-xs sm:text-sm py-2 px-2">Messages</TabsTrigger>
-            <TabsTrigger value="announcements" className="text-xs sm:text-sm py-2 px-2">Announcements</TabsTrigger>
-            <TabsTrigger value="events" className="text-xs sm:text-sm py-2 px-2">Events</TabsTrigger>
-            <TabsTrigger value="gallery" className="text-xs sm:text-sm py-2 px-2">Gallery</TabsTrigger>
-          </TabsList>
 
-          <TabsContent value="overview" className="space-y-4">
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Total Applications</CardTitle>
-                  <Users className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{applications.length}</div>
-                  <p className="text-xs text-muted-foreground">Applications received</p>
-                </CardContent>
-              </Card>
-              
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Resources</CardTitle>
-                  <FileText className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{resources.length}</div>
-                  <p className="text-xs text-muted-foreground">Resources available</p>
-                </CardContent>
-              </Card>
-              
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Messages</CardTitle>
-                  <MessageSquare className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{messages.length}</div>
-                  <p className="text-xs text-muted-foreground">Messages received</p>
-                </CardContent>
-              </Card>
-              
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Upcoming Events</CardTitle>
-                  <Calendar className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{events.length}</div>
-                  <p className="text-xs text-muted-foreground">Events scheduled</p>
-                </CardContent>
-              </Card>
+          <TabsContent value="overview" className="space-y-6 mt-0">
+            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+              <AdminStatCard title="Applications" value={applications.length} subtitle="Student submissions" icon={Users} loading={loading} />
+              <AdminStatCard title="Resources" value={resources.length} subtitle="Published files" icon={FileText} loading={loading} />
+              <AdminStatCard title="Messages" value={messages.length} subtitle="Contact inquiries" icon={MessageSquare} loading={loading} />
+              <AdminStatCard title="Events" value={events.length} subtitle="Scheduled events" icon={Calendar} loading={loading} />
             </div>
             
-            <div className="grid gap-4 md:grid-cols-2">
-              <Card>
+            <div className="grid gap-4 lg:grid-cols-2">
+              <Card className="border-slate-200 shadow-sm">
                 <CardHeader>
-                  <CardTitle>Recent Applications</CardTitle>
+                  <CardTitle className="text-base">Recent Applications</CardTitle>
                 </CardHeader>
                 <CardContent>
                   {loading ? (
-                    <div className="text-center py-4">Loading...</div>
+                    <AdminLoadingState message="Loading applications..." />
                   ) : applications.length > 0 ? (
                     <div className="space-y-4">
                       {applications.slice(0, 5).map((app) => (
@@ -720,20 +715,18 @@ export default function AdminDashboard() {
                       ))}
                     </div>
                   ) : (
-                    <div className="text-center py-8 text-muted-foreground">
-                      No recent applications
-                    </div>
+                    <AdminEmptyState title="No applications yet" description="New student applications will appear here." />
                   )}
                 </CardContent>
               </Card>
               
-              <Card>
+              <Card className="border-slate-200 shadow-sm">
                 <CardHeader>
-                  <CardTitle>Recent Messages</CardTitle>
+                  <CardTitle className="text-base">Recent Messages</CardTitle>
                 </CardHeader>
                 <CardContent>
                   {loading ? (
-                    <div className="text-center py-4">Loading...</div>
+                    <AdminLoadingState message="Loading messages..." />
                   ) : messages.length > 0 ? (
                     <div className="space-y-4">
                       {messages.slice(0, 5).map((msg) => (
@@ -752,115 +745,100 @@ export default function AdminDashboard() {
                       ))}
                     </div>
                   ) : (
-                    <div className="text-center py-8 text-muted-foreground">
-                      No recent messages
-                    </div>
+                    <AdminEmptyState title="No messages yet" description="Contact form submissions will appear here." />
                   )}
                 </CardContent>
               </Card>
             </div>
           </TabsContent>
 
-          <TabsContent value="applications" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-                  <CardTitle>Applications</CardTitle>
-                  <Button onClick={handleCreateApplication} className="w-full sm:w-auto">
-                    <Plus className="mr-2 h-4 w-4" />
-                    New Application
-                  </Button>
-                </div>
-              </CardHeader>
-              <CardContent>
+          <TabsContent value="applications" className="space-y-4 mt-0">
+            <AdminPageHeader
+              title="Applications"
+              description="Review and manage student admission applications."
+              action={
+                <Button onClick={handleCreateApplication}>
+                  <Plus className="mr-2 h-4 w-4" />
+                  New Application
+                </Button>
+              }
+            />
+            <Card className="border-slate-200 shadow-sm">
+              <CardContent className="pt-6">
                 {loading ? (
-                  <div className="text-center py-8">Loading applications...</div>
+                  <AdminLoadingState message="Loading applications..." />
                 ) : applications.length === 0 ? (
-                  <div className="text-center py-8 text-gray-500">
-                    No applications found
-                  </div>
+                  <AdminEmptyState
+                    title="No applications found"
+                    description="Applications submitted through the website will appear here."
+                    icon={Users}
+                    action={
+                      <Button onClick={handleCreateApplication}>
+                        <Plus className="mr-2 h-4 w-4" />
+                        Add application
+                      </Button>
+                    }
+                  />
                 ) : (
                   <>
                     {/* Desktop Table View */}
-                    <div className="hidden lg:block overflow-x-auto">
-                      <table className="w-full">
+                    <div className="hidden lg:block">
+                      <AdminTableWrapper>
+                      <table className="w-full text-sm">
                         <thead>
-                          <tr className="border-b">
-                            <th className="text-left py-3 px-4">Student Name</th>
-                            <th className="text-left py-3 px-4">Grade Level</th>
-                            <th className="text-left py-3 px-4">Parent Name</th>
-                            <th className="text-left py-3 px-4">Campus</th>
-                            <th className="text-left py-3 px-4">Payment Status</th>
-                            <th className="text-left py-3 px-4">Submitted</th>
-                            <th className="text-left py-3 px-4">Actions</th>
+                          <tr className="border-b border-slate-200 bg-slate-50/80">
+                            <th className={adminThClassName()}>Student Name</th>
+                            <th className={adminThClassName()}>Grade Level</th>
+                            <th className={adminThClassName()}>Parent Name</th>
+                            <th className={adminThClassName()}>Campus</th>
+                            <th className={adminThClassName()}>Payment Status</th>
+                            <th className={adminThClassName()}>Submitted</th>
+                            <th className={adminThClassName()}>Actions</th>
                           </tr>
                         </thead>
                         <tbody>
                           {applications.map((application) => (
-                            <tr key={application._id} className="border-b hover:bg-gray-50">
-                              <td className="py-3 px-4">{application.studentName}</td>
-                              <td className="py-3 px-4">{application.gradeLevel}</td>
-                              <td className="py-3 px-4">{application.parentName}</td>
-                              <td className="py-3 px-4">{application.campus}</td>
-                              <td className="py-3 px-4">
-                                <span className={`px-2 py-1 rounded-full text-xs ${
-                                  application.paymentStatus === "completed" 
-                                    ? "bg-green-100 text-green-800" 
-                                    : application.paymentStatus === "pending" 
-                                      ? "bg-yellow-100 text-yellow-800" 
-                                      : "bg-red-100 text-red-800"
-                                }`}>
-                                  {application.paymentStatus}
-                                </span>
+                            <tr key={application._id} className={adminTrClassName()}>
+                              <td className={adminTdClassName()}>{application.studentName}</td>
+                              <td className={adminTdClassName()}>{application.gradeLevel}</td>
+                              <td className={adminTdClassName()}>{application.parentName}</td>
+                              <td className={adminTdClassName()}>{application.campus}</td>
+                              <td className={adminTdClassName()}>
+                                <AdminStatusBadge label={application.paymentStatus} tone={paymentTone(application.paymentStatus)} />
                               </td>
-                              <td className="py-3 px-4">
+                              <td className={adminTdClassName()}>
                                 {new Date(application._createdAt).toLocaleDateString()}
                               </td>
-                              <td className="py-3 px-4">
-                                <div className="flex space-x-2">
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => handleViewApplication(application)}
-                                    title="View application details"
-                                  >
+                              <td className={adminTdClassName()}>
+                                <div className="flex gap-1">
+                                  <AdminIconButton label="View application" onClick={() => handleViewApplication(application)}>
                                     <Eye className="h-4 w-4" />
-                                  </Button>
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => handleDownloadApplication(application)}
-                                    title="Download as PDF"
-                                  >
+                                  </AdminIconButton>
+                                  <AdminIconButton label="Download PDF" onClick={() => handleDownloadApplication(application)}>
                                     <Download className="h-4 w-4" />
-                                  </Button>
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => handleEditApplication(application)}
-                                    title="Edit application"
-                                  >
+                                  </AdminIconButton>
+                                  <AdminIconButton label="Edit application" onClick={() => handleEditApplication(application)}>
                                     <Edit className="h-4 w-4" />
-                                  </Button>
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => handleDeleteApplication(application._id)}
+                                  </AdminIconButton>
+                                  <AdminIconButton
+                                    label="Delete application"
+                                    variant="danger"
                                     disabled={deletingId === application._id}
-                                    title="Delete application"
+                                    onClick={() => handleDeleteApplication(application._id)}
                                   >
                                     {deletingId === application._id ? (
-                                      <div className="h-4 w-4 animate-spin rounded-full border border-gray-500 border-t-transparent" />
+                                      <div className="h-4 w-4 animate-spin rounded-full border border-slate-400 border-t-transparent" />
                                     ) : (
                                       <Trash2 className="h-4 w-4" />
                                     )}
-                                  </Button>
+                                  </AdminIconButton>
                                 </div>
                               </td>
                             </tr>
                           ))}
                         </tbody>
                       </table>
+                      </AdminTableWrapper>
                     </div>
                     
                     {/* Mobile Card View */}
@@ -948,108 +926,102 @@ export default function AdminDashboard() {
             </Card>
           </TabsContent>
 
-          <TabsContent value="job-applications" className="space-y-4">
+          <TabsContent value="job-applications" className="space-y-4 mt-0">
             <JobApplicationsManager />
           </TabsContent>
 
-          <TabsContent value="resources" className="space-y-4">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-              <h2 className="text-xl sm:text-2xl font-bold">Resources</h2>
-              <Button onClick={handleCreateResource} className="w-full sm:w-auto">
-                <Plus className="mr-2 h-4 w-4" /> Add Resource
-              </Button>
-            </div>
+          <TabsContent value="resources" className="space-y-4 mt-0">
+            <AdminPageHeader
+              title="Resources"
+              description="Manage downloadable files and documents for the website."
+              action={
+                <Button onClick={handleCreateResource}>
+                  <Plus className="mr-2 h-4 w-4" /> Add Resource
+                </Button>
+              }
+            />
             
-            <Card>
+            <Card className="border-slate-200 shadow-sm">
               <CardContent className="pt-6">
                 {loading ? (
-                  <div className="text-center py-8">Loading resources...</div>
+                  <AdminLoadingState message="Loading resources..." />
                 ) : resources.length > 0 ? (
-                  <div className="overflow-x-auto">
-                    <table className="w-full">
+                  <AdminTableWrapper>
+                    <table className="w-full text-sm">
                       <thead>
-                        <tr className="border-b">
-                          <th className="text-left py-3 px-2">Title</th>
-                          <th className="text-left py-3 px-2">Category</th>
-                          <th className="text-left py-3 px-2">Type</th>
-                          <th className="text-left py-3 px-2">Size</th>
-                          <th className="text-left py-3 px-2">Date</th>
-                          <th className="text-left py-3 px-2">Actions</th>
+                        <tr className="border-b border-slate-200 bg-slate-50/80">
+                          <th className={adminThClassName()}>Title</th>
+                          <th className={adminThClassName()}>Category</th>
+                          <th className={adminThClassName()}>Type</th>
+                          <th className={adminThClassName()}>Size</th>
+                          <th className={adminThClassName()}>Date</th>
+                          <th className={adminThClassName()}>Actions</th>
                         </tr>
                       </thead>
                       <tbody>
                         {resources.map((resource) => (
-                          <tr key={resource._id} className="border-b hover:bg-gray-50">
-                            <td className="py-3 px-2">
+                          <tr key={resource._id} className={adminTrClassName()}>
+                            <td className={adminTdClassName()}>
                               <div className="font-medium">{resource.title}</div>
-                              <div className="text-sm text-muted-foreground line-clamp-1">{resource.description}</div>
+                              <div className="line-clamp-1 text-sm text-slate-500">{resource.description}</div>
                             </td>
-                            <td className="py-3 px-2">
-                              <span className="px-2 py-1 rounded-full text-xs bg-blue-100 text-blue-800">
-                                {resource.category}
-                              </span>
+                            <td className={adminTdClassName()}>
+                              <AdminStatusBadge label={resource.category} tone="info" />
                             </td>
-                            <td className="py-3 px-2">{resource.type}</td>
-                            <td className="py-3 px-2">{resource.fileSize}</td>
-                            <td className="py-3 px-2">{formatDate(resource.uploadDate)}</td>
-                            <td className="py-3 px-2">
-                              <div className="flex space-x-2">
-                                <Button 
-                                  variant="outline" 
-                                  size="sm" 
-                                  onClick={() => handleViewResource(resource)}
-                                >
+                            <td className={adminTdClassName()}>{resource.type}</td>
+                            <td className={adminTdClassName()}>{resource.fileSize}</td>
+                            <td className={adminTdClassName()}>{formatDate(resource.uploadDate)}</td>
+                            <td className={adminTdClassName()}>
+                              <div className="flex gap-1">
+                                <AdminIconButton label="View resource" onClick={() => handleViewResource(resource)}>
                                   <Eye className="h-4 w-4" />
-                                </Button>
-                                <Button 
-                                  variant="outline" 
-                                  size="sm"
-                                  onClick={() => handleEditResource(resource)}
-                                >
+                                </AdminIconButton>
+                                <AdminIconButton label="Edit resource" onClick={() => handleEditResource(resource)}>
                                   <Edit className="h-4 w-4" />
-                                </Button>
-                                <Button 
-                                  variant="outline" 
-                                  size="sm"
-                                  onClick={() => handleDeleteResource(resource._id)}
+                                </AdminIconButton>
+                                <AdminIconButton
+                                  label="Delete resource"
+                                  variant="danger"
                                   disabled={deletingId === resource._id}
+                                  onClick={() => handleDeleteResource(resource._id)}
                                 >
                                   {deletingId === resource._id ? (
-                                    <div className="h-4 w-4 animate-spin rounded-full border-b-2 border-gray-900" />
+                                    <div className="h-4 w-4 animate-spin rounded-full border border-slate-400 border-t-transparent" />
                                   ) : (
                                     <Trash2 className="h-4 w-4" />
                                   )}
-                                </Button>
+                                </AdminIconButton>
                               </div>
                             </td>
                           </tr>
                         ))}
                       </tbody>
                     </table>
-                  </div>
+                  </AdminTableWrapper>
                 ) : (
-                  <div className="text-center py-8 text-muted-foreground">
-                    No resources found
-                  </div>
+                  <AdminEmptyState title="No resources found" description="Upload documents and files for visitors to download." icon={FileText} />
                 )}
               </CardContent>
             </Card>
           </TabsContent>
 
-          <TabsContent value="messages" className="space-y-4">
+          <TabsContent value="messages" className="space-y-4 mt-0">
             <Messages />
           </TabsContent>
 
-          <TabsContent value="announcements" className="space-y-4">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-              <h2 className="text-xl sm:text-2xl font-bold">Announcements</h2>
-              <Button onClick={() => {
-                setEditingAnnouncement(null);
-                setShowAnnouncementForm(true);
-              }} className="w-full sm:w-auto">
-                <Plus className="mr-2 h-4 w-4" /> Add Announcement
-              </Button>
-            </div>
+          <TabsContent value="announcements" className="space-y-4 mt-0">
+            <AdminPageHeader
+              title="Announcements"
+              description="Publish news and updates for the school community."
+              action={
+                <Button onClick={() => {
+                  setEditingAnnouncement(null);
+                  setShowAnnouncementForm(true);
+                }}>
+                  <Plus className="mr-2 h-4 w-4" /> Add Announcement
+                </Button>
+              }
+            />
             
             {showAnnouncementForm ? (
               <AnnouncementForm
@@ -1071,90 +1043,80 @@ export default function AdminDashboard() {
                 isLoading={creatingAnnouncement}
               />
             ) : (
-              <Card>
-              <CardContent>
+              <Card className="border-slate-200 shadow-sm">
+              <CardContent className="pt-6">
                 {loading ? (
-                  <div className="text-center py-8">Loading announcements...</div>
+                  <AdminLoadingState message="Loading announcements..." />
                 ) : announcements.length > 0 ? (
-                  <div className="overflow-x-auto">
-                    <table className="w-full">
+                  <AdminTableWrapper>
+                    <table className="w-full text-sm">
                       <thead>
-                        <tr className="border-b">
-                          <th className="text-left py-3 px-2">Title</th>
-                          <th className="text-left py-3 px-2">Content</th>
-                          <th className="text-left py-3 px-2">Category</th>
-                          <th className="text-left py-3 px-2">Date</th>
-                          <th className="text-left py-3 px-2">Pinned</th>
-                          <th className="text-left py-3 px-2">Actions</th>
+                        <tr className="border-b border-slate-200 bg-slate-50/80">
+                          <th className={adminThClassName()}>Title</th>
+                          <th className={adminThClassName()}>Content</th>
+                          <th className={adminThClassName()}>Category</th>
+                          <th className={adminThClassName()}>Date</th>
+                          <th className={adminThClassName()}>Pinned</th>
+                          <th className={adminThClassName()}>Actions</th>
                         </tr>
                       </thead>
                       <tbody>
                         {announcements.map((announcement) => (
-                          <tr key={announcement._id} className="border-b hover:bg-gray-50">
-                            <td className="py-3 px-2 font-medium">{announcement.title}</td>
-                            <td className="py-3 px-2 line-clamp-2 max-w-xs">{announcement.content}</td>
-                            <td className="py-3 px-2">
-                              <span className="px-2 py-1 rounded-full text-xs bg-purple-100 text-purple-800">
-                                {announcement.category}
-                              </span>
+                          <tr key={announcement._id} className={adminTrClassName()}>
+                            <td className={`${adminTdClassName()} font-medium`}>{announcement.title}</td>
+                            <td className={`${adminTdClassName()} line-clamp-2 max-w-xs`}>{announcement.content}</td>
+                            <td className={adminTdClassName()}>
+                              <AdminStatusBadge label={announcement.category} tone="purple" />
                             </td>
-                            <td className="py-3 px-2">{formatDate(announcement.date)}</td>
-                            <td className="py-3 px-2">
-                              {announcement.pinned ? (
-                                <span className="px-2 py-1 rounded-full text-xs bg-green-100 text-green-800">
-                                  Pinned
-                                </span>
-                              ) : (
-                                <span className="px-2 py-1 rounded-full text-xs bg-gray-100 text-gray-800">
-                                  No
-                                </span>
-                              )}
+                            <td className={adminTdClassName()}>{formatDate(announcement.date)}</td>
+                            <td className={adminTdClassName()}>
+                              <AdminStatusBadge
+                                label={announcement.pinned ? "Pinned" : "No"}
+                                tone={announcement.pinned ? "success" : "neutral"}
+                              />
                             </td>
-                            <td className="py-3 px-2">
-                              <div className="flex space-x-2">
-                                <Button 
-                                  variant="outline" 
-                                  size="sm"
-                                  onClick={() => handleEditAnnouncement(announcement)}
-                                >
+                            <td className={adminTdClassName()}>
+                              <div className="flex gap-1">
+                                <AdminIconButton label="Edit announcement" onClick={() => handleEditAnnouncement(announcement)}>
                                   <Edit className="h-4 w-4" />
-                                </Button>
-                                <Button 
-                                  variant="outline" 
-                                  size="sm"
-                                  onClick={() => handleDeleteAnnouncement(announcement._id)}
+                                </AdminIconButton>
+                                <AdminIconButton
+                                  label="Delete announcement"
+                                  variant="danger"
                                   disabled={deletingId === announcement._id}
+                                  onClick={() => handleDeleteAnnouncement(announcement._id)}
                                 >
                                   {deletingId === announcement._id ? (
-                                    <div className="h-4 w-4 animate-spin rounded-full border-b-2 border-gray-900" />
+                                    <div className="h-4 w-4 animate-spin rounded-full border border-slate-400 border-t-transparent" />
                                   ) : (
                                     <Trash2 className="h-4 w-4" />
                                   )}
-                                </Button>
+                                </AdminIconButton>
                               </div>
                             </td>
                           </tr>
                         ))}
                       </tbody>
                     </table>
-                  </div>
+                  </AdminTableWrapper>
                 ) : (
-                  <div className="text-center py-8 text-muted-foreground">
-                    No announcements found
-                  </div>
+                  <AdminEmptyState title="No announcements found" description="Create your first announcement to share news with visitors." />
                 )}
               </CardContent>
               </Card>
             )}
           </TabsContent>
 
-          <TabsContent value="events" className="space-y-4">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-              <h2 className="text-xl sm:text-2xl font-bold">Events</h2>
-              <Button onClick={handleCreateEvent} className="w-full sm:w-auto">
-                <Plus className="mr-2 h-4 w-4" /> Add Event
-              </Button>
-            </div>
+          <TabsContent value="events" className="space-y-4 mt-0">
+            <AdminPageHeader
+              title="Events"
+              description="Manage school calendar events and activities."
+              action={
+                <Button onClick={handleCreateEvent}>
+                  <Plus className="mr-2 h-4 w-4" /> Add Event
+                </Button>
+              }
+            />
             
             {showEventForm ? (
               <EventForm
@@ -1175,80 +1137,74 @@ export default function AdminDashboard() {
                 isLoading={loading}
               />
             ) : (
-              <Card>
-                <CardContent>
+              <Card className="border-slate-200 shadow-sm">
+                <CardContent className="pt-6">
                   {loading ? (
-                    <div className="text-center py-8">Loading events...</div>
+                    <AdminLoadingState message="Loading events..." />
                   ) : events.length > 0 ? (
-                    <div className="overflow-x-auto">
-                      <table className="w-full">
+                    <AdminTableWrapper>
+                      <table className="w-full text-sm">
                         <thead>
-                          <tr className="border-b">
-                            <th className="text-left py-3 px-2">Title</th>
-                            <th className="text-left py-3 px-2">Description</th>
-                            <th className="text-left py-3 px-2">Date & Time</th>
-                            <th className="text-left py-3 px-2">Location</th>
-                            <th className="text-left py-3 px-2">Type</th>
-                            <th className="text-left py-3 px-2">Actions</th>
+                          <tr className="border-b border-slate-200 bg-slate-50/80">
+                            <th className={adminThClassName()}>Title</th>
+                            <th className={adminThClassName()}>Description</th>
+                            <th className={adminThClassName()}>Date & Time</th>
+                            <th className={adminThClassName()}>Location</th>
+                            <th className={adminThClassName()}>Type</th>
+                            <th className={adminThClassName()}>Actions</th>
                           </tr>
                         </thead>
                         <tbody>
                           {events.map((event) => (
-                            <tr key={event._id} className="border-b hover:bg-gray-50">
-                              <td className="py-3 px-2 font-medium">{event.title}</td>
-                              <td className="py-3 px-2 line-clamp-2 max-w-xs">{event.description}</td>
-                              <td className="py-3 px-2">
+                            <tr key={event._id} className={adminTrClassName()}>
+                              <td className={`${adminTdClassName()} font-medium`}>{event.title}</td>
+                              <td className={`${adminTdClassName()} line-clamp-2 max-w-xs`}>{event.description}</td>
+                              <td className={adminTdClassName()}>
                                 <div>{formatDate(event.date)}</div>
-                                <div className="text-sm text-muted-foreground">{event.time}</div>
+                                <div className="text-sm text-slate-500">{event.time}</div>
                               </td>
-                              <td className="py-3 px-2">{event.location}</td>
-                              <td className="py-3 px-2">
-                                <span className="px-2 py-1 rounded-full text-xs bg-indigo-100 text-indigo-800">
-                                  {event.type}
-                                </span>
+                              <td className={adminTdClassName()}>{event.location}</td>
+                              <td className={adminTdClassName()}>
+                                <AdminStatusBadge label={event.type} tone="purple" />
                               </td>
-                              <td className="py-3 px-2">
-                                <div className="flex space-x-2">
-                                  <Button 
-                                    variant="outline" 
-                                    size="sm"
-                                    onClick={() => handleEditEvent(event)}
-                                  >
+                              <td className={adminTdClassName()}>
+                                <div className="flex gap-1">
+                                  <AdminIconButton label="Edit event" onClick={() => handleEditEvent(event)}>
                                     <Edit className="h-4 w-4" />
-                                  </Button>
-                                  <Button 
-                                    variant="outline" 
-                                    size="sm"
-                                    onClick={() => handleDeleteEvent(event._id)}
+                                  </AdminIconButton>
+                                  <AdminIconButton
+                                    label="Delete event"
+                                    variant="danger"
                                     disabled={deletingId === event._id}
+                                    onClick={() => handleDeleteEvent(event._id)}
                                   >
                                     {deletingId === event._id ? (
-                                      <div className="h-4 w-4 animate-spin rounded-full border-b-2 border-gray-900" />
+                                      <div className="h-4 w-4 animate-spin rounded-full border border-slate-400 border-t-transparent" />
                                     ) : (
                                       <Trash2 className="h-4 w-4" />
                                     )}
-                                  </Button>
+                                  </AdminIconButton>
                                 </div>
                               </td>
                             </tr>
                           ))}
                         </tbody>
                       </table>
-                    </div>
+                    </AdminTableWrapper>
                   ) : (
-                    <div className="text-center py-8 text-muted-foreground">
-                      No events found
-                    </div>
+                    <AdminEmptyState title="No events found" description="Add events to keep the school calendar up to date." icon={Calendar} />
                   )}
                 </CardContent>
               </Card>
             )}
           </TabsContent>
 
-          <TabsContent value="gallery" className="space-y-4">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-              <h2 className="text-xl sm:text-2xl font-bold">Gallery Images</h2>
-              <div className="flex gap-2 w-full sm:w-auto">
+          <TabsContent value="gallery" className="space-y-4 mt-0">
+            <AdminPageHeader
+              title="Gallery"
+              description="Upload and organize photos displayed on the website."
+              action={
+              <div className="flex flex-wrap gap-2">
                 <Button 
                   onClick={() => {
                     setUseMultiImageForm(false);
@@ -1275,7 +1231,8 @@ export default function AdminDashboard() {
                   <span className="sm:hidden">Multiple</span>
                 </Button>
               </div>
-            </div>
+              }
+            />
             
             {showGalleryForm ? (
               useMultiImageForm ? (
@@ -1300,15 +1257,15 @@ export default function AdminDashboard() {
                 />
               )
             ) : (
-              <Card>
-                <CardContent>
+              <Card className="border-slate-200 shadow-sm">
+                <CardContent className="pt-6">
                   {loading ? (
-                    <div className="text-center py-8">Loading gallery images...</div>
+                    <AdminLoadingState message="Loading gallery images..." />
                   ) : galleryImages.length > 0 ? (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
                       {galleryImages.map((image) => (
-                        <div key={image._id} className="border rounded-lg overflow-hidden">
-                          <div className="bg-gray-200 border-2 border-dashed rounded-t-lg w-full h-48 flex items-center justify-center">
+                        <div key={image._id} className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
+                          <div className="flex h-48 w-full items-center justify-center bg-slate-100">
                             {image.file_url ? (
                               <img 
                                 src={image.file_url} 
@@ -1357,36 +1314,37 @@ export default function AdminDashboard() {
                       ))}
                     </div>
                   ) : (
-                    <div className="text-center py-8 text-muted-foreground">
-                      No images found
-                    </div>
+                    <AdminEmptyState title="No images found" description="Upload photos to build the school gallery." icon={ImageIcon} />
                   )}
                 </CardContent>
               </Card>
             )}
           </TabsContent>
 
-          <TabsContent value="hall-of-fame" className="space-y-4">
-            <div className="flex justify-between items-center">
-              <h2 className="text-2xl font-bold">Hall of Fame</h2>
-              <Button onClick={handleCreateHallOfFame}>
-                <Plus className="mr-2 h-4 w-4" /> Add Entry
-              </Button>
-            </div>
+          <TabsContent value="hall-of-fame" className="space-y-4 mt-0">
+            <AdminPageHeader
+              title="Hall of Fame"
+              description="Highlight outstanding student achievements on the homepage."
+              action={
+                <Button onClick={handleCreateHallOfFame}>
+                  <Plus className="mr-2 h-4 w-4" /> Add Entry
+                </Button>
+              }
+            />
             
             {loading ? (
-              <Card>
-                <CardContent className="text-center py-8">Loading Hall of Fame entries...</CardContent>
+              <Card className="border-slate-200 shadow-sm">
+                <CardContent><AdminLoadingState message="Loading Hall of Fame entries..." /></CardContent>
               </Card>
             ) : (
-              <Card>
+              <Card className="border-slate-200 shadow-sm">
                 <CardContent className="p-6">
                   {hallOfFameEntries.length > 0 ? (
                     <div className="space-y-4">
                       {hallOfFameEntries.map((entry) => (
                         <div 
                           key={entry.id} 
-                          className="flex flex-col sm:flex-row gap-4 p-4 border rounded-lg hover:shadow-md transition-shadow"
+                          className="flex flex-col gap-4 rounded-lg border border-slate-200 p-4 transition-shadow hover:shadow-md sm:flex-row"
                         >
                           <div className="flex-shrink-0">
                             <img 
@@ -1456,16 +1414,28 @@ export default function AdminDashboard() {
                       ))}
                     </div>
                   ) : (
-                    <div className="text-center py-8 text-muted-foreground">
-                      No Hall of Fame entries yet. Click "Add Entry" to create one.
-                    </div>
+                    <AdminEmptyState
+                      title="No Hall of Fame entries yet"
+                      description="Celebrate student achievements by adding your first entry."
+                      icon={Trophy}
+                      action={
+                        <Button onClick={handleCreateHallOfFame}>
+                          <Plus className="mr-2 h-4 w-4" /> Add Entry
+                        </Button>
+                      }
+                    />
                   )}
                 </CardContent>
               </Card>
             )}
           </TabsContent>
         </Tabs>
-      </main>
+
+      <AdminConfirmDialog
+        state={confirmDialog}
+        onOpenChange={(open) => !open && setConfirmDialog(null)}
+        isLoading={confirmLoading}
+      />
       
       <ApplicationDetailModal 
         application={selectedApplication} 
@@ -1497,6 +1467,6 @@ export default function AdminDashboard() {
           onSave={handleHallOfFameSave}
         />
       )}
-    </div>
+    </AdminShell>
   );
 }

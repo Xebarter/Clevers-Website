@@ -26,6 +26,14 @@ import {
   type JobApplication,
 } from "@/lib/admin/services";
 import { generateJobApplicationPDF } from "@/lib/pdf";
+import {
+  AdminEmptyState,
+  AdminLoadingState,
+  AdminPageHeader,
+} from "@/components/admin/admin-ui";
+import AdminConfirmDialog, { type AdminConfirmState } from "@/components/admin/AdminConfirmDialog";
+import { adminToast } from "@/lib/admin/notify";
+import { Briefcase } from "lucide-react";
 
 const statusOptions = [
   { value: "pending", label: "Pending", color: "bg-gray-100 text-gray-800" },
@@ -43,6 +51,8 @@ export default function JobApplicationsManager() {
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
+  const [confirmDialog, setConfirmDialog] = useState<AdminConfirmState | null>(null);
+  const [confirmLoading, setConfirmLoading] = useState(false);
 
   useEffect(() => {
     loadApplications();
@@ -92,7 +102,7 @@ export default function JobApplicationsManager() {
       });
     } catch (error) {
       console.error("Error generating PDF:", error);
-      alert("Failed to generate PDF");
+      adminToast.error("Failed to generate PDF");
     }
   };
 
@@ -100,15 +110,16 @@ export default function JobApplicationsManager() {
     setUpdatingId(id);
     try {
       await updateJobApplication(id, { application_status: newStatus });
-      setApplications(applications.map(app => 
-        app.id === id ? { ...app, application_status: newStatus } : app
-      ));
+      setApplications((prev) =>
+        prev.map((app) => (app.id === id ? { ...app, application_status: newStatus } : app))
+      );
+      adminToast.success("Status updated");
       if (selectedApplication?.id === id) {
         setSelectedApplication({ ...selectedApplication, application_status: newStatus });
       }
     } catch (error) {
       console.error("Error updating status:", error);
-      alert("Failed to update status");
+      adminToast.error("Failed to update status");
     } finally {
       setUpdatingId(null);
     }
@@ -128,30 +139,36 @@ export default function JobApplicationsManager() {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this job application?")) return;
-    
-    setDeletingId(id);
-    try {
-      await deleteJobApplication(id);
-      setApplications(applications.filter(app => app.id !== id));
-      if (selectedApplication?.id === id) {
-        setShowDetailModal(false);
-        setSelectedApplication(null);
-      }
-    } catch (error) {
-      console.error("Error deleting application:", error);
-      const errorMessage = error instanceof Error ? error.message : "Failed to delete application";
-      
-      // Check if it's a database/table not found error
-      if (errorMessage.includes("not found") || errorMessage.includes("does not exist")) {
-        alert(`Delete failed: ${errorMessage}\n\nPlease ensure the 'job_applications' table exists in your Supabase database.`);
-      } else {
-        alert(`Delete failed: ${errorMessage}`);
-      }
-    } finally {
-      setDeletingId(null);
-    }
+  const handleDelete = (id: string) => {
+    setConfirmDialog({
+      open: true,
+      title: "Delete job application",
+      description: "This application and its documents will be permanently removed.",
+      onConfirm: async () => {
+        setDeletingId(id);
+        try {
+          setConfirmLoading(true);
+          await deleteJobApplication(id);
+          setApplications(applications.filter((app) => app.id !== id));
+          if (selectedApplication?.id === id) {
+            setShowDetailModal(false);
+            setSelectedApplication(null);
+          }
+          adminToast.success("Job application deleted");
+        } catch (error) {
+          console.error("Error deleting application:", error);
+          const errorMessage = error instanceof Error ? error.message : "Failed to delete application";
+          if (errorMessage.includes("not found") || errorMessage.includes("does not exist")) {
+            adminToast.error("Delete failed", "Ensure the job_applications table exists in Supabase.");
+          } else {
+            adminToast.error("Delete failed", errorMessage);
+          }
+        } finally {
+          setDeletingId(null);
+          setConfirmLoading(false);
+        }
+      },
+    });
   };
 
   const getStatusBadge = (status: string) => {
@@ -215,24 +232,28 @@ export default function JobApplicationsManager() {
 
   return (
     <div className="space-y-4">
-      <Card>
-        <CardHeader>
-          <CardTitle>Job Applications</CardTitle>
-        </CardHeader>
-        <CardContent>
+      <AdminPageHeader
+        title="Job Applications"
+        description="Review career applications and update hiring status."
+      />
+
+      <Card className="border-slate-200 shadow-sm">
+        <CardContent className="pt-6">
           {loading ? (
-            <div className="text-center py-8">Loading job applications...</div>
+            <AdminLoadingState message="Loading job applications..." />
           ) : error ? (
-            <div className="text-center py-8">
-              <p className="text-red-500 mb-4">{error}</p>
+            <div className="py-8 text-center">
+              <p className="mb-4 text-red-600">{error}</p>
               <Button onClick={loadApplications} variant="outline">
-                Try Again
+                Try again
               </Button>
             </div>
           ) : applications.length === 0 ? (
-            <div className="text-center py-8 text-gray-500">
-              No job applications found
-            </div>
+            <AdminEmptyState
+              title="No job applications found"
+              description="Career applications submitted on the website will appear here."
+              icon={Briefcase}
+            />
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full">
@@ -621,6 +642,12 @@ export default function JobApplicationsManager() {
           )}
         </DialogContent>
       </Dialog>
+
+      <AdminConfirmDialog
+        state={confirmDialog}
+        onOpenChange={(open) => !open && setConfirmDialog(null)}
+        isLoading={confirmLoading}
+      />
     </div>
   );
 }
