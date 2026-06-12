@@ -1,247 +1,239 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { resourcesService } from "../../../lib/supabase/services"; // Use relative path for Supabase services
-import { Resource } from "../../../lib/supabase/client"; // Use relative path for Supabase client
-
-// UI components
+import { resourcesService } from "../../../lib/supabase/services";
+import { Resource } from "../../../lib/supabase/client";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-
-// Icons
 import {
   FileText,
   Download,
   Search,
   Calendar,
-  Bookmark,
-  BookOpen,
-  GraduationCap,
   FileImage,
   File,
   FileSpreadsheet,
+  FolderOpen,
+  Sparkles,
+  ArrowRight,
 } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 const resourceCategories = [
-  { id: "all", name: "All Resources" },
-  { id: "academic", name: "Academic Materials" },
-  { id: "forms", name: "Forms & Applications" },
-  { id: "policies", name: "School Policies" },
-  { id: "calendar", name: "Calendars & Schedules" },
+  { id: "all", name: "All" },
+  { id: "academic", name: "Academic" },
+  { id: "forms", name: "Forms" },
+  { id: "policies", name: "Policies" },
+  { id: "calendar", name: "Calendars" },
   { id: "newsletters", name: "Newsletters" },
 ];
 
-// Updated interface to match Supabase resource structure
-interface SupabaseResource extends Resource {
-  type?: string; // We'll derive this from file_name if needed
-  fileSize?: string; // We'll need to handle this differently as Supabase doesn't store it directly
-  uploadDate?: string; // Using created_at from Supabase
+type SupabaseResource = Resource & {
+  type?: string;
+  uploadDate?: string;
+};
+
+function getFileIcon(type: string = "") {
+  switch (type.toLowerCase()) {
+    case "pdf":
+      return <FileText className="h-6 w-6 text-red-500" />;
+    case "docx":
+    case "doc":
+      return <FileText className="h-6 w-6 text-blue-500" />;
+    case "xlsx":
+    case "xls":
+      return <FileSpreadsheet className="h-6 w-6 text-green-500" />;
+    case "jpg":
+    case "png":
+      return <FileImage className="h-6 w-6 text-purple-500" />;
+    default:
+      return <File className="h-6 w-6 text-gray-400" />;
+  }
 }
 
-const ResourcesPage = () => {
+const categoryStyles: Record<string, string> = {
+  academic: "bg-blue-50 text-blue-700 border-blue-100",
+  forms: "bg-green-50 text-green-700 border-green-100",
+  policies: "bg-purple-50 text-purple-700 border-purple-100",
+  calendar: "bg-orange-50 text-orange-700 border-orange-100",
+  newsletters: "bg-pink-50 text-pink-700 border-pink-100",
+};
+
+export default function ResourcesPage() {
   const [resources, setResources] = useState<SupabaseResource[]>([]);
   const [activeTab, setActiveTab] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchResources = async () => {
-      try {
-        setLoading(true);
-        const data = await resourcesService.getAll();
-        
-        // Transform Supabase resources to match the expected format
-        const transformedResources = data.map(resource => ({
-          ...resource,
-          type: resource.file_name ? resource.file_name.split('.').pop()?.toUpperCase() || 'FILE' : 'LINK',
-          fileSize: 'N/A', // Supabase doesn't store file sizes directly
-          uploadDate: resource.created_at || new Date().toISOString(), // Use created_at from Supabase
-        }));
-        
-        setResources(transformedResources);
-      } catch (error) {
-        console.error("Error fetching resources:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchResources();
+    resourcesService
+      .getAll()
+      .then((data) =>
+        setResources(
+          data.map((resource) => ({
+            ...resource,
+            type: resource.file_name?.split(".").pop()?.toUpperCase() || "FILE",
+            uploadDate: resource.created_at || new Date().toISOString(),
+          }))
+        )
+      )
+      .catch(console.error)
+      .finally(() => setLoading(false));
   }, []);
 
-  const filteredResources = resources.filter((resource) => {
-    const categoryMatch = activeTab === "all" || resource.category === activeTab;
-    const searchMatch =
-      (resource.title && resource.title.toLowerCase().includes(searchQuery.toLowerCase())) ||
-      (resource.description && resource.description.toLowerCase().includes(searchQuery.toLowerCase()));
-
-    return categoryMatch && searchMatch;
-  });
-
-  const getFileIcon = (type: string = '') => {
-    switch (type.toLowerCase()) {
-      case "pdf":
-        return <FileText className="h-5 w-5 text-red-500" />;
-      case "docx":
-      case "doc":
-        return <FileText className="h-5 w-5 text-blue-500" />;
-      case "xlsx":
-      case "xls":
-        return <FileSpreadsheet className="h-5 w-5 text-green-500" />;
-      case "jpg":
-      case "png":
-        return <FileImage className="h-5 w-5 text-purple-500" />;
-      default:
-        return <File className="h-5 w-5 text-gray-500" />;
-    }
-  };
-
-  const getCategoryIcon = (category: string = '') => {
-    switch (category) {
-      case "academic":
-        return <BookOpen className="h-4 w-4 mr-1" />;
-      case "forms":
-        return <FileText className="h-4 w-4 mr-1" />;
-      case "policies":
-        return <Bookmark className="h-4 w-4 mr-1" />;
-      case "calendar":
-        return <Calendar className="h-4 w-4 mr-1" />;
-      case "newsletters":
-        return <GraduationCap className="h-4 w-4 mr-1" />;
-      default:
-        return <FileText className="h-4 w-4 mr-1" />;
-    }
-  };
-
-  const getCategoryBadgeClass = (category: string = '') => {
-    switch (category) {
-      case "academic":
-        return "bg-blue-100 text-blue-800 border-blue-200";
-      case "forms":
-        return "bg-green-100 text-green-800 border-green-200";
-      case "policies":
-        return "bg-purple-100 text-purple-800 border-purple-200";
-      case "calendar":
-        return "bg-orange-100 text-orange-800 border-orange-200";
-      case "newsletters":
-        return "bg-pink-100 text-pink-800 border-pink-200";
-      default:
-        return "bg-gray-100 text-gray-800 border-gray-200";
-    }
-  };
-
-  if (loading) {
-    return (
-      <div className="container mx-auto px-4 py-12">
-        <div className="max-w-5xl mx-auto">
-          <div className="text-center">
-            <h1 className="text-4xl md:text-5xl font-bold mb-4">School Resources</h1>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Loading resources...
-            </p>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  const filteredResources = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    return resources.filter((resource) => {
+      const categoryMatch = activeTab === "all" || resource.category === activeTab;
+      const searchMatch =
+        !q ||
+        resource.title?.toLowerCase().includes(q) ||
+        resource.description?.toLowerCase().includes(q);
+      return categoryMatch && searchMatch;
+    });
+  }, [resources, activeTab, searchQuery]);
 
   return (
-    <div className="container mx-auto px-4 py-12">
-      <div className="max-w-5xl mx-auto">
-        <div className="text-center mb-12">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">School Resources</h1>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Access and download school documents, forms, academic materials, calendars, and newsletters.
+    <div className="min-h-screen bg-gradient-to-b from-white via-blue-50/30 to-green-50/20">
+      {/* Hero */}
+      <section className="relative py-16 sm:py-20 overflow-hidden bg-gradient-to-br from-blue-50 via-white to-green-50">
+        <div className="absolute bottom-0 left-0 w-64 h-64 bg-blue-200/15 rounded-full blur-3xl pointer-events-none" />
+        <div className="container mx-auto px-4 sm:px-6 relative text-center max-w-3xl">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/70 border border-blue-100 shadow-sm mb-6">
+            <Sparkles className="h-4 w-4 text-blue-500" />
+            <span className="text-sm font-medium text-gray-700">Downloads & documents</span>
+          </div>
+          <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight text-gray-900 mb-5">
+            School{" "}
+            <span className="bg-gradient-to-r from-pink-500 via-yellow-400 to-green-500 bg-clip-text text-transparent">
+              Resources
+            </span>
+          </h1>
+          <p className="text-lg text-gray-600 leading-relaxed">
+            Access forms, academic materials, policies, calendars, and newsletters for parents and students.
           </p>
         </div>
+      </section>
 
-        <div className="mb-8">
-          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6">
-            <h2 className="text-2xl font-bold">Resource Library</h2>
-            <div className="relative w-full md:w-64">
-              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
+      <section className="py-12 sm:py-16">
+        <div className="container mx-auto px-4 sm:px-6 max-w-4xl">
+          {/* Toolbar */}
+          <div className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm mb-8 space-y-4">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
               <Input
-                type="text"
+                type="search"
                 placeholder="Search resources..."
-                className="pl-8"
+                className="pl-9 h-10 border-gray-200"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
+            <Tabs value={activeTab} onValueChange={setActiveTab}>
+              <TabsList className="h-auto w-full flex flex-wrap justify-start gap-1 bg-gray-50 p-1 rounded-xl">
+                {resourceCategories.map((cat) => (
+                  <TabsTrigger
+                    key={cat.id}
+                    value={cat.id}
+                    className="rounded-lg text-xs sm:text-sm data-[state=active]:bg-white data-[state=active]:shadow-sm"
+                  >
+                    {cat.name}
+                  </TabsTrigger>
+                ))}
+              </TabsList>
+            </Tabs>
           </div>
 
-          <Tabs defaultValue="all" onValueChange={setActiveTab}>
-            <TabsList className="w-full grid grid-cols-2 md:grid-cols-6 h-auto">
-              {resourceCategories.map((category) => (
-                <TabsTrigger key={category.id} value={category.id} className="text-xs md:text-sm py-2">
-                  {category.name}
-                </TabsTrigger>
-              ))}
-            </TabsList>
-          </Tabs>
-        </div>
-
-        <div className="space-y-4">
-          {filteredResources.length === 0 ? (
-            <Card>
-              <CardContent className="pt-6 pb-6 text-center">
-                <p className="text-gray-500">No resources found matching your criteria</p>
-              </CardContent>
-            </Card>
+          {loading ? (
+            <div className="flex flex-col items-center justify-center py-20 gap-3">
+              <div className="hero-spinner" role="status" aria-label="Loading resources" />
+              <p className="text-sm font-medium text-green-700/70">Loading resources...</p>
+            </div>
+          ) : filteredResources.length === 0 ? (
+            <div className="text-center py-20 rounded-2xl border border-dashed border-gray-200 bg-white/60">
+              <FolderOpen className="h-12 w-12 text-gray-300 mx-auto mb-4" />
+              <p className="font-medium text-gray-700">No resources found</p>
+              <p className="text-sm text-gray-500 mt-1">
+                {searchQuery ? "Try a different search term." : "New documents will appear here when published."}
+              </p>
+              {searchQuery && (
+                <Button variant="link" className="mt-2 text-green-700" onClick={() => setSearchQuery("")}>
+                  Clear search
+                </Button>
+              )}
+            </div>
           ) : (
-            filteredResources.map((resource) => (
-              <Card key={resource.id} className="overflow-hidden group hover:shadow-md transition-all">
-                <div className="flex flex-col md:flex-row">
-                  <div className="bg-gray-50 p-6 flex items-center justify-center md:w-24">
-                    {getFileIcon(resource.type)}
-                  </div>
-                  <div className="flex-1 p-6">
-                    <div className="flex flex-col md:flex-row md:items-start justify-between gap-2">
-                      <div>
-                        <h3 className="text-lg font-semibold">{resource.title}</h3>
-                        <p className="text-gray-600 text-sm mt-1">{resource.description}</p>
+            <>
+              <p className="text-sm text-gray-500 mb-4">
+                {filteredResources.length} of {resources.length} resources
+              </p>
+              <div className="space-y-3">
+                {filteredResources.map((resource) => (
+                  <article
+                    key={resource.id}
+                    className="group flex flex-col sm:flex-row gap-4 rounded-2xl border border-gray-100 bg-white p-5 shadow-sm hover:shadow-md transition-all"
+                  >
+                    <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-gray-50 ring-1 ring-gray-100">
+                      {getFileIcon(resource.type)}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+                        <div>
+                          <h3 className="font-bold text-gray-900 group-hover:text-green-700 transition-colors">
+                            {resource.title}
+                          </h3>
+                          {resource.description && (
+                            <p className="text-sm text-gray-600 mt-1 line-clamp-2">{resource.description}</p>
+                          )}
+                        </div>
+                        {resource.file_url && (
+                          <a href={resource.file_url} target="_blank" rel="noopener noreferrer" className="shrink-0">
+                            <Button size="sm" className="rounded-lg gap-1.5 bg-green-600 hover:bg-green-700">
+                              <Download className="h-4 w-4" />
+                              Download
+                            </Button>
+                          </a>
+                        )}
                       </div>
-                      <Link href={resource.file_url || "#"} className="mt-2 md:mt-0" target="_blank">
-                        <Button size="sm" className="gap-1">
-                          <Download className="h-4 w-4" />
-                          Download
-                        </Button>
-                      </Link>
-                    </div>
-                    <div className="flex flex-wrap items-center mt-4 text-xs text-gray-500 gap-x-4 gap-y-2">
-                      {resource.category && (
-                        <Badge variant="outline" className={getCategoryBadgeClass(resource.category)}>
-                          <span className="flex items-center">
-                            {getCategoryIcon(resource.category)}
+                      <div className="flex flex-wrap items-center gap-2 mt-3">
+                        {resource.category && (
+                          <Badge
+                            variant="outline"
+                            className={cn("text-[10px] uppercase tracking-wide", categoryStyles[resource.category])}
+                          >
                             {resourceCategories.find((c) => c.id === resource.category)?.name || resource.category}
+                          </Badge>
+                        )}
+                        {resource.type && (
+                          <span className="text-xs text-gray-400">{resource.type}</span>
+                        )}
+                        {resource.uploadDate && (
+                          <span className="text-xs text-gray-400 flex items-center gap-1">
+                            <Calendar className="h-3 w-3" />
+                            {new Date(resource.uploadDate).toLocaleDateString("en-UG")}
                           </span>
-                        </Badge>
-                      )}
-                      <span className="flex items-center">
-                        <FileText className="h-4 w-4 mr-1" />
-                        {resource.type} • {resource.fileSize}
-                      </span>
-                      <span>Uploaded: {resource.uploadDate ? new Date(resource.uploadDate).toLocaleDateString() : 'N/A'}</span>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                </div>
-              </Card>
-            ))
+                  </article>
+                ))}
+              </div>
+            </>
           )}
+
+          <div className="mt-12 text-center rounded-2xl border border-green-100 bg-green-50/50 p-8">
+            <p className="text-gray-700 mb-4">Need help finding a document?</p>
+            <Link href="/contact">
+              <Button variant="outline" className="rounded-lg gap-2 border-green-200 text-green-700 hover:bg-green-50">
+                Contact us <ArrowRight className="h-4 w-4" />
+              </Button>
+            </Link>
+          </div>
         </div>
-      </div>
+      </section>
     </div>
   );
-};
-
-export default ResourcesPage;
+}

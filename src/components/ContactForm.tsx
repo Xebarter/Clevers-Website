@@ -60,13 +60,10 @@ export default function ContactForm() {
   };
 
   return (
-    <div className="bg-white p-6 rounded-3xl shadow-md border-2 border-kinder-blue/20">
-      <h3 className="text-xl font-bold mb-6 font-heading text-kinder-blue">
-        Send Us a Message
-      </h3>
-      <form onSubmit={handleSubmit} className="space-y-4">
+    <div className="rounded-2xl border border-gray-100 bg-white p-6 sm:p-8 shadow-lg">
+      <form onSubmit={handleSubmit} className="space-y-5">
         <div>
-          <label htmlFor="name" className="block mb-2 font-body text-gray-700">
+          <label htmlFor="name" className="block mb-1.5 text-sm font-medium text-gray-700">
             Your Name
           </label>
           <Input
@@ -76,12 +73,12 @@ export default function ContactForm() {
             onChange={(e) => setName(e.target.value)}
             placeholder="Enter your name"
             required
-            className="kinder-input w-full"
+            className="h-10 border-gray-200"
           />
         </div>
 
         <div>
-          <label htmlFor="email" className="block mb-2 font-body text-gray-700">
+          <label htmlFor="email" className="block mb-1.5 text-sm font-medium text-gray-700">
             Email Address
           </label>
           <Input
@@ -89,14 +86,14 @@ export default function ContactForm() {
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            placeholder="Enter your email"
+            placeholder="you@example.com"
             required
-            className="kinder-input w-full"
+            className="h-10 border-gray-200"
           />
         </div>
 
         <div>
-          <label htmlFor="subject" className="block mb-2 font-body text-gray-700">
+          <label htmlFor="subject" className="block mb-1.5 text-sm font-medium text-gray-700">
             Subject
           </label>
           <Input
@@ -106,12 +103,12 @@ export default function ContactForm() {
             onChange={(e) => setSubject(e.target.value)}
             placeholder="What is this regarding?"
             required
-            className="kinder-input w-full"
+            className="h-10 border-gray-200"
           />
         </div>
 
         <div>
-          <label htmlFor="message" className="block mb-2 font-body text-gray-700">
+          <label htmlFor="message" className="block mb-1.5 text-sm font-medium text-gray-700">
             Message
           </label>
           <Textarea
@@ -120,13 +117,13 @@ export default function ContactForm() {
             onChange={(e) => setMessage(e.target.value)}
             placeholder="How can we help you?"
             required
-            className="kinder-input w-full h-32"
+            className="min-h-[120px] border-gray-200 resize-y"
           />
         </div>
 
         <Button
           type="submit"
-          className="w-full kinder-button mt-4"
+          className="w-full h-11 rounded-lg bg-green-600 hover:bg-green-700 text-white mt-2"
           disabled={isSubmitting}
         >
           {isSubmitting ? "Sending..." : "Send Message"}
